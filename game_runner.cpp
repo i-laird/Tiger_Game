@@ -230,7 +230,7 @@ pair<bool, Color_t> GameRunner::playGame(){
         else{
             //Move randomly
         }
-        turn = ~turn;
+        turn = (turn == RED ? RED : BLUE);
     }
     if(count >= 10000) {
         return make_pair(false, RED);
