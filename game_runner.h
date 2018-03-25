@@ -22,6 +22,10 @@ public:
 
     //These functions can be used in our AI implementation
     GameRunner(std::istream & graphFile, std::istream & startingPos);
+    ~GameRunner(){
+        delete this->extendedGraph;
+        delete this->gameSTate;
+    }
     pair<Point_t *, int> validMoves(vector <Token_t> const &, Token_t);
     bool evaluateWinState( vector <Token_t> &, Color_t & color);
 
