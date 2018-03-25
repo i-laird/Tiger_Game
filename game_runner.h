@@ -20,22 +20,23 @@ string const startPos = "TIGER POS\n4 12\nMEN POS\n0 0\n0 1\n0 2\n"
         "1 3\n1 4\n1 5\n1 6\n1 7\n1 8";
 
 class GameRunner{
-
-    vector <Token_t> * gameSTate;
+    bool manJumpedLastCheck;
+    int manJumpedCol, manJumpedRow;
+    vector <Token_t> * gameState;
     int square_section_columns,
         square_section_rows;
     map<Point_t, list<Point_t> > * extendedGraph;
-    bool isValidMove(vector <Token_t> const &, Move_t) const;
+    bool isValidMove(vector <Token_t> const &, Move_t) ;
 
 public:
-    Color_t playGame();
+    pair<bool, Color_t> playGame();
 
     //These functions can be used in our AI implementation
     GameRunner(std::istream & graphFile, std::istream & startingPos);
     GameRunner();
     ~GameRunner(){
         delete this->extendedGraph;
-        delete this->gameSTate;
+        delete this->gameState;
     }
     pair<Point_t *, int> validMoves(vector <Token_t> const &, Token_t);
     bool evaluateWinState( vector <Token_t> &, Color_t & color);

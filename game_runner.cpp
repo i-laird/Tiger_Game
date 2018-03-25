@@ -4,7 +4,7 @@
 
 #include "game_runner.h"
 
-bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) const{
+bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
     bool validMove = false, tigerJumpedMan = false;
     int jumpedManCol, jumpedManRow;
     for(unsigned i = 0; i < moves.size(); i++){
@@ -75,6 +75,11 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) const{
                 validMove = false;
             }
         }
+        if(validMove){
+            this->manJumpedLastCheck = true;
+            this->mainJumpedCol = jumpedManCol;
+            this->manJumpedRow = jumpedManRow;
+        }
     }
     return validMove;
 }
@@ -103,7 +108,7 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
  */
 GameRunner::GameRunner(){
     istringstream graphFile(graph), startingPos(startPos);
-    this->gameSTate = new vector<Token_t>();
+    this->gameState = new vector<Token_t>();
     this->extendedGraph = new map<Point_t, list<Point_t> >();
     int readNum;
     Token_t tempToken;
@@ -139,11 +144,11 @@ GameRunner::GameRunner(){
     tempToken.color = RED;
     startingPos.ignore(1000, '\n');
     startingPos >> tempToken.location.row >> tempToken.location.col;
-    this->gameSTate->push_back(tempToken);
+    this->gameState->push_back(tempToken);
     tempToken.color = BLUE;
     //Read in the men
     while(startingPos >> tempToken.location.row >> tempToken.location.col){
-        this->gameSTate->push_back(tempToken);
+        this->gameState->push_back(tempToken);
     }
 }
 
@@ -151,7 +156,7 @@ GameRunner::GameRunner(){
  * Custom constructor can make custom game from files
  */
 GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
-    this->gameSTate = new vector<Token_t>();
+    this->gameState = new vector<Token_t>();
     this->extendedGraph = new map<Point_t, list<Point_t> >();
     int readNum;
     Token_t tempToken;
@@ -187,17 +192,52 @@ GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
     tempToken.color = RED;
     startingPos.ignore(1000, '\n');
     startingPos >> tempToken.location.row >> tempToken.location.col;
-    this->gameSTate->push_back(tempToken);
+    this->gameState->push_back(tempToken);
     tempToken.color = BLUE;
     //Read in the men
     while(startingPos >> tempToken.location.row >> tempToken.location.col){
-        this->gameSTate->push_back(tempToken);
+        this->gameState->push_back(tempToken);
     }
 
 }
 
-Color_t GameRunner::playGame(){
-
+pair<bool, Color_t> GameRunner::playGame(){
+    Color_t turn = RED, winner;
+    Move_t returnedMove;
+    int count = 0;
+    //Keep playing until game is finished or 10000 turns have passed
+    while(count < 10000 && !this->evaluateWinState(*this->gameState, winner)){
+        this->manJumpedLastCheck = false;
+        count++;
+        returnedMove = My_Move(*this->gameState, turn);
+        if(isValidMove(*this->gameState, returnedMove)){
+            for(vector<Token_t>::iterator vectorIterator = gameState->begin();
+                vectorIterator != gameState->end(); vectorIterator++) {
+                    //See if the encountered spot is the moved token
+                    if ((*vectorIterator).location == returnedMove.token.location) {
+                        (*vectorIterator).location = returnedMove.destination;
+                    }
+                    //See if a man was killed that turn
+                    if (turn == RED && this->manJumpedLastCheck) {
+                        if ((*vectorIterator).location.row == manJumpedRow &&
+                            (*vectorIterator).location.col == manJumpedCol) {
+                            this->gameState->erase(vectorIterator);
+                            break;
+                        }
+                    }
+            }
+        }
+        else{
+            //Move randomly
+        }
+        turn = ~turn;
+    }
+    if(count >= 10000) {
+        return make_pair(false, RED);
+    }else if(winner == RED){
+        return make_pair(true, RED);
+    }
+    return make_pair(true, BLUE);
 }
 
 pair<Point_t *, int> GameRunner::validMoves(vector <Token_t> const & boardState, Token_t piece){
