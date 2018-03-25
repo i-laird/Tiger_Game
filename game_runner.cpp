@@ -98,8 +98,58 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
 
 }
 
+/*
+ * Deafault Constructor can be used to creact default start game
+ */
+GameRunner::GameRunner(){
+    istringstream graphFile(graph), startingPos(startPos);
+    this->gameSTate = new vector<Token_t>();
+    this->extendedGraph = new map<Point_t, list<Point_t> >();
+    int readNum;
+    Token_t tempToken;
+    Point_t tempPoint, tempPoint2;
+    list<Point_t> tempList;
+    map<Point_t, list<Point_t> >::iterator mapIter, mapIter2;
+    //Read in the board
+    graphFile.ignore(1000, '\n');
+    //Read in the square section
+    graphFile >> this->square_section_rows >> this->square_section_columns;
+    //Read in the Unusual edges
+    graphFile.ignore(1000, '\n');
+    while(graphFile >> readNum){
+        graphFile >> tempPoint.row >> tempPoint.col;
+        mapIter = extendedGraph->find(tempPoint);
+        if(mapIter == extendedGraph->end()){
+            extendedGraph->insert(make_pair(tempPoint, tempList));
+            mapIter = extendedGraph->find(tempPoint);
+        }
+        for(int i = 0; i < readNum; i++) {
+            graphFile >> tempPoint2.row >> tempPoint2.col;
+            mapIter->second.push_back(tempPoint);
+            mapIter2 = extendedGraph->find(tempPoint2);
+            if(mapIter2 == extendedGraph->end()){
+                extendedGraph->insert(make_pair(tempPoint2, tempList));
+                mapIter2 = extendedGraph->find(tempPoint2);
+            }
+            mapIter2->second.push_back(tempPoint);
+        }
+    }
 
+    //Read in the piece locations
+    tempToken.color = RED;
+    startingPos.ignore(1000, '\n');
+    startingPos >> tempToken.location.row >> tempToken.location.col;
+    this->gameSTate->push_back(tempToken);
+    tempToken.color = BLUE;
+    //Read in the men
+    while(startingPos >> tempToken.location.row >> tempToken.location.col){
+        this->gameSTate->push_back(tempToken);
+    }
+}
 
+/*
+ * Custom constructor can make custom game from files
+ */
 GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
     this->gameSTate = new vector<Token_t>();
     this->extendedGraph = new map<Point_t, list<Point_t> >();
