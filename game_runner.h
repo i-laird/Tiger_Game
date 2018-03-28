@@ -26,9 +26,8 @@ class GameRunner{
     int square_section_columns,
         square_section_rows;
     map<Point_t, list<Point_t> > * extendedGraph;
-    bool isValidMove(vector <Token_t> const &, Move_t) ;
-
 public:
+    bool isValidMove(vector <Token_t> const &, Move_t) ;
     pair<bool, Color_t> playGame();
 
     //These functions can be used in our AI implementation

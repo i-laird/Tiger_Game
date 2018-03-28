@@ -104,7 +104,7 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
 }
 
 /*
- * Deafault Constructor can be used to creact default start game
+ * Deafault Constructor can be used to creat default start game
  */
 GameRunner::GameRunner(){
     istringstream graphFile(graph), startingPos(startPos);
@@ -124,10 +124,12 @@ GameRunner::GameRunner(){
     while(graphFile >> readNum){
         graphFile >> tempPoint.row >> tempPoint.col;
         mapIter = extendedGraph->find(tempPoint);
+        //See if the point is not already mapped
         if(mapIter == extendedGraph->end()){
             extendedGraph->insert(make_pair(tempPoint, tempList));
             mapIter = extendedGraph->find(tempPoint);
         }
+        //Now put all of the Nodes reachable from that vertex in
         for(int i = 0; i < readNum; i++) {
             graphFile >> tempPoint2.row >> tempPoint2.col;
             mapIter->second.push_back(tempPoint);
@@ -228,7 +230,7 @@ pair<bool, Color_t> GameRunner::playGame(){
             }
         }
         else{
-            //Move randomly
+            //TODO Move randomly
         }
         turn = (turn == RED ? RED : BLUE);
     }
@@ -267,10 +269,14 @@ pair<Point_t *, int> GameRunner::validMoves(vector <Token_t> const & boardState,
                 tempMove.destination.col -= 1;
                 jumpMove.destination.col -= 2;
         }
-        if(this->isValidMove(boardState, tempMove) ||
-           (piece.color == RED && isValidMove(boardState, jumpMove))){
-                validPoints[size] = tempMove.destination;
-                size += 1;
+        //See if moving simply UP,DOWN,LEft,RiGHT 1 is valid
+        if(this->isValidMove(boardState, tempMove){
+            validPoints[size] = tempMove.destination;
+            size += 1;
+        } //See if moving 2 UP,DOWN,LEFT,RIGHt works
+        else if (piece.color == RED && isValidMove(boardState, jumpMove)){
+            validPoints[size] = jumpMove.destination;
+            size += 1;
         }
     }
     //Now check for diagonal moves
@@ -282,12 +288,18 @@ pair<Point_t *, int> GameRunner::validMoves(vector <Token_t> const & boardState,
             tempMove.destination = *listIter;
             jumpMove.destination.row = ((tempMove.destination.row - piece.location.row) * 2) + piece.location.row;
             jumpMove.destination.col = ((tempMove.destination.col - piece.location.col) * 2) + piece.location.col;
-            if(isValidMove(boardState, tempMove) || (piece.color == RED && isValidMove(boardState, jumpMove)){
+            //See if diagonal move valid
+            if(isValidMove(boardState, tempMove) {
                 validPoints[size] = tempMove.destination;
+                size += 1;
+            }//See if man can be jumped with diagonal
+            else if(piece.color == RED && isValidMove(boardState, jumpMove)){
+                validPoints[size] = jumpMove.destination;
                 size += 1;
             }
         }
     }
+    //return the pointer coupled with the number of elements stored in it
     return make_pair(validPoints, size);
 }
 
