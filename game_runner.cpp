@@ -17,23 +17,51 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             map<Point_t, list<Point_t> >::iterator mapIter;
             int destRow = move.destination.row, destCol = move.destination.col,
                 origRow = moves[i].location.row, origCol = moves[i].location.col;
-            int colDifference = move.destination.col - moves[i].location.col,
-                rowDifference = move.destination.row - moves[i].location.row;
+            int colDifference = destCol - origCol,
+                rowDifference = destRow - origRow;
             colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
             rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
-            if((move.token.color == BLUE && rowDifference > 1 || colDifference > 1) ||
-                move.token.color == RED && rowDifference > 2 || colDifference > 2 ){
-                    return false;
+            //Men can only move 1 ever except Tiger cage
+            if(move.token.color == BLUE){
+                if(origRow < square_section_rows && origCol < square_section_columns
+                 && destRow < square_section_rows && destCol < square_section_columns){
+                    if((rowDifference > 1 || colDifference > 1)) {
+                        return false;
+                    }
+                }
+                else{
+                    if(rowDifference > 2 || colDifference > 2){
+                        return false;
+                    }
+                }
             }
-            if(rowDifference == 2 || colDifference == 2){
-                tigerJumpedMan = true;
+            if(move.token.color == RED){
+                if(origRow < square_section_rows && origCol < square_section_columns
+                   && destRow < square_section_rows && destCol < square_section_columns){
+                    if((rowDifference > 2 || colDifference > 2)) {
+                        return false;
+                    }
+                    //See if tiger jumped man not in Tiger cage
+                    if(rowDifference == 2 || colDifference == 2){
+                        tigerJumpedMan = true;
+                    }
+                }
+                else{
+                    if(rowDifference > 4 || colDifference > 4){
+                        return false;
+                    }
+                    //See if tiger jumped man in Tiger cage
+                    if(rowDifference > 2 || colDifference > 2){
+                        tigerJumpedMan = true;
+                    }
+                }
             }
             //See if the move starts and ends in the Square section and is not diagonal
-            if((rowDifference > 0 && colDifference == 0) || (colDifference > 1 && rowDifference == 0)){
-                if(origRow <= this->square_section_rows && origRow >= 0 &&
-                   origCol <= this->square_section_columns && origCol >= 0 &&
-                   destRow <= this->square_section_rows && destRow >= 0 &&
-                   destCol <= this->square_section_columns && destCol >= 0){
+            if((rowDifference > 0 && colDifference == 0) || (colDifference > 0 && rowDifference == 0)){
+                if(origRow < this->square_section_rows && origRow >= 0 &&
+                   origCol < this->square_section_columns && origCol >= 0 &&
+                   destRow < this->square_section_rows && destRow >= 0 &&
+                   destCol < this->square_section_columns && destCol >= 0){
                         validMove = true;
                 }
             }
@@ -77,7 +105,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
         }
         if(validMove){
             this->manJumpedLastCheck = true;
-            this->mainJumpedCol = jumpedManCol;
+            this->manJumpedCol = jumpedManCol;
             this->manJumpedRow = jumpedManRow;
         }
     }
