@@ -88,7 +88,7 @@ bool find_path_to_state(State_Transition& t, M& det_man_moves,
     }
 
     // if been here before, return false, cycling
-    if(t.found_states.find(t.current) != t.found_state.end()) {
+    if(t.found_states.find(t.current) != t.found_states.end()) {
         return false;
     }
     else{
