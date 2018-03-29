@@ -24,7 +24,6 @@ struct Move_t{
     Point_t destination;
 };
 
-Move_t  Move(vector<Token_t>, Color_t turn);
 Move_t  My_Move(vector<Token_t>, Color_t turn);
 
 

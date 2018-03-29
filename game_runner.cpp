@@ -2,8 +2,15 @@
 // Created by iancl on 3/25/2018.
 //
 
+#include <assert.h>
 #include "game_runner.h"
+Move_t  My_Move(vector<Token_t>, Color_t turn){
 
+}
+
+bool operator<(Point_t a, Point_t b){
+    return (a.row < b.row ? a.row < b.row : a.col < b.col);
+}
 bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
     bool validMove = false, tigerJumpedMan = false;
     int jumpedManCol, jumpedManRow;
@@ -192,6 +199,7 @@ GameRunner::GameRunner(){
  * Custom constructor can make custom game from files
  */
 GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
+    string trashline;
     this->gameState = new vector<Token_t>();
     this->extendedGraph = new map<Point_t, list<Point_t> >();
     int readNum;
@@ -200,33 +208,26 @@ GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
     list<Point_t> tempList;
     map<Point_t, list<Point_t> >::iterator mapIter, mapIter2;
     //Read in the board
-    graphFile.ignore(1000, '\n');
+    getline(graphFile, trashline);
     //Read in the square section
     graphFile >> this->square_section_rows >> this->square_section_columns;
     //Read in the Unusual edges
-    graphFile.ignore(1000, '\n');
+    graphFile.ignore();
+    getline(graphFile, trashline);
     while(graphFile >> readNum){
         graphFile >> tempPoint.row >> tempPoint.col;
-        mapIter = extendedGraph->find(tempPoint);
-        if(mapIter == extendedGraph->end()){
-            extendedGraph->insert(make_pair(tempPoint, tempList));
-            mapIter = extendedGraph->find(tempPoint);
-        }
+        mapIter = (extendedGraph->insert(make_pair(tempPoint, tempList))).first;
         for(int i = 0; i < readNum; i++) {
             graphFile >> tempPoint2.row >> tempPoint2.col;
-            mapIter->second.push_back(tempPoint);
-            mapIter2 = extendedGraph->find(tempPoint2);
-            if(mapIter2 == extendedGraph->end()){
-                extendedGraph->insert(make_pair(tempPoint2, tempList));
-                mapIter2 = extendedGraph->find(tempPoint2);
-            }
+            mapIter->second.push_back(tempPoint2);
+            mapIter2 = (extendedGraph->insert(make_pair(tempPoint2, tempList))).first;
             mapIter2->second.push_back(tempPoint);
         }
     }
 
     //Read in the piece locations
     tempToken.color = RED;
-    startingPos.ignore(1000, '\n');
+    getline(graphFile, trashline);
     startingPos >> tempToken.location.row >> tempToken.location.col;
     this->gameState->push_back(tempToken);
     tempToken.color = BLUE;
@@ -304,7 +305,7 @@ pair<Point_t *, int> GameRunner::validMoves(vector <Token_t> const & boardState,
                 jumpMove.destination.col -= 2;
         }
         //See if moving simply UP,DOWN,LEft,RiGHT 1 is valid
-        if(this->isValidMove(boardState, tempMove){
+        if(this->isValidMove(boardState, tempMove)){
             validPoints[size] = tempMove.destination;
             size += 1;
         } //See if moving 2 UP,DOWN,LEFT,RIGHt works
@@ -323,7 +324,7 @@ pair<Point_t *, int> GameRunner::validMoves(vector <Token_t> const & boardState,
             jumpMove.destination.row = ((tempMove.destination.row - piece.location.row) * 2) + piece.location.row;
             jumpMove.destination.col = ((tempMove.destination.col - piece.location.col) * 2) + piece.location.col;
             //See if diagonal move valid
-            if(isValidMove(boardState, tempMove) {
+            if(isValidMove(boardState, tempMove)) {
                 validPoints[size] = tempMove.destination;
                 size += 1;
             }//See if man can be jumped with diagonal

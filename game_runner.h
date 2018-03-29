@@ -112,4 +112,6 @@ bool operator==(Point_t a, Point_t b);
  */
 bool operator==(Token_t a, Token_t b);
 
+bool operator<(Point_t a, Point_t b);
+
 #endif //TIGER_GAME_GAME_RUNNER_H
