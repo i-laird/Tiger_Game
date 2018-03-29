@@ -233,35 +233,47 @@ GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
 pair<bool, Color_t> GameRunner::playGame(){
     Color_t turn = RED, winner;
     Move_t returnedMove;
-    int count = 0;
+    int counter = 0;
     //Keep playing until game is finished or 10000 turns have passed
-    while(count < 10000 && !this->evaluateWinState(*this->gameState, winner)){
+    while(counter < 10000 && !this->evaluateWinState(*this->gameState, winner)){
         this->manJumpedLastCheck = false;
-        count++;
+        counter++;
         returnedMove = My_Move(*this->gameState, turn);
-        if(isValidMove(*this->gameState, returnedMove)){
-            for(vector<Token_t>::iterator vectorIterator = gameState->begin();
-                vectorIterator != gameState->end(); vectorIterator++) {
-                    //See if the encountered spot is the moved token
-                    if ((*vectorIterator).location == returnedMove.token.location) {
-                        (*vectorIterator).location = returnedMove.destination;
+        //If not valid move I will perform first available move
+        if(!isValidMove(*this->gameState, returnedMove)){
+            if(turn == RED){
+                returnedMove.token = (*gameState)[0];
+                returnedMove.destination = this->validMoves(*gameState, returnedMove.token).first[0];
+            }
+            else{
+                for(int i = 1; i < gameState->size(); i++){
+                    returnedMove.token = (*gameState)[i];
+                    pair<Point_t *, int > returnPair = this->validMoves(*gameState, returnedMove.token);
+                    if(returnPair.second > 0){
+                        returnedMove.destination = returnPair.first[0];
+                        break;
                     }
-                    //See if a man was killed that turn
-                    if (turn == RED && this->manJumpedLastCheck) {
-                        if ((*vectorIterator).location.row == manJumpedRow &&
-                            (*vectorIterator).location.col == manJumpedCol) {
-                            this->gameState->erase(vectorIterator);
-                            break;
-                        }
-                    }
+                }
             }
         }
-        else{
-            //TODO Move randomly
+        for(vector<Token_t>::iterator vectorIterator = gameState->begin();
+            vectorIterator != gameState->end(); vectorIterator++) {
+                //See if the encountered spot is the moved token
+                if ((*vectorIterator).location == returnedMove.token.location) {
+                    (*vectorIterator).location = returnedMove.destination;
+                }
+                //See if a man was killed that turn
+                if (turn == RED && this->manJumpedLastCheck) {
+                    if ((*vectorIterator).location.row == manJumpedRow &&
+                        (*vectorIterator).location.col == manJumpedCol) {
+                            this->gameState->erase(vectorIterator);
+                            break;
+                    }
+                }
         }
         turn = (turn == RED ? RED : BLUE);
     }
-    if(count >= 10000) {
+    if(counter >= 10000) {
         return make_pair(false, RED);
     }else if(winner == RED){
         return make_pair(true, RED);
