@@ -12,7 +12,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
         if(moves[i].location == move.destination){
             return false;
         }
-        //Now if it is a valid move at all
+        //Checking if move indicated is valid IF token found is right token
         if(moves[i] == move.token && validMove == false) {
             map<Point_t, list<Point_t> >::iterator mapIter;
             int destRow = move.destination.row, destCol = move.destination.col,
@@ -23,12 +23,14 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
             //Men can only move 1 ever except Tiger cage
             if(move.token.color == BLUE){
+                //See if move starts and ends in Square section but has move diff > 1
                 if(origRow < square_section_rows && origCol < square_section_columns
                  && destRow < square_section_rows && destCol < square_section_columns){
                     if((rowDifference > 1 || colDifference > 1)) {
                         return false;
                     }
                 }
+                //If in Tiger cage can move 2 max
                 else{
                     if(rowDifference > 2 || colDifference > 2){
                         return false;
@@ -36,17 +38,20 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                 }
             }
             if(move.token.color == RED){
+                //See if tiger move started and ended in square section of board
                 if(origRow < square_section_rows && origCol < square_section_columns
                    && destRow < square_section_rows && destCol < square_section_columns){
+                    //Even w/ jump cannot move more than 2 in rows or columns
                     if((rowDifference > 2 || colDifference > 2)) {
                         return false;
                     }
-                    //See if tiger jumped man not in Tiger cage
+                    //See if tiger jumped man in square section
                     if(rowDifference == 2 || colDifference == 2){
                         tigerJumpedMan = true;
                     }
                 }
                 else{
+                    //Tiger can NEVER move more than 4 in row or colum even w/ tiger cage jump
                     if(rowDifference > 4 || colDifference > 4){
                         return false;
                     }
@@ -65,6 +70,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                         validMove = true;
                 }
             }
+            //See if the move involved an unusual edge in some way
             else if((mapIter = extendedGraph->find(moves[i].location)) != extendedGraph->end()){
                 Point_t jumpedMan;
                 if(tigerJumpedMan) {
@@ -73,11 +79,11 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                     jumpedMan.row = jumpedManRow = (move.destination.row + origRow) / 2;
                 }
                 list<Point_t>::const_iterator listIter = mapIter->second.begin();
-                while(listIter != mapIter->second.end()){
+                while(!validMove && listIter != mapIter->second.end()){
                     if(move.destination == *listIter){
                         validMove = true;
                     }
-                    if(tigerJumpedMan && jumpedMan == *listIter){
+                    else if(tigerJumpedMan && jumpedMan == *listIter){
                         map<Point_t, list<Point_t> >::iterator mapIter2;
                         mapIter2 = extendedGraph->find(jumpedMan);
                         list<Point_t>::const_iterator listIter2 = mapIter2->second.begin();
@@ -90,7 +96,12 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                     }
                     listIter++;
                 }
+                //Move end position not reachable from the indicated start position
+                if(validMove == false){
+                    return false;
+                }
             }
+            //Move start position invalid
             else{
                 return false;
             }
@@ -98,11 +109,13 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
     }
     //See if a man was actual present where the tiger is said to have jumped him
     if(tigerJumpedMan){
+        //See if a man is present at the jumped position
         for(unsigned i = 1 ; i < moves.size() && validMove; i++){
             if(moves[i].location.row == jumpedManRow && moves[i].location.col == jumpedManCol){
                 validMove = false;
             }
         }
+        //If the Tiger jump was actually valid store the info for later use
         if(validMove){
             this->manJumpedLastCheck = true;
             this->manJumpedCol = jumpedManCol;
@@ -113,26 +126,19 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
 }
 
 bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
-    pair<Point_t *, int> moveReceiver = this->validMoves(tokens, tokens[1]);
-    //Means the tiger cannot move
+    pair<Point_t *, int> moveReceiver = this->validMoves(tokens, tokens[0]);
+    //Means the tiger cannot move so MEN WIN
     if(moveReceiver.second == 0){
-        color = RED;
+        color = BLUE;
         return true;
     }
 
-    //See if any man can move
-    for(unsigned int i = 0; i < tokens.size(); i++){
-        moveReceiver = this->validMoves(tokens, tokens[1]);
-        if(moveReceiver.second == 0){
-            color = BLUE;
-            return true;
-        }
-    }
-
+    //If at least one man alive Tiger has not won yet
+    return (tokens.size() > 1);
 }
 
 /*
- * Deafault Constructor can be used to creat default start game
+ * Default Constructor can be used to create default start game
  */
 GameRunner::GameRunner(){
     istringstream graphFile(graph), startingPos(startPos);
