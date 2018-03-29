@@ -9,6 +9,25 @@ using namespace std;
 
 typedef map<Token_t, Point_t> State;
 
+bool operator<(const Token_t& a, const Token_t& b) {
+    return make_pair(a.location.row, a.location.col) <
+                                     make_pair(b.location.row, b.location.col);
+}
+
+bool operator<(const State& a, const State& b) {
+    if(a.size() != b.size()) {
+        return a.size() < b.size();
+    }
+    else {
+        for(auto i = a.begin(); i != a.end(); ++i){
+            if(i->second != b[i->first]) {
+                return i->second < b[i->first];
+            }
+        }
+    }
+    return false;
+}
+
 bool is_equal(const State& a, const State& b, const vector<Token_t>& to_check) {
     for(auto i = to_check.begin(); i != to_check.end(); ++i) {
         State::iterator a_ptr = a.find(*i), b_ptr = b.find(*i);
@@ -23,6 +42,16 @@ bool is_equal(const State& a, const State& b, const vector<Token_t>& to_check) {
     }
     return true;
 }
+
+struct State_Transition{
+    State current, desired;
+    set<State> found_states;
+    vector<Token_t> to_move;
+    map<State,Move_t> path;
+    int max_moves;
+    int cur_moves;
+    int back_row;
+};
 
 // this function returns true if and only if there is a path of moves
 // from the current state to the desired state which allows for the following
@@ -46,12 +75,11 @@ bool is_equal(const State& a, const State& b, const vector<Token_t>& to_check) {
 //               tokens in order to determine validity)
 //
 template <class M, class T>
-bool find_path_to_state(State& current, const State& desired, map<State,Move_t>& path,
-                        const vector<Token_t>& to_move, int max_moves, set<State>& found_states
-                        int num_moves, int back_row, M& det_man_moves, T& det_tiger_moves) {
+bool find_path_to_state(State_Transition& t, M& det_man_moves,
+                                                            T& det_tiger_moves) {
     // if at max moves, return true if reached desired state, false else
-    if(num_moves >= max_moves){
-        if(is_equal(current, desired, to_move)) {
+    if(t.num_moves >= t.max_moves){
+        if(is_equal(t.current, t.desired, t.to_move)) {
             return true;
         }
         else{
@@ -60,11 +88,11 @@ bool find_path_to_state(State& current, const State& desired, map<State,Move_t>&
     }
 
     // if been here before, return false, cycling
-    if(found_states.find(current) != found_state.end()) {
+    if(t.found_states.find(t.current) != t.found_state.end()) {
         return false;
     }
     else{
-        found_states.insert(current);
+        t.found_states.insert(t.current);
     }
 
     // determine whether this state is any good, i.e. if there exists a
@@ -72,30 +100,30 @@ bool find_path_to_state(State& current, const State& desired, map<State,Move_t>&
     // desired state
     bool any_good = false; // true iff path to desired state following above
                            // guidelines
-    vector<Move_t> man_moves = det_man_moves(current, to_move);
+    vector<Move_t> man_moves = det_man_moves(t.current, t.to_move);
     for(auto m = man_moves.begin(); m != man_moves.end() && !any_good; ++m){
         bool move_okay = true;
-        Point_t prev_position = current[m->token]; // record position
+        Point_t prev_position = t.current[m->token]; // record position
         // perform move
-        current[m->token] = m->destination;
+        t.current[m->token] = m->destination;
+        ++t.num_moves;
         // check each tiger response
-        vector<Move_t> tiger_moves = det_tiger_moves(current, to_move);
+        vector<Move_t> tiger_moves = det_tiger_moves(t.current, t.to_move);
         for(auto t = tiger_moves.begin(); t != tiger_moves.end() && m_okay; ++t) {
-            Point_t prev_tiger_pos = current[t->token];
-            current[t->token] = t->destination;
-            if(!find_path_to_state(current, desired, path, to_move, max_moves,
-                                   found_states, num_moves + 1, back_row,
-                                   det_man_moves, det_tiger_moves)){
+            Point_t prev_tiger_pos = t.current[t->token];
+            t.current[t->token] = t->destination;
+            if(!find_path_to_state(t, det_man_moves, det_tiger_moves)){
                 m_okay = false;
             }
-            current[t->token] = prev_tiger_pos;
+            t.current[t->token] = prev_tiger_pos;
         }
         // undo move
-        current[m->token] = prev_position;
+        --t.num_moves;
+        t.current[m->token] = prev_position;
         // if move is okay, record it
         if(m_okay){
             any_good = true;
-            path[current] = Move_t(*m);
+            t.path[t.current] = Move_t(*m);
         }
     }
 
