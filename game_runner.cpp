@@ -149,6 +149,7 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
  */
 GameRunner::GameRunner(){
     istringstream graphFile(graph), startingPos(startPos);
+    string trashline;
     this->gameState = new vector<Token_t>();
     this->extendedGraph = new map<Point_t, list<Point_t> >();
     int readNum;
@@ -157,35 +158,26 @@ GameRunner::GameRunner(){
     list<Point_t> tempList;
     map<Point_t, list<Point_t> >::iterator mapIter, mapIter2;
     //Read in the board
-    graphFile.ignore(1000, '\n');
+    getline(graphFile, trashline);
     //Read in the square section
     graphFile >> this->square_section_rows >> this->square_section_columns;
     //Read in the Unusual edges
-    graphFile.ignore(1000, '\n');
+    graphFile.ignore();
+    getline(graphFile, trashline);
     while(graphFile >> readNum){
         graphFile >> tempPoint.row >> tempPoint.col;
-        mapIter = extendedGraph->find(tempPoint);
-        //See if the point is not already mapped
-        if(mapIter == extendedGraph->end()){
-            extendedGraph->insert(make_pair(tempPoint, tempList));
-            mapIter = extendedGraph->find(tempPoint);
-        }
-        //Now put all of the Nodes reachable from that vertex in
+        mapIter = (extendedGraph->insert(make_pair(tempPoint, tempList))).first;
         for(int i = 0; i < readNum; i++) {
             graphFile >> tempPoint2.row >> tempPoint2.col;
-            mapIter->second.push_back(tempPoint);
-            mapIter2 = extendedGraph->find(tempPoint2);
-            if(mapIter2 == extendedGraph->end()){
-                extendedGraph->insert(make_pair(tempPoint2, tempList));
-                mapIter2 = extendedGraph->find(tempPoint2);
-            }
+            mapIter->second.push_back(tempPoint2);
+            mapIter2 = (extendedGraph->insert(make_pair(tempPoint2, tempList))).first;
             mapIter2->second.push_back(tempPoint);
         }
     }
 
     //Read in the piece locations
     tempToken.color = RED;
-    startingPos.ignore(1000, '\n');
+    getline(graphFile, trashline);
     startingPos >> tempToken.location.row >> tempToken.location.col;
     this->gameState->push_back(tempToken);
     tempToken.color = BLUE;
