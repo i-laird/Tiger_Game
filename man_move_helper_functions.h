@@ -51,12 +51,45 @@ template <class M, class T>
 bool find_path_to_state(State_Transition& t, M& det_man_moves,
                                                             T& det_tiger_moves);
 
-class Men_move_forward{
+class Men_Move_F{
     private:
         int back_row;
     public:
-        Men_move_forward();
-        vector<pair<int, Move_t> > operator()(const State&, const vector<int>&);
+        Men_Move_F(int br = -1);
+        // Finds all forward moves using tokens in the State of the given indices
+        // which are forward, and leave the tiger unable to capture anyone
+        //
+        // NOTE: CHECKS THAT MOVES DO NOT HIT ANOTHER TOKEN, THAT THEY DO NOT
+        //       PASS back_row - 2 IN ROW, HOWEVER NO OTHER CHECKS FOR VALIDITY
+        //       ARE PERFORMED
+        vector<pair<int, Move_t> >* operator()(const State&, const vector<int>&);
 };
+
+
+class Men_Move_FLR {
+    private:
+        int back_row;
+        int left_col;
+        int right_col;
+    public:
+        Men_Move_FLR(int br = -1, int left_c = -1, int right_c = -1);
+        // Finds all forward, left, and right moves using tokens in the State
+        // of the given indices which leave the tiger unable to capture anyone
+        //
+        // NOTE: CHECKS THAT MOVES DO NOT HIT ANOTHER TOKEN, THAT THEY STAY
+        //       WITHIN [left_col, right_col] AND THAT THEY DO NOT PASS
+        //       back_row - 2 IN ROW, HOWEVER NO OTHER CHECKS FOR VALIDITY
+        //       ARE PERFORMED
+        vector<pair<int, Move_t> >* operator()(const State&, const vector<int>&);
+};
+
+// - SAME_ROW indicates all columns are on same two adjacent rows
+// - ONE_BEHIND indicates all columns are on same two
+//   adjacent rows except for one column, which is one row behind
+// - TWO_BEHIND indicates all columns are on same two adjacent rows
+//   except for one column, which is two rows behind
+enum Defined_State {SAME_ROW, ONE_BEHIND, TWO_BEHIND};
+
+
 
 #endif // MAN_MOVE_HELPER_FUNCTIONS_H_INCLUDED
