@@ -12,6 +12,10 @@ bool operator<(Point_t a, Point_t b){
     return (a.row < b.row ? true : (a.col < b.col && a.row == b.col));
 }
 bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
+    if(move.destination.col < 0 || move.destination.row < 0
+       || move.destination.col >= col_boundary || move.destination.row >= row_boundary)
+            return false;
+
     bool validMove = false, tigerJumpedMan = false;
     int jumpedManCol, jumpedManRow;
     for(unsigned i = 0; i < moves.size(); i++){
@@ -21,6 +25,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
         }
         //Checking if move indicated is valid IF token found is right token
         if(moves[i] == move.token && validMove == false) {
+            bool inSquareSection = false;
             map<Point_t, list<Point_t> >::iterator mapIter;
             int destRow = move.destination.row, destCol = move.destination.col,
                 origRow = moves[i].location.row, origCol = moves[i].location.col;
@@ -28,15 +33,17 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                 rowDifference = destRow - origRow;
             colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
             rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
+            if(origRow >= tiger_cage_row_offset && origCol < colDifference
+               && destRow >= tiger_cage_row_offset && destCol < colDifference){
+                inSquareSection = true;
+            }
             //Men can only move 1 ever except Tiger cage
             if(move.token.color == BLUE){
                 //See if move starts and ends in Square section but has move diff > 1
-                if(origRow + tiger_cage_row_offset < rowDifference
-                   && origCol < colDifference && destRow + tiger_cage_row_offset
-                   < rowDifference && destCol < colDifference){
-                        if((rowDifference > 1 || colDifference > 1)) {
-                            return false;
-                        }
+                if(inSquareSection){
+                    if((rowDifference > 1 || colDifference > 1)) {
+                        return false;
+                    }
                 }
                 //If in Tiger cage can move 2 max
                 else{
@@ -47,9 +54,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             }
             if(move.token.color == RED){
                 //See if tiger move started and ended in square section of board
-                if(origRow + tiger_cage_row_offset < rowDifference
-                   && origCol < colDifference && destRow + tiger_cage_row_offset
-                   < rowDifference && destCol < colDifference){
+                if(inSquareSection){
                     //Even w/ jump cannot move more than 2 in rows or columns
                     if((rowDifference > 2 || colDifference > 2)) {
                         return false;
@@ -72,11 +77,8 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             }
             //See if the move starts and ends in the Square section and is not diagonal
             if((rowDifference > 0 && colDifference == 0) || (colDifference > 0 && rowDifference == 0)){
-                if(origRow + tiger_cage_row_offset < this->row_boundary && origRow >= tiger_cage_row_offset &&
-                   origCol < this->col_boundary && origCol >= 0 &&
-                   destRow + tiger_cage_row_offset < this->row_boundary && destRow >= tiger_cage_row_offset &&
-                   destCol < this->col_boundary && destCol >= 0){
-                        validMove = true;
+                if(inSquareSection){
+                    validMove = true;
                 }
             }
             //See if the move involved an unusual edge in some way
