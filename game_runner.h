@@ -11,13 +11,15 @@
 #include <list>
 #include <sstream>
 
-string const graph = "BOARD SQUARE SECTION DIMENSIONS\n9 9\nUNUSUAL EDGES\n2 0 4 1 3 1 5\n2 1 3 2 2\n1 2 2 3 1\n"
-        "1 3 1 4 0\n1 4 0 5 1\n1 5 1 6 2\n1 6 2 7 3\n1 7 3 8 4\n1 1 5 2 6\n1 2 6 3 7\n1 3 7 4 8\n1 4 8 5 7\n"
-        "1 5 7 6 6\n1 6 6 7 5\n1 7 5 8 4\n2 8 4 10 5 10 3\n2 10 5 12 6 12 4\n2 10 3 12 4 12 2\n"
-        "1 12 2 14 3\n1 12 6 14 5\n2 12 4 14 5 14 3\n1 14 5 16 4\n1 14 3 16 4";
-string const startPos = "TIGER POS\n4 12\nMEN POS\n0 0\n0 1\n0 2\n"
-        "0 3\n0 4\n0 5\n0 6\n0 7\n0 8\n1 0\n1 1\n1 2\n"
-        "1 3\n1 4\n1 5\n1 6\n1 7\n1 8";
+string const graph = "BOARD SQUARE SECTION DIMENSIONS\n17 9\nUNUSUAL EDGES"
+                     "\n2 16 4 15 3 15 5\n2 15 3 14 2\n1 14 2 13 1\n"
+        "1 13 1 12 0\n1 12 0 11 1\n1 11 1 10 2\n1 10 2 9 3\n1 9 3 8 4\n"
+        "1 15 5 14 6\n1 14 6 13 7\n1 13 7 12 8\n1 12 8 11 7\n1 11 7 10 6\n"
+        "1 10 6 9 5\n1 9 5 8 4\n2 8 4 6 5 6 3\n2 6 5 4 6 4 4\n2 6 3 4 4 4 2\n"
+        "1 4 2 2 3\n1 4 6 2 5\n2 4 4 2 5 2 3\n1 2 5 0 4\n1 2 3 0 4";
+string const startPos = "TIGER POS\n4 4\nMEN POS\n16 0\n16 1\n16 2\n"
+        "16 3\n16 4\n16 5\n16 6\n16 7\n16 8\n17 0\n17 1\n17 2\n"
+        "17 3\n17 4\n17 5\n17 6\n17 7\n17 8";
 /**
  * This class runs a game. It can be used like Booth's API to fetch moves and run them on the Game
  *
@@ -28,8 +30,9 @@ class GameRunner{
     bool manJumpedLastCheck;
     int manJumpedCol, manJumpedRow;
     vector <Token_t> * gameState;
-    int square_section_columns,
-        square_section_rows;
+    int col_boundary,
+        row_boundary,
+        tiger_cage_row_offset;
     map<Point_t, list<Point_t> > * extendedGraph;
 public:
     /**

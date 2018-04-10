@@ -9,7 +9,7 @@ Move_t  My_Move(vector<Token_t>, Color_t turn){
 }
 
 bool operator<(Point_t a, Point_t b){
-    return (a.row < b.row ? a.row < b.row : a.col < b.col);
+    return (a.row < b.row ? true : (a.col < b.col && a.row == b.col));
 }
 bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
     bool validMove = false, tigerJumpedMan = false;
@@ -31,11 +31,12 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             //Men can only move 1 ever except Tiger cage
             if(move.token.color == BLUE){
                 //See if move starts and ends in Square section but has move diff > 1
-                if(origRow < square_section_rows && origCol < square_section_columns
-                 && destRow < square_section_rows && destCol < square_section_columns){
-                    if((rowDifference > 1 || colDifference > 1)) {
-                        return false;
-                    }
+                if(origRow + tiger_cage_row_offset < rowDifference
+                   && origCol < colDifference && destRow + tiger_cage_row_offset
+                   < rowDifference && destCol < colDifference){
+                        if((rowDifference > 1 || colDifference > 1)) {
+                            return false;
+                        }
                 }
                 //If in Tiger cage can move 2 max
                 else{
@@ -46,8 +47,9 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             }
             if(move.token.color == RED){
                 //See if tiger move started and ended in square section of board
-                if(origRow < square_section_rows && origCol < square_section_columns
-                   && destRow < square_section_rows && destCol < square_section_columns){
+                if(origRow + tiger_cage_row_offset < rowDifference
+                   && origCol < colDifference && destRow + tiger_cage_row_offset
+                   < rowDifference && destCol < colDifference){
                     //Even w/ jump cannot move more than 2 in rows or columns
                     if((rowDifference > 2 || colDifference > 2)) {
                         return false;
@@ -70,10 +72,10 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             }
             //See if the move starts and ends in the Square section and is not diagonal
             if((rowDifference > 0 && colDifference == 0) || (colDifference > 0 && rowDifference == 0)){
-                if(origRow < this->square_section_rows && origRow >= 0 &&
-                   origCol < this->square_section_columns && origCol >= 0 &&
-                   destRow < this->square_section_rows && destRow >= 0 &&
-                   destCol < this->square_section_columns && destCol >= 0){
+                if(origRow + tiger_cage_row_offset < this->row_boundary && origRow >= tiger_cage_row_offset &&
+                   origCol < this->col_boundary && origCol >= 0 &&
+                   destRow + tiger_cage_row_offset < this->row_boundary && destRow >= tiger_cage_row_offset &&
+                   destCol < this->col_boundary && destCol >= 0){
                         validMove = true;
                 }
             }
@@ -104,7 +106,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                     listIter++;
                 }
                 //Move end position not reachable from the indicated start position
-                if(validMove == false){
+                if(!validMove){
                     return false;
                 }
             }
@@ -148,6 +150,7 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
  * Default Constructor can be used to create default start game
  */
 GameRunner::GameRunner(){
+    this->tiger_cage_row_offset = 8;
     istringstream graphFile(graph), startingPos(startPos);
     string trashline;
     this->gameState = new vector<Token_t>();
@@ -160,7 +163,7 @@ GameRunner::GameRunner(){
     //Read in the board
     getline(graphFile, trashline);
     //Read in the square section
-    graphFile >> this->square_section_rows >> this->square_section_columns;
+    graphFile >> this->row_boundary >> this->col_boundary;
     //Read in the Unusual edges
     graphFile.ignore();
     getline(graphFile, trashline);
@@ -191,6 +194,7 @@ GameRunner::GameRunner(){
  * Custom constructor can make custom game from files
  */
 GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
+    this->tiger_cage_row_offset = 8;
     string trashline;
     this->gameState = new vector<Token_t>();
     this->extendedGraph = new map<Point_t, list<Point_t> >();
@@ -202,7 +206,7 @@ GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
     //Read in the board
     getline(graphFile, trashline);
     //Read in the square section
-    graphFile >> this->square_section_rows >> this->square_section_columns;
+    graphFile >> this->row_boundary >> this->col_boundary;
     //Read in the Unusual edges
     graphFile.ignore();
     getline(graphFile, trashline);
