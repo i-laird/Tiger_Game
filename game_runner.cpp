@@ -33,8 +33,8 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                 rowDifference = destRow - origRow;
             colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
             rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
-            if(origRow >= tiger_cage_row_offset && origCol < colDifference
-               && destRow >= tiger_cage_row_offset && destCol < colDifference){
+            if(origRow >= tiger_cage_row_offset && origRow < row_boundary && origCol < col_boundary
+               && destRow >= tiger_cage_row_offset && destRow < row_boundary && destCol < col_boundary){
                     inSquareSection = true;
             }
             //Men can only move 1 ever except Tiger cage
@@ -119,11 +119,12 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
         }
     }
     //See if a man was actual present where the tiger is said to have jumped him
-    if(tigerJumpedMan){
+    if(tigerJumpedMan && validMove){
+        validMove = false;
         //See if a man is present at the jumped position
-        for(unsigned i = 1 ; i < moves.size() && validMove; i++){
+        for(unsigned i = 1 ; i < moves.size() && !validMove; i++){
             if(moves[i].location.row == jumpedManRow && moves[i].location.col == jumpedManCol){
-                validMove = false;
+                validMove = true;
             }
         }
         //If the Tiger jump was actually valid store the info for later use
