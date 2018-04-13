@@ -10,16 +10,15 @@
 #include <map>
 #include <list>
 #include <sstream>
-
-string const graph = "BOARD SQUARE SECTION DIMENSIONS\n17 9\nUNUSUAL EDGES"
-                     "\n2 16 4 15 3 15 5\n2 15 3 14 2\n1 14 2 13 1\n"
-        "1 13 1 12 0\n1 12 0 11 1\n1 11 1 10 2\n1 10 2 9 3\n1 9 3 8 4\n"
-        "1 15 5 14 6\n1 14 6 13 7\n1 13 7 12 8\n1 12 8 11 7\n1 11 7 10 6\n"
-        "1 10 6 9 5\n1 9 5 8 4\n2 8 4 6 5 6 3\n2 6 5 4 6 4 4\n2 6 3 4 4 4 2\n"
-        "1 4 2 2 3\n1 4 6 2 5\n2 4 4 2 5 2 3\n1 2 5 0 4\n1 2 3 0 4";
-string const startPos = "TIGER POS\n4 4\nMEN POS\n16 0\n16 1\n16 2\n"
-        "16 3\n16 4\n16 5\n16 6\n16 7\n16 8\n17 0\n17 1\n17 2\n"
-        "17 3\n17 4\n17 5\n17 6\n17 7\n17 8";
+string const graph = "BOARD SQUARE SECTION DIMENSIONS\n13 9\nUNUSUAL EDGES"
+                     "\n2 12 4 11 3 11 5\n2 11 3 10 2\n1 10 2 9 1\n"
+        "1 9 1 8 0\n1 8 0 7 1\n1 7 1 6 2\n1 6 2 5 3\n1 5 3 4 4\n"
+        "1 11 5 10 6\n1 10 6 9 7\n1 9 7 8 8\n1 8 8 7 7\n1 7 7 6 6\n"
+        "1 6 6 5 5\n1 5 5 4 4\n2 4 4 3 5 3 3\n2 3 5 2 6 2 4\n2 3 3 2 4 2 2\n"
+        "1 2 2 1 3\n1 2 6 1 5\n2 2 4 1 5 1 3\n1 1 5 0 4\n1 1 3 0 4";
+string const startPos = "TIGER POS\n2 4\nMEN POS\n11 0\n11 1\n11 2\n"
+        "11 3\n11 4\n11 5\n11 6\n11 7\n11 8\n12 0\n12 1\n12 2\n"
+        "12 3\n12 4\n12 5\n12 6\n12 7\n12 8";
 /**
  * This class runs a game. It can be used like Booth's API to fetch moves and run them on the Game
  *
