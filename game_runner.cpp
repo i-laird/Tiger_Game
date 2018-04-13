@@ -35,7 +35,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
             if(origRow >= tiger_cage_row_offset && origCol < colDifference
                && destRow >= tiger_cage_row_offset && destCol < colDifference){
-                inSquareSection = true;
+                    inSquareSection = true;
             }
             //Men can only move 1 ever except Tiger cage
             if(move.token.color == BLUE){
@@ -152,7 +152,7 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
  * Default Constructor can be used to create default start game
  */
 GameRunner::GameRunner(){
-    this->tiger_cage_row_offset = 8;
+    this->tiger_cage_row_offset = 4;
     istringstream graphFile(graph), startingPos(startPos);
     string trashline;
     this->gameState = new vector<Token_t>();
@@ -196,7 +196,7 @@ GameRunner::GameRunner(){
  * Custom constructor can make custom game from files
  */
 GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
-    this->tiger_cage_row_offset = 8;
+    this->tiger_cage_row_offset = 4;
     string trashline;
     this->gameState = new vector<Token_t>();
     this->extendedGraph = new map<Point_t, list<Point_t> >();
