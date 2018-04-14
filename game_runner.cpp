@@ -368,6 +368,8 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             for(int j = 0; j < tokenMoves.second.second;j++){
                 checkPoints.insert(tokenMoves.first[j]);
             }
+            delete [] tokenMoves.second.first;
+            delete [] tokenMoves.first;
         }
         //Now find the closest point
         for(Point_t toCheck : checkPoints){
@@ -450,6 +452,8 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
                 frontier.push(evaluatePoint);
             }
         }
+        delete [] tokenMoves.second.first;
+        delete [] tokenMoves.first;
     }
     //Now find what Point should be moved to
     evaluatePoint = currToken.location;
