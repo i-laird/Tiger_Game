@@ -346,7 +346,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
     returnMove.token.color = RED;
     static Point_t previousLocation;
     Point_t closestPoint;
-    int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol;
+    int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol, totaler;
     //Get all of the valid moves for the Tiger
     pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
     bool moveFound = false;
@@ -379,10 +379,16 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             rowDifference = destRow - origRow;
             colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
             rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
-            if(colDifference + rowDifference < smallestRowColDistance){
-                smallestRowColDistance = colDifference + rowDifference;
+            totaler = rowDifference + colDifference;
+            //see if a point that is more desirable i.e. has diagonal
+            //We want tiger to graviatate to diagonal edges
+            if(this->extendedGraph->find(toCheck) != extendedGraph->end()){
+                totaler -= 3;
             }
-            closestPoint = toCheck;
+            if(totaler < smallestRowColDistance){
+                smallestRowColDistance = colDifference + rowDifference;
+                closestPoint = toCheck;
+            }
         }
         //See if closest piece is within 1 move
         bool within1Move = false;
