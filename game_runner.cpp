@@ -347,15 +347,17 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
     static Point_t previousLocation;
     Point_t closestPoint;
     int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol, totaler;
+
     //Get all of the valid moves for the Tiger
     pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
     bool moveFound = false;
     origCol = tokens[0].location.row;
-    origRow=tokens[0].location.col;
+    origRow = tokens[0].location.col;
 
     //First see if jump can be made
     //Will probably implement min max here later
     for(int i = 0; i < returnMoves.second.second; i++){
+        //Greedily selects a jump
         if(returnMoves.second.first[i]){
             returnMove.destination = returnMoves.first[i];
             moveFound = true;
@@ -380,26 +382,22 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
             rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
             totaler = rowDifference + colDifference;
-            //see if a point that is more desirable i.e. has diagonal
-            //We want tiger to graviatate to diagonal edges
+            //see if it is a point that is more desirable i.e. has diagonal
+            //We want tiger to gravitate to diagonal edges
             if(this->extendedGraph->find(toCheck) != extendedGraph->end()){
                 totaler -= 3;
             }
             if(totaler < smallestRowColDistance){
-                smallestRowColDistance = colDifference + rowDifference;
+                smallestRowColDistance = totaler;
                 closestPoint = toCheck;
             }
         }
-        //See if closest piece is within 1 move
-        bool within1Move = false;
-        for(int i =0 ; i < returnMoves.second.second;i++){
-            if(returnMoves.first[i] == closestPoint){
-                within1Move = true;
-            }
-        }
-        //See if should alternate
-        if(within1Move) {
+        //See if tiger is already on the closest point
+        bool alreadyClosest = (closestPoint == tokens[0].location);
+        //See if should alternate if already there
+        if(alreadyClosest) {
             map<Point_t, list<Point_t>>::const_iterator mapIter = this->extendedGraph->find(tokens[0].location);
+            //See if non traditional move can be made because they are harder to counter
             if (mapIter != extendedGraph->end()) {
                 for (Point_t temp : mapIter->second) {
                     returnMove.destination = temp;
@@ -409,21 +407,28 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
                     }
                 }
             }
-            //If alternating does not work
+            //If no non traditional move can be found see if can just move
+            // back to previous location
             if (!moveFound) {
                 returnMove.destination = previousLocation;
                 if (isValidMove(tokens, returnMove)) {
                     moveFound = true;
                 } else {
                     //If no special move or previous just make whatever move
+                    // has already been calculated
                     returnMove.destination = returnMoves.first[0];
                     moveFound = true;
                 }
             }
         }
-        //Case if no man is within 1 edge then must BFS to him
+        //Case not already as close as can be then I will BFS to him
         else{
-            returnMove.destination = BFS_To_Point(tokens, 0, closestPoint, RED);
+            bool success;
+            returnMove.destination = BFS_To_Point(tokens, 0, closestPoint, RED, success);
+            //If no path can be found then just make a move
+            if(!success){
+                returnMove.destination = returnMoves.first[0];
+            }
         }
     }
     delete [] returnMoves.second.first;
@@ -432,7 +437,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
     return  returnMove;
 }
 
-Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Point_t desiredLoc, Color_t color){
+Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Point_t desiredLoc, Color_t color, bool & success){
     queue<Point_t> frontier;
     map<Point_t, Point_t> previous;
     Point_t evaluatePoint, originalPoint = mapLayout[tokenIndex].location, temp;
@@ -461,12 +466,19 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
         delete [] tokenMoves.second.first;
         delete [] tokenMoves.first;
     }
-    //Now find what Point should be moved to
-    evaluatePoint = currToken.location;
-    while(!(previous[evaluatePoint] == (temp = originalPoint))){
-        evaluatePoint = temp;
+    if(currToken.location == desiredLoc) {
+        //Now find what Point should be moved to
+        evaluatePoint = currToken.location;
+        while (!(previous[evaluatePoint] == (temp = originalPoint))) {
+            evaluatePoint = temp;
+        }
+        success = true;
+    }
+    else{
+        success = false;
     }
     return evaluatePoint;
+
 }
 
 

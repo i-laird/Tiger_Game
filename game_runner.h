@@ -107,7 +107,7 @@ public:
      */
     bool evaluateWinState( vector <Token_t> &, Color_t & color);
 
-    Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo, Color_t);
+    Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo, Color_t, bool &);
 
     Move_t Tiger_Move(vector<Token_t> &);
 
