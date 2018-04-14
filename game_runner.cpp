@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <set>
+#include <queue>
 #include "game_runner.h"
 Move_t  My_Move(vector<Token_t>, Color_t turn){
 
@@ -338,6 +339,8 @@ pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(vector <Token_t> cons
 }
 
 Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
+    set<Point_t> checkPoints;
+    pair<Point_t * , pair< bool *, int > > tokenMoves;
     Move_t returnMove;
     returnMove.token.location = tokens[0].location;
     returnMove.token.color = RED;
@@ -350,7 +353,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
     origCol = tokens[0].location.row;
     origRow=tokens[0].location.col;
 
-    //First see if jumo can be made
+    //First see if jump can be made
     //Will probably implement min max here later
     for(int i = 0; i < returnMoves.second.second; i++){
         if(returnMoves.second.first[i]){
@@ -359,10 +362,17 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
         }
     }
     if(!moveFound){
+        //Add all points within 1 of the Men to the set to be evaluated
+        for(int i = 1; i < tokens.size(); i++){
+            tokenMoves = validMoves(tokens, tokens[i]);
+            for(int j = 0; j < tokenMoves.second.second;j++){
+                checkPoints.insert(tokenMoves.first[j]);
+            }
+        }
         //Now find the closest point
-        for(int i = 1; i < tokens.size();i++){
-            destRow = tokens[i].location.row;
-            destCol=tokens[i].location.col;
+        for(Point_t toCheck : checkPoints){
+            destRow = toCheck.row;
+            destCol = toCheck.col;
             colDifference = destCol - origCol;
             rowDifference = destRow - origRow;
             colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
@@ -370,7 +380,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             if(colDifference + rowDifference < smallestRowColDistance){
                 smallestRowColDistance = colDifference + rowDifference;
             }
-            closestPoint = tokens[i].location;
+            closestPoint = toCheck;
         }
         //See if closest piece is within 1 move
         bool within1Move = false;
@@ -403,10 +413,9 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
                 }
             }
         }
-        //Case if no man is within 1
+        //Case if no man is within 1 edge then must BFS to him
         else{
-            //TODO IMPLEMENT THIS FUNCTION
-            //returnMove.destination = BFS_To_Point(closestPoint);
+            returnMove.destination = BFS_To_Point(tokens, 0, closestPoint, RED);
         }
     }
     delete [] returnMoves.second.first;
@@ -414,6 +423,42 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
     previousLocation = tokens[0].location;
     return  returnMove;
 }
+
+Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Point_t desiredLoc, Color_t color){
+    queue<Point_t> frontier;
+    map<Point_t, Point_t> previous;
+    Point_t evaluatePoint, originalPoint = mapLayout[tokenIndex].location, temp;
+    Token_t currToken;
+    currToken.color = color;
+    frontier.push(mapLayout[tokenIndex].location);
+    previous[currToken.location] = currToken.location;
+    pair<Point_t * , pair< bool *, int > > tokenMoves;
+    while(!frontier.empty()){
+        //Reseting the position because validMoves will check if a piece actually exists there!
+        //Okay to change layout because vector is a copy :-)
+        currToken.location = mapLayout[tokenIndex].location = frontier.front();
+        frontier.pop();
+        tokenMoves = this->validMoves(mapLayout, currToken);
+        //See if done
+        if(currToken.location == desiredLoc){
+            break;
+        }
+        for(int i = 0; i < tokenMoves.second.second; i++){
+            evaluatePoint = tokenMoves.first[i];
+            //See if the key has a predecessor i.e. exists if not add
+            if(previous.insert(make_pair(evaluatePoint, currToken.location)).second) {
+                frontier.push(evaluatePoint);
+            }
+        }
+    }
+    //Now find what Point should be moved to
+    evaluatePoint = currToken.location;
+    while(!(previous[evaluatePoint] == (temp = originalPoint))){
+        evaluatePoint = temp;
+    }
+    return evaluatePoint;
+}
+
 
 bool operator==(Move_t a, Move_t b){
     return a.token == b.token && a.destination == b.destination;
