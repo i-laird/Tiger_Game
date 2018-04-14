@@ -9,6 +9,68 @@ Move_t  My_Move(vector<Token_t>, Color_t turn){
 
 }
 
+/*
+ * Default Constructor can be used to create default start game
+ */
+GameRunner::GameRunner(){
+    istringstream graphFile(graph), startingPos(startPos);
+    this->createGraph(graphFile, startingPos);
+}
+
+/*
+ * Custom constructor can make custom game with new map and new starting pos
+ */
+GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
+    this->createGraph(graphFile, startingPos);
+}
+
+/*
+ * Custom constructor can make custom game with default map but custom locations
+ */
+GameRunner::GameRunner(std::istream & startingPos){
+    istringstream graphFile(graph);
+    this->createGraph(graphFile, startingPos);
+}
+
+void GameRunner::createGraph(std::istream & graphFile, std::istream & startingPos){
+    this->tiger_cage_row_offset = 4;
+    string trashline;
+    this->gameState = new vector<Token_t>();
+    this->extendedGraph = new map<Point_t, list<Point_t> >();
+    int readNum;
+    Token_t tempToken;
+    Point_t tempPoint, tempPoint2;
+    list<Point_t> tempList;
+    map<Point_t, list<Point_t> >::iterator mapIter, mapIter2;
+    //Read in the board
+    getline(graphFile, trashline);
+    //Read in the square section
+    graphFile >> this->row_boundary >> this->col_boundary;
+    //Read in the Unusual edges
+    graphFile.ignore();
+    getline(graphFile, trashline);
+    while(graphFile >> readNum){
+        graphFile >> tempPoint.row >> tempPoint.col;
+        mapIter = (extendedGraph->insert(make_pair(tempPoint, tempList))).first;
+        for(int i = 0; i < readNum; i++) {
+            graphFile >> tempPoint2.row >> tempPoint2.col;
+            mapIter->second.push_back(tempPoint2);
+            mapIter2 = (extendedGraph->insert(make_pair(tempPoint2, tempList))).first;
+            mapIter2->second.push_back(tempPoint);
+        }
+    }
+
+    //Read in the piece locations
+    tempToken.color = RED;
+    getline(graphFile, trashline);
+    startingPos >> tempToken.location.row >> tempToken.location.col;
+    this->gameState->push_back(tempToken);
+    tempToken.color = BLUE;
+    //Read in the men
+    while(startingPos >> tempToken.location.row >> tempToken.location.col){
+        this->gameState->push_back(tempToken);
+    }
+}
 bool operator<(Point_t a, Point_t b){
     return (a.row < b.row ? true : (a.col < b.col && a.row == b.col));
 }
@@ -157,94 +219,6 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
     return returnFlag;
 }
 
-/*
- * Default Constructor can be used to create default start game
- */
-GameRunner::GameRunner(){
-    this->tiger_cage_row_offset = 4;
-    istringstream graphFile(graph), startingPos(startPos);
-    string trashline;
-    this->gameState = new vector<Token_t>();
-    this->extendedGraph = new map<Point_t, list<Point_t> >();
-    int readNum;
-    Token_t tempToken;
-    Point_t tempPoint, tempPoint2;
-    list<Point_t> tempList;
-    map<Point_t, list<Point_t> >::iterator mapIter, mapIter2;
-    //Read in the board
-    getline(graphFile, trashline);
-    //Read in the square section
-    graphFile >> this->row_boundary >> this->col_boundary;
-    //Read in the Unusual edges
-    graphFile.ignore();
-    getline(graphFile, trashline);
-    while(graphFile >> readNum){
-        graphFile >> tempPoint.row >> tempPoint.col;
-        mapIter = (extendedGraph->insert(make_pair(tempPoint, tempList))).first;
-        for(int i = 0; i < readNum; i++) {
-            graphFile >> tempPoint2.row >> tempPoint2.col;
-            mapIter->second.push_back(tempPoint2);
-            mapIter2 = (extendedGraph->insert(make_pair(tempPoint2, tempList))).first;
-            mapIter2->second.push_back(tempPoint);
-        }
-    }
-
-    //Read in the piece locations
-    tempToken.color = RED;
-    getline(graphFile, trashline);
-    startingPos >> tempToken.location.row >> tempToken.location.col;
-    this->gameState->push_back(tempToken);
-    tempToken.color = BLUE;
-    //Read in the men
-    while(startingPos >> tempToken.location.row >> tempToken.location.col){
-        this->gameState->push_back(tempToken);
-    }
-}
-
-/*
- * Custom constructor can make custom game from files
- */
-GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
-    this->tiger_cage_row_offset = 4;
-    string trashline;
-    this->gameState = new vector<Token_t>();
-    this->extendedGraph = new map<Point_t, list<Point_t> >();
-    int readNum;
-    Token_t tempToken;
-    Point_t tempPoint, tempPoint2;
-    list<Point_t> tempList;
-    map<Point_t, list<Point_t> >::iterator mapIter, mapIter2;
-    //Read in the board
-    getline(graphFile, trashline);
-    //Read in the square section
-    graphFile >> this->row_boundary >> this->col_boundary;
-    //Read in the Unusual edges
-    graphFile.ignore();
-    getline(graphFile, trashline);
-    while(graphFile >> readNum){
-        graphFile >> tempPoint.row >> tempPoint.col;
-        mapIter = (extendedGraph->insert(make_pair(tempPoint, tempList))).first;
-        for(int i = 0; i < readNum; i++) {
-            graphFile >> tempPoint2.row >> tempPoint2.col;
-            mapIter->second.push_back(tempPoint2);
-            mapIter2 = (extendedGraph->insert(make_pair(tempPoint2, tempList))).first;
-            mapIter2->second.push_back(tempPoint);
-        }
-    }
-
-    //Read in the piece locations
-    tempToken.color = RED;
-    getline(graphFile, trashline);
-    startingPos >> tempToken.location.row >> tempToken.location.col;
-    this->gameState->push_back(tempToken);
-    tempToken.color = BLUE;
-    //Read in the men
-    while(startingPos >> tempToken.location.row >> tempToken.location.col){
-        this->gameState->push_back(tempToken);
-    }
-
-}
-
 pair<bool, Color_t> GameRunner::playGame(){
     Color_t turn = RED, winner;
     Move_t returnedMove;
@@ -298,8 +272,8 @@ pair<bool, Color_t> GameRunner::playGame(){
 
 pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(vector <Token_t> const & boardState, Token_t piece){
     //Maximum number of valid moves
-    Point_t * validPoints = new Point_t[6];
-    bool * jumpMade = new bool[6];
+    Point_t * validPoints = new Point_t[MAX_NUMBER_MOVES];
+    bool * jumpMade = new bool[MAX_NUMBER_MOVES];
     int size = 0;
     Move_t tempMove, jumpMove;
     tempMove.token = piece;
@@ -429,6 +403,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
                 }
             }
         }
+        //Case if no man is within 1
         else{
             //TODO IMPLEMENT THIS FUNCTION
             //returnMove.destination = BFS_To_Point(closestPoint);

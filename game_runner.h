@@ -10,6 +10,8 @@
 #include <map>
 #include <list>
 #include <sstream>
+
+int const MAX_NUMBER_MOVES = 7;
 string const graph = "BOARD SQUARE SECTION DIMENSIONS\n13 9\nUNUSUAL EDGES"
                      "\n2 12 4 11 3 11 5\n2 11 3 10 2\n1 10 2 9 1\n"
         "1 9 1 8 0\n1 8 0 7 1\n1 7 1 6 2\n1 6 2 5 3\n1 5 3 4 4\n"
@@ -32,7 +34,8 @@ class GameRunner{
     int col_boundary,
         row_boundary,
         tiger_cage_row_offset;
-    map<Point_t, list<Point_t> > * extendedGraph;
+    map<Point_t, list<Point_t>> * extendedGraph;
+    void createGraph(std::istream & graphFile, std::istream & boardLayout);
 public:
     /**
      * Description: Sees is the indicated move is valid. i.e. Can the indicated
@@ -55,6 +58,14 @@ public:
 
     //These functions can be used in our AI implementation
     /*
+     * description: Default Constructor
+     *              Reads in game board from string streams.
+     *              This is the one that should be used in our AI
+     * precondition: GameRunner does not exist
+     * Return: none: GameRunner is created
+     */
+    GameRunner();
+    /*
      * description: Custom Constructor
      *              Reads in game board and starting positions for pieces
      *              from files. This is the one that is used for testing reasons.
@@ -63,13 +74,13 @@ public:
      */
     GameRunner(std::istream & graphFile, std::istream & startingPos);
     /*
-     * description: Default Constructor
+     * description: Custom Constructor
      *              Reads in game board from string streams.
-     *              This is the one that should be used in our AI
+     *              Allows custom starting pos
      * precondition: GameRunner does not exist
      * Return: none: GameRunner is created
      */
-    GameRunner();
+    GameRunner(std::istream & startingPos);
     /*
      * description: destructor
      * precondition: GameRunner exists
@@ -95,6 +106,8 @@ public:
      * return: true is a player has won(player is stored in refernce variable)
      */
     bool evaluateWinState( vector <Token_t> &, Color_t & color);
+
+    Point_t BFS_To_Point(Point_t moveTo);
 
     Move_t Tiger_Move(vector<Token_t> &);
 
