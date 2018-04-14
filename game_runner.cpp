@@ -35,7 +35,7 @@ GameRunner::GameRunner(std::istream & startingPos){
 
 void GameRunner::createGraph(std::istream & graphFile, std::istream & startingPos){
     this->tiger_cage_row_offset = 4;
-    string trashline;
+    string trashline = "";
     this->gameState = new vector<Token_t>();
     this->extendedGraph = new map<Point_t, list<Point_t> >();
     int readNum;
@@ -63,10 +63,12 @@ void GameRunner::createGraph(std::istream & graphFile, std::istream & startingPo
 
     //Read in the piece locations
     tempToken.color = RED;
-    getline(graphFile, trashline);
+    getline(startingPos, trashline);
     startingPos >> tempToken.location.row >> tempToken.location.col;
     this->gameState->push_back(tempToken);
     tempToken.color = BLUE;
+    startingPos.ignore();
+    getline(startingPos, trashline);
     //Read in the men
     while(startingPos >> tempToken.location.row >> tempToken.location.col){
         this->gameState->push_back(tempToken);
@@ -77,6 +79,7 @@ bool operator<(Point_t a, Point_t b){
 }
 bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
     this->manJumpedLastCheck = false;
+    Point_t jumpedMan;
     if(move.destination.col < 0 || move.destination.row < 0
        || move.destination.col >= col_boundary || move.destination.row >= row_boundary)
             return false;
@@ -89,7 +92,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             return false;
         }
         //Checking if move indicated is valid IF token found is right token
-        if(moves[i] == move.token && validMove == false) {
+        if(moves[i] == move.token && !validMove) {
             bool inSquareSection = false;
             map<Point_t, list<Point_t> >::iterator mapIter;
             int destRow = move.destination.row, destCol = move.destination.col,
@@ -104,40 +107,20 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             }
             //Men can only move 1 ever except Tiger cage
             if(move.token.color == BLUE){
-                //See if move starts and ends in Square section but has move diff > 1
-                if(inSquareSection){
-                    if((rowDifference > 1 || colDifference > 1)) {
-                        return false;
-                    }
-                }
-                //If in Tiger cage can move 2 max
-                else{
-                    if(rowDifference > 2 || colDifference > 2){
-                        return false;
-                    }
+                if((rowDifference > 1 || colDifference > 1)) {
+                    return false;
                 }
             }
             if(move.token.color == RED){
-                //See if tiger move started and ended in square section of board
-                if(inSquareSection){
-                    //Even w/ jump cannot move more than 2 in rows or columns
-                    if((rowDifference > 2 || colDifference > 2)) {
-                        return false;
-                    }
-                    //See if tiger jumped man in square section
-                    if(rowDifference == 2 || colDifference == 2){
-                        tigerJumpedMan = true;
-                    }
+                if((rowDifference > 2 || colDifference > 2)) {
+                    return false;
                 }
-                else{
-                    //Tiger can NEVER move more than 4 in row or colum even w/ tiger cage jump
-                    if(rowDifference > 4 || colDifference > 4){
-                        return false;
-                    }
-                    //See if tiger jumped man in Tiger cage
-                    if(rowDifference > 2 || colDifference > 2){
-                        tigerJumpedMan = true;
-                    }
+                //See if tiger jumped man in square section
+                if(rowDifference == 2 || colDifference == 2){
+                    tigerJumpedMan = true;
+                    //Now find coordinates of jumped dude
+                    jumpedMan.col = jumpedManCol = (move.destination.col + origCol) / 2;
+                    jumpedMan.row = jumpedManRow = (move.destination.row + origRow) / 2;
                 }
             }
             //See if the move starts and ends in the Square section and is not diagonal
@@ -148,12 +131,6 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             }
             //See if the move involved an unusual edge in some way
             else if((mapIter = extendedGraph->find(moves[i].location)) != extendedGraph->end()){
-                Point_t jumpedMan;
-                if(tigerJumpedMan) {
-                    //Now find coordinates of jumped dude
-                    jumpedMan.col = jumpedManCol = (move.destination.col + origCol) / 2;
-                    jumpedMan.row = jumpedManRow = (move.destination.row + origRow) / 2;
-                }
                 list<Point_t>::const_iterator listIter = mapIter->second.begin();
                 while(!validMove && listIter != mapIter->second.end()){
                     if(move.destination == *listIter){

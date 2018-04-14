@@ -30,13 +30,13 @@ string const startPos = "TIGER POS\n2 4\nMEN POS\n11 0\n11 1\n11 2\n"
 class GameRunner{
     bool manJumpedLastCheck;
     int manJumpedCol, manJumpedRow;
-    vector <Token_t> * gameState;
     int col_boundary,
         row_boundary,
         tiger_cage_row_offset;
     map<Point_t, list<Point_t>> * extendedGraph;
     void createGraph(std::istream & graphFile, std::istream & boardLayout);
 public:
+    vector <Token_t> * gameState;
     /**
      * Description: Sees is the indicated move is valid. i.e. Can the indicated
      *              token move to the position specified.
