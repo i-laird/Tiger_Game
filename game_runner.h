@@ -87,7 +87,7 @@ public:
      * postcondition: Board is unchanged.
      * Return: a pointer to the Moves along with the # of moves.
      */
-    pair<Point_t *, int> validMoves(vector <Token_t> const &, Token_t);
+    pair<Point_t *, pair<bool *, int> >  validMoves(vector <Token_t> const &, Token_t);
     /*
      * description: sees if a player has won (Tiger or Men)
      * precondition: Board state is valid
@@ -95,6 +95,8 @@ public:
      * return: true is a player has won(player is stored in refernce variable)
      */
     bool evaluateWinState( vector <Token_t> &, Color_t & color);
+
+    Move_t Tiger_Move(vector<Token_t> &);
 
 };
 

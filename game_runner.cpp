@@ -3,6 +3,7 @@
 //
 
 #include <assert.h>
+#include <set>
 #include "game_runner.h"
 Move_t  My_Move(vector<Token_t>, Color_t turn){
 
@@ -12,6 +13,7 @@ bool operator<(Point_t a, Point_t b){
     return (a.row < b.row ? true : (a.col < b.col && a.row == b.col));
 }
 bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
+    this->manJumpedLastCheck = false;
     if(move.destination.col < 0 || move.destination.row < 0
        || move.destination.col >= col_boundary || move.destination.row >= row_boundary)
             return false;
@@ -138,15 +140,21 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
 }
 
 bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
-    pair<Point_t *, int> moveReceiver = this->validMoves(tokens, tokens[0]);
+    bool returnFlag = false;
+    pair<Point_t *, pair<bool *, int> > moveReceiver = this->validMoves(tokens, tokens[0]);
     //Means the tiger cannot move so MEN WIN
-    if(moveReceiver.second == 0){
+    if(moveReceiver.second.second == 0){
         color = BLUE;
-        return true;
+        returnFlag = true;
     }
-
     //If at least one man alive Tiger has not won yet
-    return (tokens.size() > 1);
+    if(!returnFlag && tokens.size() > 1){
+        color = RED;
+        returnFlag = true;
+    }
+    delete [] moveReceiver.second.first;
+    delete [] moveReceiver.first;
+    return returnFlag;
 }
 
 /*
@@ -255,8 +263,8 @@ pair<bool, Color_t> GameRunner::playGame(){
             else{
                 for(int i = 1; i < gameState->size(); i++){
                     returnedMove.token = (*gameState)[i];
-                    pair<Point_t *, int > returnPair = this->validMoves(*gameState, returnedMove.token);
-                    if(returnPair.second > 0){
+                    pair<Point_t *, pair<bool *, int > > returnPair = this->validMoves(*gameState, returnedMove.token);
+                    if(returnPair.second.second > 0){
                         returnedMove.destination = returnPair.first[0];
                         break;
                     }
@@ -288,9 +296,10 @@ pair<bool, Color_t> GameRunner::playGame(){
     return make_pair(true, BLUE);
 }
 
-pair<Point_t *, int> GameRunner::validMoves(vector <Token_t> const & boardState, Token_t piece){
+pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(vector <Token_t> const & boardState, Token_t piece){
     //Maximum number of valid moves
     Point_t * validPoints = new Point_t[6];
+    bool * jumpMade = new bool[6];
     int size = 0;
     Move_t tempMove, jumpMove;
     tempMove.token = piece;
@@ -318,10 +327,12 @@ pair<Point_t *, int> GameRunner::validMoves(vector <Token_t> const & boardState,
         //See if moving simply UP,DOWN,LEft,RiGHT 1 is valid
         if(this->isValidMove(boardState, tempMove)){
             validPoints[size] = tempMove.destination;
+            jumpMade[size] = false;
             size += 1;
         } //See if moving 2 UP,DOWN,LEFT,RIGHt works
         else if (piece.color == RED && isValidMove(boardState, jumpMove)){
             validPoints[size] = jumpMove.destination;
+            jumpMade[size] = true;
             size += 1;
         }
     }
@@ -337,16 +348,96 @@ pair<Point_t *, int> GameRunner::validMoves(vector <Token_t> const & boardState,
             //See if diagonal move valid
             if(isValidMove(boardState, tempMove)) {
                 validPoints[size] = tempMove.destination;
+                jumpMade[size] = false;
                 size += 1;
             }//See if man can be jumped with diagonal
             else if(piece.color == RED && isValidMove(boardState, jumpMove)){
                 validPoints[size] = jumpMove.destination;
+                jumpMade[size] = true;
                 size += 1;
             }
+            listIter++;
         }
     }
     //return the pointer coupled with the number of elements stored in it
-    return make_pair(validPoints, size);
+    return make_pair(validPoints, make_pair(jumpMade, size));
+}
+
+Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
+    Move_t returnMove;
+    returnMove.token.location = tokens[0].location;
+    returnMove.token.color = RED;
+    static Point_t previousLocation;
+    Point_t closestPoint;
+    int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol;
+    //Get all of the valid moves for the Tiger
+    pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
+    bool moveFound = false;
+    origCol = tokens[0].location.row;
+    origRow=tokens[0].location.col;
+
+    //First see if jumo can be made
+    //Will probably implement min max here later
+    for(int i = 0; i < returnMoves.second.second; i++){
+        if(returnMoves.second.first[i]){
+            returnMove.destination = returnMoves.first[i];
+            moveFound = true;
+        }
+    }
+    if(!moveFound){
+        //Now find the closest point
+        for(int i = 1; i < tokens.size();i++){
+            destRow = tokens[i].location.row;
+            destCol=tokens[i].location.col;
+            colDifference = destCol - origCol;
+            rowDifference = destRow - origRow;
+            colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
+            rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
+            if(colDifference + rowDifference < smallestRowColDistance){
+                smallestRowColDistance = colDifference + rowDifference;
+            }
+            closestPoint = tokens[i].location;
+        }
+        //See if closest piece is within 1 move
+        bool within1Move = false;
+        for(int i =0 ; i < returnMoves.second.second;i++){
+            if(returnMoves.first[i] == closestPoint){
+                within1Move = true;
+            }
+        }
+        //See if should alternate
+        if(within1Move) {
+            map<Point_t, list<Point_t>>::const_iterator mapIter = this->extendedGraph->find(tokens[0].location);
+            if (mapIter != extendedGraph->end()) {
+                for (Point_t temp : mapIter->second) {
+                    returnMove.destination = temp;
+                    if (isValidMove(tokens, returnMove)) {
+                        moveFound = true;
+                        break;
+                    }
+                }
+            }
+            //If alternating does not work
+            if (!moveFound) {
+                returnMove.destination = previousLocation;
+                if (isValidMove(tokens, returnMove)) {
+                    moveFound = true;
+                } else {
+                    //If no special move or previous just make whatever move
+                    returnMove.destination = returnMoves.first[0];
+                    moveFound = true;
+                }
+            }
+        }
+        else{
+            //TODO IMPLEMENT THIS FUNCTION
+            //returnMove.destination = BFS_To_Point(closestPoint);
+        }
+    }
+    delete [] returnMoves.second.first;
+    delete [] returnMoves.first;
+    previousLocation = tokens[0].location;
+    return  returnMove;
 }
 
 bool operator==(Move_t a, Move_t b){
