@@ -6,20 +6,23 @@
 #define TIGER_GAME_GAME_RUNNER_H
 
 #include "function_api.h"
+#include "general_util.h"
+#include "Unorderded_State.h"
 #include <iostream>
 #include <map>
 #include <list>
 #include <sstream>
 
-typedef vector<Token_t> State;
-
-string const graph = "BOARD SQUARE SECTION DIMENSIONS\n9 9\nUNUSUAL EDGES\n2 0 4 1 3 1 5\n2 1 3 2 2\n1 2 2 3 1\n"
-        "1 3 1 4 0\n1 4 0 5 1\n1 5 1 6 2\n1 6 2 7 3\n1 7 3 8 4\n1 1 5 2 6\n1 2 6 3 7\n1 3 7 4 8\n1 4 8 5 7\n"
-        "1 5 7 6 6\n1 6 6 7 5\n1 7 5 8 4\n2 8 4 10 5 10 3\n2 10 5 12 6 12 4\n2 10 3 12 4 12 2\n"
-        "1 12 2 14 3\n1 12 6 14 5\n2 12 4 14 5 14 3\n1 14 5 16 4\n1 14 3 16 4";
-string const startPos = "TIGER POS\n10 4\nMEN POS\n0 0\n0 1\n0 2\n"
-        "0 3\n0 4\n0 5\n0 6\n0 7\n0 8\n1 0\n1 1\n1 2\n"
-        "1 3\n1 4\n1 5\n1 6\n1 7\n1 8";
+int const MAX_NUMBER_MOVES = 7;
+string const graph = "BOARD SQUARE SECTION DIMENSIONS\n13 9\nUNUSUAL EDGES"
+                     "\n2 12 4 11 3 11 5\n2 11 3 10 2\n1 10 2 9 1\n"
+        "1 9 1 8 0\n1 8 0 7 1\n1 7 1 6 2\n1 6 2 5 3\n1 5 3 4 4\n"
+        "1 11 5 10 6\n1 10 6 9 7\n1 9 7 8 8\n1 8 8 7 7\n1 7 7 6 6\n"
+        "1 6 6 5 5\n1 5 5 4 4\n2 4 4 3 5 3 3\n2 3 5 2 6 2 4\n2 3 3 2 4 2 2\n"
+        "1 2 2 1 3\n1 2 6 1 5\n2 2 4 1 5 1 3\n1 1 5 0 4\n1 1 3 0 4";
+string const startPos = "TIGER POS\n2 4\nMEN POS\n11 0\n11 1\n11 2\n"
+        "11 3\n11 4\n11 5\n11 6\n11 7\n11 8\n12 0\n12 1\n12 2\n"
+        "12 3\n12 4\n12 5\n12 6\n12 7\n12 8";
 /**
  * This class runs a game. It can be used like Booth's API to fetch moves and run them on the Game
  *
@@ -29,11 +32,13 @@ string const startPos = "TIGER POS\n10 4\nMEN POS\n0 0\n0 1\n0 2\n"
 class GameRunner{
     bool manJumpedLastCheck;
     int manJumpedCol, manJumpedRow;
-    vector <Token_t> * gameState;
-    int square_section_columns,
-        square_section_rows;
-    map<Point_t, list<Point_t> > * extendedGraph;
+    int col_boundary,
+        row_boundary,
+        tiger_cage_row_offset;
+    map<Point_t, list<Point_t>> * extendedGraph;
+    void createGraph(std::istream & graphFile, std::istream & boardLayout);
 public:
+    vector <Token_t> * gameState;
     /**
      * Description: Sees is the indicated move is valid. i.e. Can the indicated
      *              token move to the position specified.
@@ -44,6 +49,16 @@ public:
      *             indicates which player if a win occurred
      */
     bool isValidMove(vector <Token_t> const &, Move_t) ;
+    /**
+     * Description: Sees is the indicated move is valid. i.e. Can the indicated
+     *              token move to the position specified.
+     *              return: true means valid move, false means invalid
+     * precondition: game state is valid
+     * postcondition: game is unchanged
+     * return: First pair element indicates if a player won, second pair element
+     *             indicates which player if a win occurred
+     */
+    bool isValidMove(Unordered_State const &, Move_t) ;
     /*
      * description: Runs the game until tie or victory for Tiger or Men
      * precondition: there is a validly named move function it can use
@@ -55,6 +70,14 @@ public:
 
     //These functions can be used in our AI implementation
     /*
+     * description: Default Constructor
+     *              Reads in game board from string streams.
+     *              This is the one that should be used in our AI
+     * precondition: GameRunner does not exist
+     * Return: none: GameRunner is created
+     */
+    GameRunner();
+    /*
      * description: Custom Constructor
      *              Reads in game board and starting positions for pieces
      *              from files. This is the one that is used for testing reasons.
@@ -63,13 +86,13 @@ public:
      */
     GameRunner(std::istream & graphFile, std::istream & startingPos);
     /*
-     * description: Default Constructor
+     * description: Custom Constructor
      *              Reads in game board from string streams.
-     *              This is the one that should be used in our AI
+     *              Allows custom starting pos
      * precondition: GameRunner does not exist
      * Return: none: GameRunner is created
      */
-    GameRunner();
+    GameRunner(std::istream & startingPos);
     /*
      * description: destructor
      * precondition: GameRunner exists
@@ -87,7 +110,15 @@ public:
      * postcondition: Board is unchanged.
      * Return: a pointer to the Moves along with the # of moves.
      */
-    pair<Point_t *, int> validMoves(vector <Token_t> const &, Token_t);
+    pair<Point_t *, pair<bool *, int> >  validMoves(vector <Token_t> const &, Token_t);
+    /*
+     * description: returns all Moves a Token can make.
+     *                  will return Tiger jump moves.
+     * precondition: Board state is valid
+     * postcondition: Board is unchanged.
+     * Return: a pointer to the Moves along with the # of moves.
+     */
+    pair<Point_t *, pair<bool *, int> >  validMoves(Unordered_State const &, Token_t);
     /*
      * description: sees if a player has won (Tiger or Men)
      * precondition: Board state is valid
@@ -96,26 +127,11 @@ public:
      */
     bool evaluateWinState( vector <Token_t> &, Color_t & color);
 
-    State getState() const;
+    Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo, Color_t, bool &);
+
+    Move_t Tiger_Move(vector<Token_t> &);
 
 };
 
-/*
- * description: operator==
- * return: true is the two Move_t are equal
- */
-bool operator==(Move_t a, Move_t b);
-/*
- * description: operator==
- * return: true is the two Point_t are equal
- */
-bool operator==(Point_t a, Point_t b);
-/*
- * description: operator==
- * return: true is the two Token_t are equal
- */
-bool operator==(Token_t a, Token_t b);
-
-bool operator<(Point_t a, Point_t b);
 
 #endif //TIGER_GAME_GAME_RUNNER_H
