@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //
 // Created by iancl on 3/25/2018.
 //
@@ -132,6 +133,5 @@ public:
     Move_t Tiger_Move(vector<Token_t> &);
 
 };
-
 
 #endif //TIGER_GAME_GAME_RUNNER_H
