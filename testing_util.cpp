@@ -131,7 +131,7 @@ State inverse_hash(Hash_val h, int back_row, Token_t tiger) {
 
     return st;
 }
-
+/*
 void play_as_tiger() {
     cout << "   TIGER GAME:    \n\n\n";
     cout << " Use wasd keys to move the tiger, then press Enter.\n";
@@ -247,3 +247,4 @@ void play_as_tiger() {
 
     cout << "\nGAME OVER\n";
 }
+*/

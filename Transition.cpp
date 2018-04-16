@@ -1,5 +1,138 @@
 #include "Transition.h"
 
+
+bool Transition::path_to_secure(int max_moves, Move_t off_move, Hash_val start,
+                                int row_sum, map<Hash_val, bool>& prev_secure,
+                                int num_moves) {
+    Token_t tiger = current->get_tiger();
+    // if already know result of this state return it (i.e. have
+    // been to this state with this many or more moves remaining)
+    pair<Hash_val, Token_t> ndx = make_pair(cur_hash_val, tiger);
+    auto visited_ptr = visited.find(ndx);
+    if(visited_ptr != visited.end()) {
+        // if been here before with at least as many remaining moves and could
+        // not get there, return false
+        if(num_moves >= visited_ptr->second.first &&
+           visited_ptr->second.second == false) {
+            return visited_ptr->second.second;
+        }
+        // else if been here before with less remaining moves and could
+        // get there, return true
+        if(num_moves <= visited_ptr->second.first &&
+           visited_ptr->second.second == true) {
+            return visited_ptr->second.second;
+        }
+
+    }
+
+    // see if at a secure, non-initial state
+    bool sec = false;
+    auto prev_secure_ptr = prev_secure.find(cur_hash_val);
+    if(prev_secure_ptr != prev_secure.end()) {
+        sec = prev_secure_ptr->second;
+    }
+    else if(cur_hash_val != start && secure(current, game, off_move)
+       && row_sum < 0) {
+        prev_secure.insert(make_pair(cur_hash_val, true));
+        sec = true;
+    }
+    else {
+        prev_secure.insert(make_pair(cur_hash_val, false));
+        sec = false;
+    }
+
+
+    // if at max moves or found a secure state, return
+    if(sec || num_moves >= max_moves){
+        visited[ndx] = make_pair(num_moves, sec);
+        return sec;
+    }
+
+    // determine whether this state is any good, i.e. if there exists a
+    // move which, no matter the tiger response, allows one to reach the
+    // desired state
+    bool any_good = false; // true iff path to desired state following above
+                           // guidelines
+
+    // see if can reach a desired state "without moving" this time
+    // this prevents degenerating into cycles
+    if(path_to_secure(max_moves, off_move, start,
+                      row_sum, prev_secure, num_moves + 1)) {
+        return true;
+    }
+
+    // determine men to move
+    vector<Token_t> to_move;
+    for(int c = left_r_bds.first; c < left_r_bds.second; ++c) {
+        for(auto r = current->rows_in_col(c).begin();
+                                    r != current->rows_in_col(c).end(); ++r) {
+            to_move.push_back(make_man(make_point(*r,c)));
+        }
+    }
+
+    // for each man
+    for(unsigned int i = 0; i < to_move.size() && !any_good; ++i) {
+        Token_t man = to_move[i];
+        pair<Point_t *, pair<bool*,int>> man_moves;
+        man_moves = game->validMoves(*current, man);
+        for(int m = 0; m <  man_moves.second.second && !any_good; ++m){
+            bool m_okay = true; // true iff this move is a good response to
+                                // the current state
+            Move_t mv = make_move(man, man_moves.first[m]);
+            // don't move out of bounds
+            if(mv.destination.row < low_high_bds.first ||
+               mv.destination.row >= low_high_bds.second ||
+               mv.destination.col < left_r_bds.first ||
+               mv.destination.col >= left_r_bds.second) {
+                m_okay = false;
+                /// DO THIS BETER ????
+                continue;
+           }
+            // perform move
+            cur_hash_val = next_hash(mv, cur_hash_val, back_row);
+            current->do_move(mv);
+            row_sum += mv.destination.row - mv.token.location.row;
+            // if tiger can capture after move, this is a bad move
+            if(tiger_can_jump(current, game)) {
+                visited[make_pair(cur_hash_val, tiger)] = make_pair(0, false);
+                m_okay = false;
+            }
+            // check each tiger response
+            pair<Point_t *, pair<bool*,int>> tiger_moves;
+            tiger_moves = game->validMoves(*current, tiger);
+            for(auto t = 0; t < tiger_moves.second.second && m_okay; ++t) {
+                // move tiger
+                Move_t t_mv = make_move(tiger, tiger_moves.first[t]);
+                current->do_move(t_mv);
+                if(!path_to_secure(max_moves, off_move, start, row_sum,
+                                   prev_secure, num_moves + 1)) {
+                    m_okay = false;
+                }
+                // undo tiger move
+                current->do_move(-t_mv);
+            }
+            delete [] tiger_moves.second.first;
+            delete [] tiger_moves.first; // free memory
+            // undo move
+            current->do_move(-mv);
+            row_sum += mv.token.location.row - mv.destination.row;
+            cur_hash_val = next_hash(-mv, cur_hash_val, back_row);
+            // if move is okay, record it
+            if(m_okay){
+                any_good = true;
+                path[ndx] = mv;
+            }
+        }
+        delete [] man_moves.second.first;
+        delete [] man_moves.first; // free memory
+    }
+
+    visited[ndx] = make_pair(num_moves, any_good); // record answer
+    return any_good;
+}
+
+
+
 bool Transition::search_for_state(int max_moves, int num_moves) {
     Token_t tiger = current->get_tiger();
     // if already know result of this state return it (i.e. have
@@ -9,10 +142,13 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
     if(visited_ptr != visited.end()) {
         // if been here before with at least as many remaining moves and could
         // not get there, return false
-        if(num_moves >= visited_ptr->second.first) {
+        if(num_moves >= visited_ptr->second.first &&
+           visited_ptr->second.second == false) {
             return visited_ptr->second.second;
-        } // else if this was a success state, return that
-        else if(visited_ptr->second.second == true){
+        } // else if been here before with fewer remaining moves and could
+          // get there, return true
+        else if(num_moves <= visited_ptr->second.first &&
+                visited_ptr->second.second == true){
             return visited_ptr->second.second;
         }
     }
@@ -22,6 +158,7 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
     if(hash_vals->find(cur_hash_val) != hash_vals->end()) {
         desired_state_found = true;
     }
+
 
     // if at max moves or found a desired state, return
     if(desired_state_found || num_moves >= max_moves){
@@ -34,6 +171,12 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
     // desired state
     bool any_good = false; // true iff path to desired state following above
                            // guidelines
+
+    // see if can reach a desired state "without moving" this time
+    // this prevents degenerating into cycles
+    if(search_for_state(max_moves, num_moves + 1)) {
+        return true;
+    }
 
     // determine men to move
     vector<Token_t> to_move;
@@ -124,6 +267,24 @@ bool Transition::find_path_to_state(int max_moves) {
     this->visited.clear();
     this->path.clear();
     return search_for_state(max_moves);
+}
+
+
+bool Transition::find_path_to_secure(int max_moves,
+                                     Move_t off_move, Hash_val start) {
+    int row_sum = 0;
+    for(int c = 0; c < NUM_COL; ++c) {
+        auto r = current->rows_in_col(c).begin();
+        while(r != current->rows_in_col(c).end()) {
+            row_sum += *r;
+            ++r;
+        }
+    }
+    this->visited.clear();
+    this->path.clear();
+    map<Hash_val, bool> prev_secure;
+
+    return path_to_secure(max_moves, off_move, start, row_sum, prev_secure);
 }
 
 

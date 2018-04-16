@@ -1,6 +1,11 @@
 #include "Men_Mover.h"
 
 void Men_Mover::determine_rows() {
+    // pretend off move not done
+    if(off_move_active) {
+        this->current.do_move(-off_move);
+    }
+
     set<int> row_to_col[NUM_ROW];
 
     /// back_row is the furthest back token
@@ -32,6 +37,10 @@ void Men_Mover::determine_rows() {
         }
     }
     /// otherwise front_row is left unchanged
+    // re-do off move
+    if(off_move_active) {
+        this->current.do_move(off_move);
+    }
 }
 
 
@@ -79,6 +88,7 @@ Move_t Men_Mover::off_move_handling() {
         move_ready = false;
         path.clear();
         desired.clear();
+        /// TO-DO----- CLEAR SPECIAL MOVES
     }
 
     return to_do;
@@ -135,7 +145,7 @@ Move_t** Men_Mover::find_moves_to_do() {
 }
 
 
-void Men_Mover::greedy_forward_move() {
+void Men_Mover::search_for_state() {
 
     Move_t** moves_to_do = find_moves_to_do();
     if(moves_to_do == nullptr) {
@@ -154,7 +164,7 @@ void Men_Mover::greedy_forward_move() {
         path.clear();
         // desired states are those which do all moves_to_do in columns
         // c and c + 1 or in columns c + 1 and c + 2
-        int max_moves[2] = {0,0};
+        int req_moves[2] = {0,0};
         for(int i = 0; i < 2; ++i) {
             Move_t mv;
             Hash_val desired_hash = hash_locs(current, back_row);
@@ -162,7 +172,7 @@ void Men_Mover::greedy_forward_move() {
                 for(int k = 0; k < 2; ++k) {
                     mv = moves_to_do[j + i][k];
                     if(mv != NULL_MOVE) {
-                        ++max_moves[i];
+                        ++req_moves[i];
                         current.do_move(mv);
                         desired_hash = next_hash(mv, desired_hash, back_row);
                     }
@@ -170,11 +180,11 @@ void Men_Mover::greedy_forward_move() {
             }
             // if the suggested desired state is secure, add it to the set
             // of desired states
-            if(secure(&current, &game, off_move) && max_moves[i] > 0) {
+            if(secure(&current, &game, off_move) && req_moves[i] > 0) {
                 desired.insert(desired_hash);
             }
             else {
-                max_moves[i] = 0;
+                req_moves[i] = 0;
             }
 
             // undo moves
@@ -188,10 +198,60 @@ void Men_Mover::greedy_forward_move() {
             }
         }
         // create transition, and have it look for a path to the desired states
-        if(max_moves[0] > 0 || max_moves[1] > 0) {
+        if(desired.size() > 0) {
             Transition t(&current, &desired, &game, back_row, make_pair(c, c+3),
                          make_pair(front_row, back_row + 1));
-            move_ready = t.find_path_to_state(max(max_moves[0], max_moves[1]));
+            move_ready = t.find_path_to_state(max(req_moves[0], req_moves[1]));
+            if(move_ready) {
+                path = t.get_path();
+            }
+        }
+    }
+
+
+    /// look for moves which move forward individual columns
+    for(int c = 0; c < NUM_COL && !move_ready; ++c) {
+        if(c == off_col) {
+            continue;
+        }
+        desired.clear();
+        path.clear();
+
+        // desired states are those which do all moves_to_do in column
+        // c
+        int req_moves = 0;
+        Move_t mv;
+        Hash_val desired_hash = hash_locs(current, back_row);
+        for(int k = 0; k < 2; ++k) {
+            mv = moves_to_do[c][k];
+            if(mv != NULL_MOVE) {
+                ++req_moves;
+                current.do_move(mv);
+                desired_hash = next_hash(mv, desired_hash, back_row);
+            }
+        }
+        // if the suggested desired state is secure, add it to the set
+        // of desired states
+        if(secure(&current, &game, off_move) && req_moves > 0) {
+            desired.insert(desired_hash);
+        }
+        else {
+            req_moves = 0;
+        }
+
+        // undo moves
+        for(int k = 1; k >= 0; --k) {
+            mv = moves_to_do[c][k];
+            if(mv != NULL_MOVE) {
+                current.do_move(-mv);
+            }
+        }
+
+        // create transition, and have it look for a path to the desired states
+        if(desired.size() > 0) {
+            Transition t(&current, &desired, &game, back_row, make_pair(c, c+1),
+                         make_pair(front_row, back_row + 1));
+            move_ready = t.find_path_to_state(req_moves);
             if(move_ready) {
                 path = t.get_path();
             }
@@ -222,29 +282,72 @@ Move_t Men_Mover::next_move(Move_t tiger_move) {
         }
     }
 
-    // try a greedy move
+    // try a search move
+    bool try_search = false;
+
     if(!move_ready) {
+        try_search = true;
         // determine rows
         determine_rows();
+        if(front_row <= 4) {
+            to_tiger_cage = true;
+        }
         // look for path
         this->path.clear();
         this->desired.clear();
-        this->greedy_forward_move();
+        this->search_for_state();
     }
 
-    // if move is ready from greedy move, do it
-    if(move_ready) {
+    // if move is ready from search, do it
+    if(move_ready && !to_tiger_cage && try_search) {
         cur_hash = hash_locs(current, back_row);
         ndx = make_pair(cur_hash, current.get_tiger());
         to_do = path[ndx];
     }
     // if no move ready from the greedy move, try a special move
     else {
-        //this->special_move();
+        special_moves.set_front_back_row(front_row, back_row);
+        to_do = special_moves.get_move();
+        if(to_do != NULL_MOVE) {
+            path.clear();
+            desired.clear();
+            move_ready = true;
+        }
+        else if(special_moves.handle_special_case()) {
+            to_do = special_moves.get_move();
+            path.clear();
+            desired.clear();
+            move_ready = true;
+        }
+
+        for(int c = 0; c < NUM_COL - 2 && !move_ready; ++c) {
+            set<Hash_val> temp;
+            Transition t(&current, &temp, &game, back_row, make_pair(c, c+3),
+                         make_pair(front_row, back_row + 1));
+            move_ready = t.find_path_to_secure(3, off_move, cur_hash);
+            if(move_ready) {
+                path = t.get_path();
+            }
+        }
+    }
+
+    // if move is ready from search for secure move, do it
+    if(move_ready && to_do == NULL_MOVE && !to_tiger_cage) {
+        cur_hash = hash_locs(current, back_row);
+        ndx = make_pair(cur_hash, current.get_tiger());
+        to_do = path[ndx];
+    }
+
+    // if no move found still, try an off move
+    if(!move_ready && !to_tiger_cage) {
+        off_move_active = !off_move_active;
     }
 
     // handle off move
-    off_move = off_move_handling();
+    Move_t off_move_to_do = off_move_handling();
+    if(off_move_ready) {
+        to_do = off_move_to_do;
+    }
 
     // do move in this object
     current.do_move(to_do);
@@ -258,6 +361,7 @@ Men_Mover::Men_Mover(const State& s){
     current = Unordered_State(s);
     back_row = NUM_ROW - 1;
     front_row = back_row - 2;
+    special_moves = Specific_Move_Handler(&current);
 
     // about next mvoe
     move_ready = false;

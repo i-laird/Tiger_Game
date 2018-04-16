@@ -70,6 +70,7 @@ bool tiger_can_jump(const Unordered_State* st, GameRunner* g) {
 
 bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
     Token_t orig_tiger = st->get_tiger();
+    st->set_tiger(make_tiger(TIGER_START)); // set tiger to starting pt
     // undo off move
     bool off_move_undone = st->do_move(-off_move);
 

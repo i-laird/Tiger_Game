@@ -103,7 +103,7 @@ Move_t operator+(const Move_t& a, const Move_t& b);
 int one_norm(const Move_t & m);
 
 /***************************** additional operators ***************************/
-// returns new set with given columns moved in given position
+// returns new set with given columns moved in given direc
 set<Point_t> move_cols(const Point_t& direc, const set<Point_t>& pts,
                        set<int> cols);
 
@@ -123,9 +123,10 @@ const Point_t UP    = make_point(-1, 0);
 const Point_t DOWN  = make_point(1, 0);
 const Point_t LEFT  = make_point(0, -1);
 const Point_t RIGHT = make_point(0, 1);
-
+const Point_t TIGER_START = make_point(2,4);
 
 /// simple types
 typedef vector<Token_t> State;
+
 
 #endif // GENERAL_UTIL_H_INCLUDED

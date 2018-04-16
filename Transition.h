@@ -1,3 +1,5 @@
+#include "testing_util.h"
+
 #include "men_util.h"
 
 #ifndef TRANSITION_H_INCLUDED
@@ -17,12 +19,16 @@ class Transition {
         map<pair<Hash_val,Token_t>, Move_t> path;
         Hash_val cur_hash_val;
 
+        bool path_to_secure(int max_moves, Move_t off_move, Hash_val start,
+                            int row_sum,  map<Hash_val, bool>& prev_secure,
+                            int num_moves = 0);
         bool search_for_state(int max_moves, int num_moves = 0);
     public:
         Transition(Unordered_State* c, set<Hash_val>*hash_vals,GameRunner*game,
                    int back_row, pair<int,int> left_right_bds,
                    pair<int,int> low_high_bds);
         bool find_path_to_state(int max_moves);
+        bool find_path_to_secure(int max_moves, Move_t off_move, Hash_val start);
         map<pair<Hash_val,Token_t>, Move_t> get_path();
 };
 
