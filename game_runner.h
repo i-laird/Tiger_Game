@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 //
 // Created by iancl on 3/25/2018.
 //
