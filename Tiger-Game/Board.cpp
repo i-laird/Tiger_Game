@@ -143,3 +143,21 @@ bool Board::isValid(const State& s, const Move_t& m) const {
     }
     return valid;
 }
+
+std::vector<Move_t> Board::listPossible(const State &s, const Token_t t) {
+    vector<Move_t> out;
+    for(int r = 0; r < 13; r++){
+        for(int c  = 0; c < 9; c++){
+            if(adjacencies[t.location.row][t.location.col][r][c]){
+                bool occupied = false;
+                for(int i = 0; i < s.size() && !occupied; i++){
+                    occupied = s[i].location.row == r && s[i].location.col == c;
+                }
+                if(!occupied){
+                    out.push_back({t, {r, c}});
+                }
+            }
+        }
+    }
+    return out;
+}

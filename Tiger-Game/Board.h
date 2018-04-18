@@ -24,6 +24,7 @@ class Board{
         Board();
         bool isVertex(Point_t p) const;
         bool isValid(const State& s, const Move_t& m) const;
+        std::vector<Move_t> listPossible(const State& s, const Token_t t);
 };
 
 #endif // BOARD_H_INCLUDED

@@ -40,4 +40,4 @@ add_executable(Tiger-Game
         Tiger-Game/Man_Mover.h
         Tiger-Game/Play_Tiger.cpp
         Tiger-Game/Play_Tiger.h
-        Tiger-Game/Smart_Mover.cpp Tiger-Game/Smart_Mover.h)
+        Tiger-Game/Smart_Mover.cpp Tiger-Game/Smart_Mover.h Tiger-Game/Scored_MMover.cpp Tiger-Game/Scored_MMover.h)
