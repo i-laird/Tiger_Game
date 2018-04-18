@@ -8,9 +8,10 @@ class Play_Tiger{
     private:
         State game_state;
         Board brd;
-        Man_Mover men_response;
+        Man_Mover* men_response;
     public:
-        Play_Tiger() {}
+        Play_Tiger();
+        ~Play_Tiger();
         void print_board(ostream& out = cout);
         void play(istream& in = cin);
 };

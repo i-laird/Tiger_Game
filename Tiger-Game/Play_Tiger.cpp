@@ -3,6 +3,7 @@
 using namespace std;
 
 #include "Play_Tiger.h"
+#include "Smart_Mover.h"
 
 
 void Play_Tiger::print_board(ostream& out) {
@@ -140,7 +141,7 @@ void Play_Tiger::play(istream & in) {
             print_board(dynamic_cast<ostream&>(board_one));
 
 
-            man_move = men_response.next_move(game_state);
+            man_move = men_response->next_move(game_state);
 
             bool men_moved = false;
             for(auto i = game_state.begin(); i != game_state.end() && !men_moved; ++i) {
@@ -162,4 +163,12 @@ void Play_Tiger::play(istream & in) {
         }
     }
     cout << "GAME OVER\n";
+}
+
+Play_Tiger::Play_Tiger() {
+    men_response = new Smart_Mover();
+}
+
+Play_Tiger::~Play_Tiger() {
+    delete men_response;
 }

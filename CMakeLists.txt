@@ -37,8 +37,7 @@ add_executable(Tiger-Game
         Tiger-Game/main.cpp
         Tiger-Game/man_move_helper_functions.cpp
         Tiger-Game/man_move_helper_functions.h
-        Tiger-Game/Man_Mover.cpp
         Tiger-Game/Man_Mover.h
         Tiger-Game/Play_Tiger.cpp
         Tiger-Game/Play_Tiger.h
-)
+        Tiger-Game/Smart_Mover.cpp Tiger-Game/Smart_Mover.h)
