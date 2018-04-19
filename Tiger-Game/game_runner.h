@@ -32,7 +32,7 @@ class GameRunner{
     vector <Token_t> * gameState;
     int square_section_columns,
         square_section_rows;
-    map<Point_t, list<Point_t> > * extendedGraph;
+    map<Point_t, std::list<Point_t> > * extendedGraph;
 public:
     /**
      * Description: Sees is the indicated move is valid. i.e. Can the indicated
