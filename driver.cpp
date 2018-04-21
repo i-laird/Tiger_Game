@@ -4,6 +4,7 @@
 #include "Scored_MMovers/Upward.h"
 #include "Scored_MMovers/Inward.h"
 #include <iomanip>
+#include <ctime>
 using namespace std;
 
 int main()
@@ -95,7 +96,10 @@ int main()
 
         gs[0].location = tiger_move.destination;
         game_state.do_move(tiger_move);
+        time_t start = clock();
         Move_t men_move = men->next_move(tiger_move);
+        time_t end = clock();
+        cout << "men time: " << end - start << endl;
         if(men_move == NULL_MOVE) {
             cout << "<ERROR>: no men move received\n";
         }
