@@ -546,17 +546,20 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             //If no non traditional move can be found see if can just move
             // back to previous location
             if (!moveFound) {
-                returnMove.destination = previousLocation;
-                if (isValidMove(tokens, returnMove)) {
-                    moveFound = true;
-                } else {
-                    //If no special move or previous just go backwards if possible
-                    for(int k = 0; k < returnMoves.second.second; k++) {
-                        returnMove.destination = returnMoves.first[k];
-                        if((returnMove.destination.row - origRow != 0))
-                            break;
+                Point_t record;
+                //Try and go upwards
+                for(int k = 0; !moveFound && k < returnMoves.second.second; k++) {
+                    returnMove.destination = returnMoves.first[k];
+                    if((returnMove.destination.row - origRow != 0)) {
+                        moveFound = true;
                     }
+                }
+                if(!moveFound){
                     moveFound = true;
+                    record = returnMove.destination;
+                    returnMove.destination = previousLocation;
+                    if (!isValidMove(tokens, returnMove))
+                        returnMove.destination = record;
                 }
             }
         }
