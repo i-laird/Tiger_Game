@@ -4,7 +4,7 @@
 
 #include "Inward.h"
 
-void Inward::genScores(int ** scores) {
+void Inward::genScores(int **scores, GameRunner game, Unordered_State current) {
     int mod = 0;
     for(int c = 0; c < 5; c++){
         for(int r = 0; r < 13; r++){

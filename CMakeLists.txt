@@ -31,4 +31,6 @@ add_executable(Tiger-Game
         Scored_MMovers/ScoreMod.h
         Scored_MMovers/Inward.cpp
         Scored_MMovers/Inward.h
+        Scored_MMovers/AvoidCapture.cpp
+        Scored_MMovers/AvoidCapture.h
         )

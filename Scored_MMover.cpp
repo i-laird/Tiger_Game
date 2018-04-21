@@ -13,7 +13,7 @@ int ** Scored_MMover::genScores() {
         }
     }
     for(ScoreMod* mod : mods){
-        mod->genScores(out);
+        mod->genScores(out, game, current);
     }
     for(int i = 0; i < 13; i++){
         std::cout << std::endl;
