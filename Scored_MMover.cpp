@@ -5,7 +5,7 @@
 #include "Scored_MMover.h"
 
 int ** Scored_MMover::genScores() {
-    int** out = new int*[11];
+    int** out = new int*[13];
     for(int i = 0; i < 13; i++){
         out[i] = new int[9];
         for(int j = 0; j < 9; j++){
