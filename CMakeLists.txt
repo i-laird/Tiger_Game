@@ -19,5 +19,16 @@ add_executable(Tiger-Game
         testing_util.h
         Transition.cpp
         Transition.h
-        Unorderded_State.cpp
-        Unorderded_State.h Smart_Mover.cpp Smart_Mover.h Scored_MMover.h Scored_MMover.cpp Men_Mover.cpp)
+        Unordered_State.cpp
+        Unordered_State.h
+        Smart_Mover.cpp
+        Smart_Mover.h
+        Scored_MMover.h
+        Scored_MMover.cpp
+        Men_Mover.cpp
+        Scored_MMovers/Upward.cpp
+        Scored_MMovers/Upward.h
+        Scored_MMovers/ScoreMod.h
+        Scored_MMovers/Inward.cpp
+        Scored_MMovers/Inward.h
+        )

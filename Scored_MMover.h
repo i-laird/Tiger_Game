@@ -7,14 +7,17 @@
 
 #include <vector>
 #include "Men_Mover.h"
+#include "Scored_MMovers/ScoreMod.h"
 
 
 class Scored_MMover : public Men_Mover {
-protected:
+private:
+    std::vector<ScoreMod*> mods;
 public:
     Scored_MMover(const State &s);
-
-protected:
+    virtual ~Scored_MMover();
+    Scored_MMover* addMod(ScoreMod* mod);
+private:
     int **genScores();
     int scoreDelta(int **scores, Move_t move);
 protected:

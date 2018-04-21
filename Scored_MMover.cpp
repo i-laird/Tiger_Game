@@ -12,6 +12,15 @@ int ** Scored_MMover::genScores() {
             out[i][j] = 0;
         }
     }
+    for(ScoreMod* mod : mods){
+        mod->genScores(out);
+    }
+    for(int i = 0; i < 13; i++){
+        std::cout << std::endl;
+        for(int j = 0; j < 9; j++){
+            std::cout << out[i][j] << " ";
+        }
+    }
     return out;
 }
 
@@ -36,6 +45,7 @@ Move_t Scored_MMover::execute_move() {
             }
         }
     }
+    current.do_move(best);
     return best;
 }
 
@@ -44,3 +54,14 @@ int Scored_MMover::scoreDelta(int ** scores, Move_t move) {
 }
 
 Scored_MMover::Scored_MMover(const State &s) : Men_Mover(s) {}
+
+Scored_MMover::~Scored_MMover() {
+    for(ScoreMod* mod : mods){
+        delete mod;
+    }
+}
+
+Scored_MMover *Scored_MMover::addMod(ScoreMod *mod) {
+    mods.push_back(mod);
+    return this;
+}

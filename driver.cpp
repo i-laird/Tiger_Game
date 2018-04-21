@@ -1,5 +1,8 @@
 #include "Smart_Mover.h"
 #include "testing_util.h"
+#include "Scored_MMover.h"
+#include "Scored_MMovers/Upward.h"
+#include "Scored_MMovers/Inward.h"
 #include <iomanip>
 using namespace std;
 
@@ -25,7 +28,7 @@ int main()
         }
     }
     GameRunner game;
-    Men_Mover* men = new Smart_Mover(gs);
+    Men_Mover* men = (new Scored_MMover(gs))->addMod(new Upward())->addMod(new Upward())->addMod(new Inward());//new Smart_Mover(gs);
     Unordered_State game_state(gs);
     bool play_game = true;
     while(play_game) {
