@@ -19,6 +19,16 @@ class Unordered_State{
          * postcondition: an Unordered_State is created
          */
         Unordered_State();
+        /// assignment operator
+        /*       operator=
+         *
+         * description: assignment operator, makes deep copy and returns a const
+         *              reference to this object
+         * return: const Unordered_State&
+         * precondition: that object is a valid Unordered State
+         * postcondition: this Unordered_State is a copy of that
+         */
+        const Unordered_State& operator=(const Unordered_State& that);
 
         /*       Unordered_State(const State& st)
          *
@@ -93,6 +103,7 @@ class Unordered_State{
          * postcondition: this object and that object are unchanged
          */
         bool operator!=(const Unordered_State& that) const;
+
         /// accessors
 
         /*       get_tiger
