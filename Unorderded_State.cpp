@@ -95,6 +95,10 @@ const Token_t& Unordered_State::get_tiger() const {
 
 
 const set<int>& Unordered_State::rows_in_col(int col) const {
+    // set col to nearest column in range
+    col = max(0, col);
+    col = min(col, NUM_COL - 1);
+
     return this->col_to_rows[col];
 }
 
@@ -110,7 +114,9 @@ void Unordered_State::set_men_locs(const set<Point_t>& locs) {
         col_to_rows[i] = set<int>();
     }
     for(auto i = locs.begin(); i != locs.end(); ++i) {
-        col_to_rows[i->col].insert(i->row);
+        if(i->col >= 0 && i->col < NUM_COL) {
+            col_to_rows[i->col].insert(i->row);
+        }
     }
 }
 
@@ -121,6 +127,11 @@ bool Unordered_State::do_move(const Move_t& m) {
                             // exists to an unoccupied position
     Point_t from = m.token.location; // where going from
     Point_t to = m.destination; // where going to
+    // this is a bad move if not in the column range
+    if(from.col < 0 || from.col >= NUM_COL || to.col < 0 ||
+       from.col >= NUM_COL) {
+        valid_move = false;
+    }
     // this is a bad move if moving into tiger location
     if(to == this->tiger.location) {
         valid_move = false;
@@ -169,29 +180,17 @@ bool Unordered_State::do_move(const Move_t& m) {
 /// functions to convenience getting information
 bool Unordered_State::is_occupied(const Point_t& pt) const {
     bool occupied = false;
-    if(pt == this->tiger.location) {
-        occupied = true;
-    }
-    else if(col_to_rows[pt.col].find(pt.row) != col_to_rows[pt.col].end()) {
-        occupied = true;
+    // if column in range
+    if(pt.col >= 0 && pt.col < NUM_COL) {
+        if(pt == this->tiger.location) {
+            occupied = true;
+        }
+        else if(col_to_rows[pt.col].find(pt.row) != col_to_rows[pt.col].end()) {
+            occupied = true;
+        }
     }
 
     return occupied;
 }
 
-
-set<Point_t> Unordered_State::men_in_grid(int low, int high,
-                                          int left, int right) const{
-    set<Point_t> in_grid;
-   for(int c = left; c < right; ++c) {
-        for(auto r = col_to_rows[c].begin(); r != col_to_rows[c].end(); ++r) {
-            if(*r < low && *r >= high) {
-                in_grid.insert(make_point(*r, c));
-            }
-        }
-   }
-
-    // return the men in the grid
-    return in_grid;
-}
 

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 //
 // Created by iancl on 3/25/2018.
 //
@@ -16,7 +15,7 @@
 
 int const MAX_NUMBER_MOVES = 7;
 string const graph = "BOARD SQUARE SECTION DIMENSIONS\n13 9\nUNUSUAL EDGES"
-                     "\n2 12 4 11 3 11 5\n2 11 3 10 2\n1 10 2 9 1\n"
+                     "\n2 12 4 11 3 11 5\n1 11 3 10 2\n1 10 2 9 1\n"
         "1 9 1 8 0\n1 8 0 7 1\n1 7 1 6 2\n1 6 2 5 3\n1 5 3 4 4\n"
         "1 11 5 10 6\n1 10 6 9 7\n1 9 7 8 8\n1 8 8 7 7\n1 7 7 6 6\n"
         "1 6 6 5 5\n1 5 5 4 4\n2 4 4 3 5 3 3\n2 3 5 2 6 2 4\n2 3 3 2 4 2 2\n"
@@ -133,5 +132,6 @@ public:
     Move_t Tiger_Move(vector<Token_t> &);
 
 };
+
 
 #endif //TIGER_GAME_GAME_RUNNER_H

@@ -26,14 +26,24 @@ void Men_Mover::determine_rows() {
         this->front_row = back_row - 2;
     }
     /// else if all columns on back_row - 1 and back_row - 2 except
-    /// for one column which is on back_row - 1 and back_row,
+    /// for one column which is on back_row - 1 and back_row, and tiger
+    /// is blocking that column from moving up
     /// front_row is back_row - 3
     else if (row_to_col[back_row - 1].size() == NUM_COL &&
              row_to_col[back_row - 2].size() == NUM_COL - 1 &&
              row_to_col[back_row].size() == 1) {
         int col = *row_to_col[back_row].begin();
         if(row_to_col[back_row - 2].find(col) == row_to_col[back_row - 2].end()){
-            this->front_row = back_row - 3;
+            if(this->current.get_tiger().location.row >= back_row - 3 &&
+               this->current.get_tiger().location.col == col) {
+                // if lagging column is
+                // - on middle if in lower half
+                // - not on an edge if on upper half
+                if((front_row >= 8 && col == (NUM_COL - 1) / 2) ||
+                   (front_row < 8 && (col == 0 || col == NUM_COL - 1))) {
+                    this->front_row = back_row - 3;
+                }
+            }
         }
     }
     /// otherwise front_row is left unchanged
@@ -88,11 +98,12 @@ Move_t Men_Mover::off_move_handling() {
         move_ready = false;
         path.clear();
         desired.clear();
-        /// TO-DO----- CLEAR SPECIAL MOVES
+        this->special_moves.clear_moves();
     }
 
     return to_do;
 }
+
 
 Move_t** Men_Mover::find_moves_to_do() {
     /// store forward moves for each column except for the
@@ -125,6 +136,13 @@ Move_t** Men_Mover::find_moves_to_do() {
                                               moves_to_do[c][1].destination){
                         swap(moves_to_do[c][0], moves_to_do[c][1]);
                     }
+                    // if the guy in front already has a space between
+                    // him and the guy below, don't try to move the top guy again
+                    if(moves_to_do[c][1].destination.row - moves_to_do[c][0].destination.row > 1) {
+                        moves_to_do[c][0] = moves_to_do[c][1];
+                        moves_to_do[c][1] = NULL_MOVE;
+                    }
+
                 }
                 ++r;
             }
@@ -145,6 +163,24 @@ Move_t** Men_Mover::find_moves_to_do() {
 }
 
 
+Move_t Men_Mover::try_for_specific_move() {
+    Move_t to_do = NULL_MOVE;
+    special_moves.set_front_back_row(front_row, back_row);
+
+    // if no move ready, then try a special move
+    if(special_moves.handle_special_case(off_move)) {
+        to_do = special_moves.get_move();
+        if(to_do != NULL_MOVE) {
+            path.clear();
+            desired.clear();
+            move_ready = true;
+        }
+    }
+
+    return to_do;
+}
+
+
 void Men_Mover::search_for_state() {
 
     Move_t** moves_to_do = find_moves_to_do();
@@ -162,37 +198,45 @@ void Men_Mover::search_for_state() {
         }
         desired.clear();
         path.clear();
-        // desired states are those which do all moves_to_do in columns
-        // c and c + 1 or in columns c + 1 and c + 2
-        int req_moves[2] = {0,0};
-        for(int i = 0; i < 2; ++i) {
-            Move_t mv;
-            Hash_val desired_hash = hash_locs(current, back_row);
-            for(int j = c; j < c + 2; ++j) {
-                for(int k = 0; k < 2; ++k) {
-                    mv = moves_to_do[j + i][k];
-                    if(mv != NULL_MOVE) {
-                        ++req_moves[i];
-                        current.do_move(mv);
-                        desired_hash = next_hash(mv, desired_hash, back_row);
+        // desired states are those which move up either 1 or
+        // 2 of the 3 columns
+        int ndx = 0;
+        int req_moves[6] = {0,0,0,0,0,0};
+        for(int i = 0; i < 3; ++i) {
+            for(int j = i; j < 3; ++j) {
+                Move_t mv;
+                Hash_val desired_hash = hash_locs(current, back_row);
+                for(int col = 0; col < 3; ++col) {
+                    for(int k = 0; k < 2; ++k) {
+                        if(col != i && col != j) {
+                            mv = moves_to_do[c + col][k];
+                            if(mv != NULL_MOVE) {
+                                ++req_moves[ndx];
+                                current.do_move(mv);
+                                desired_hash = next_hash(mv, desired_hash, back_row);
+                            }
+                        }
                     }
                 }
-            }
-            // if the suggested desired state is secure, add it to the set
-            // of desired states
-            if(secure(&current, &game, off_move) && req_moves[i] > 0) {
-                desired.insert(desired_hash);
-            }
-            else {
-                req_moves[i] = 0;
-            }
+                // if the suggested desired state is secure, add it to the set
+                // of desired states
+                if(secure(&current, &game, off_move) && req_moves[ndx] > 0) {
+                    desired.insert(desired_hash);
+                }
+                else {
+                    req_moves[ndx] = 0;
+                }
+                ++ndx;
 
-            // undo moves
-            for(int j = c + 1; j >= c; --j) {
-                for(int k = 1; k >= 0; --k) {
-                    mv = moves_to_do[j + i][k];
-                    if(mv != NULL_MOVE) {
-                        current.do_move(-mv);
+                // undo moves
+                for(int col = 2; col >= 0; --col) {
+                    for(int k = 1; k >= 0; --k) {
+                        if(col!= i && col != j) {
+                            mv = moves_to_do[c + col][k];
+                            if(mv != NULL_MOVE) {
+                                current.do_move(-mv);
+                            }
+                        }
                     }
                 }
             }
@@ -201,7 +245,15 @@ void Men_Mover::search_for_state() {
         if(desired.size() > 0) {
             Transition t(&current, &desired, &game, back_row, make_pair(c, c+3),
                          make_pair(front_row, back_row + 1));
-            move_ready = t.find_path_to_state(max(req_moves[0], req_moves[1]));
+            int min_req = INFTY;
+            int max_req = -1;
+            for(int i = 0; i < 6; ++i) {
+                max_req = max(max_req, req_moves[i]);
+                if(req_moves[i] > 0) {
+                    min_req = min(req_moves[i], min_req);
+                }
+            }
+            move_ready = t.find_path_to_state(min(4,max_req), min_req);
             if(move_ready) {
                 path = t.get_path();
             }
@@ -210,6 +262,7 @@ void Men_Mover::search_for_state() {
 
 
     /// look for moves which move forward individual columns
+    /*
     for(int c = 0; c < NUM_COL && !move_ready; ++c) {
         if(c == off_col) {
             continue;
@@ -249,20 +302,114 @@ void Men_Mover::search_for_state() {
 
         // create transition, and have it look for a path to the desired states
         if(desired.size() > 0) {
-            Transition t(&current, &desired, &game, back_row, make_pair(c, c+1),
+            int left_bd = max(0, c-1);
+            int r_bd = min(NUM_COL, c + 1);
+            Transition t(&current, &desired, &game, back_row, make_pair(left_bd, r_bd),
                          make_pair(front_row, back_row + 1));
-            move_ready = t.find_path_to_state(req_moves);
+            move_ready = t.find_path_to_state(2 * req_moves);
             if(move_ready) {
                 path = t.get_path();
             }
         }
     }
+    */
 
     // free memory
     for(int c = 0; c < NUM_COL; ++c) {
         delete [] moves_to_do[c];
     }
     delete [] moves_to_do;
+}
+
+
+Move_t Men_Mover::fail_safe(Move_t suggested) {
+    // first call safety failsafe
+    Move_t to_do = safety_fail_safe(suggested);
+    if(to_do != NULL_MOVE) {
+        suggested = to_do;
+    }
+    // now ensure validity
+    if(!game.isValidMove(current, suggested)) {
+        // if move not valid, look for a valid safe move
+        bool fail_safe_found = false;
+        // try each direction of moves and see if finds one that is valid
+        // with no immediage jump
+        Point_t dirs[8] = {UP, UP + LEFT, UP + RIGHT,
+                           LEFT, RIGHT,
+                           DOWN, DOWN + LEFT, DOWN + RIGHT};
+        for(int i = 0; i < 8 && !fail_safe_found; ++i) {
+            for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
+                auto r = current.rows_in_col(c).begin();
+                while(r != current.rows_in_col(c).end() && !fail_safe_found) {
+                    Token_t man = make_man(make_point(*r,c));
+                    Move_t mv = make_move_in_direction(man, dirs[i]);
+                    if(game.isValidMove(current, mv) && mv.destination.row >= front_row) {
+                        current.do_move(mv);
+                        if(!tiger_can_jump(&current, &game)) {
+                            fail_safe_found = true;
+                            to_do = mv;
+                        }
+                        current.do_move(-mv);
+                    }
+                    ++r;
+                }
+            }
+        }
+        // if cannot find a safe valid move, just try to find a valid move
+        for(int i = 0; i < 8 && !fail_safe_found; ++i) {
+            for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
+                auto r = current.rows_in_col(c).begin();
+                while(r != current.rows_in_col(c).end() && !fail_safe_found) {
+                    Token_t man = make_man(make_point(*r,c));
+                    Move_t mv = make_move_in_direction(man, dirs[i]);
+                    if(game.isValidMove(current, mv) && mv.destination.row >= front_row) {
+                        fail_safe_found = true;
+                        to_do = mv;
+                    }
+                    ++r;
+                }
+            }
+        }
+    }
+
+    return to_do;
+}
+
+
+Move_t Men_Mover::safety_fail_safe(Move_t suggested) {
+    Move_t to_do = NULL_MOVE;
+
+    current.do_move(suggested);
+    bool can_jump = tiger_can_jump(&current, &game);
+    current.do_move(-suggested);
+    if(can_jump) {
+        bool fail_safe_found = false;
+        // try each direction of moves and see if can prevent the
+        // capture
+        Point_t dirs[8] = {UP, UP + LEFT, UP + RIGHT,
+                           LEFT, RIGHT,
+                           DOWN, DOWN + LEFT, DOWN + RIGHT};
+        for(int i = 0; i < 8 && !fail_safe_found; ++i) {
+            for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
+                auto r = current.rows_in_col(c).begin();
+                while(r != current.rows_in_col(c).end() && !fail_safe_found) {
+                    Token_t man = make_man(make_point(*r,c));
+                    Move_t mv = make_move_in_direction(man, dirs[i]);
+                    if(game.isValidMove(current, mv) && mv.destination.row >= front_row) {
+                        current.do_move(mv);
+                        if(!tiger_can_jump(&current, &game)) {
+                            fail_safe_found = true;
+                            to_do = mv;
+                        }
+                        current.do_move(-mv);
+                    }
+                    ++r;
+                }
+            }
+        }
+    }
+
+    return to_do;
 }
 
 
@@ -274,79 +421,93 @@ Move_t Men_Mover::next_move(Move_t tiger_move) {
 
     Hash_val cur_hash = hash_locs(current, back_row);
     pair<Hash_val, Token_t> ndx = make_pair(cur_hash, current.get_tiger());
-    // see if move still ready from previous work
+    // try a search move
+    bool move_from_search = false;
+    // see if move still ready from previous search
     if(move_ready) {
         auto next_move = path.find(ndx);
         if(next_move == path.end()) {
             move_ready = false;
         }
+        else {
+            move_from_search = true;
+        }
     }
 
-    // try a search move
-    bool try_search = false;
+    // see if move still ready from previous specific move
+    if(!move_from_search) {
+        to_do = special_moves.get_move();
+        if(to_do != NULL_MOVE) {
+            move_ready = true;
+            path.clear();
+            desired.clear();
+        }
+    }
 
     if(!move_ready) {
-        try_search = true;
         // determine rows
         determine_rows();
         if(front_row <= 4) {
             to_tiger_cage = true;
         }
         // look for path
-        this->path.clear();
-        this->desired.clear();
-        this->search_for_state();
+        else {
+            this->path.clear();
+            this->desired.clear();
+            this->search_for_state();
+            if(move_ready) {
+                move_from_search = true;
+            }
+        }
     }
 
     // if move is ready from search, do it
-    if(move_ready && !to_tiger_cage && try_search) {
+    if(move_ready && !to_tiger_cage && move_from_search) {
         cur_hash = hash_locs(current, back_row);
         ndx = make_pair(cur_hash, current.get_tiger());
         to_do = path[ndx];
     }
     // if no move ready from the greedy move, try a special move
-    else {
-        special_moves.set_front_back_row(front_row, back_row);
-        to_do = special_moves.get_move();
+    else if(!move_ready){
+        to_do = try_for_specific_move();
         if(to_do != NULL_MOVE) {
-            path.clear();
-            desired.clear();
             move_ready = true;
         }
-        else if(special_moves.handle_special_case()) {
-            to_do = special_moves.get_move();
-            path.clear();
-            desired.clear();
-            move_ready = true;
-        }
-
-        for(int c = 0; c < NUM_COL - 2 && !move_ready; ++c) {
-            set<Hash_val> temp;
-            Transition t(&current, &temp, &game, back_row, make_pair(c, c+3),
-                         make_pair(front_row, back_row + 1));
-            move_ready = t.find_path_to_secure(3, off_move, cur_hash);
-            if(move_ready) {
-                path = t.get_path();
-            }
-        }
-    }
-
-    // if move is ready from search for secure move, do it
-    if(move_ready && to_do == NULL_MOVE && !to_tiger_cage) {
-        cur_hash = hash_locs(current, back_row);
-        ndx = make_pair(cur_hash, current.get_tiger());
-        to_do = path[ndx];
     }
 
     // if no move found still, try an off move
     if(!move_ready && !to_tiger_cage) {
         off_move_active = !off_move_active;
     }
+    // undo off move if to tiger cage
+    if(to_tiger_cage && off_move_active) {
+        off_move_active = false;
+    }
 
     // handle off move
     Move_t off_move_to_do = off_move_handling();
     if(off_move_ready) {
         to_do = off_move_to_do;
+    }
+    // perform failsafe
+    Move_t fs = fail_safe(to_do);
+    if(fs != NULL_MOVE) {
+        // if was performing an off move, undo that
+        if(off_move_ready) {
+            if(off_move_active) {
+                off_move_active = false;
+                off_move = NULL_MOVE;
+            }
+            else {
+                off_move_active = true;
+                off_move = -to_do;
+            }
+        }
+        move_ready = false;
+        this->path.clear();
+        this->desired.clear();
+        this->special_moves.clear_moves();
+        to_do = fs;
     }
 
     // do move in this object
@@ -361,7 +522,7 @@ Men_Mover::Men_Mover(const State& s){
     current = Unordered_State(s);
     back_row = NUM_ROW - 1;
     front_row = back_row - 2;
-    special_moves = Specific_Move_Handler(&current);
+    special_moves = Specific_Move_Handler(&current, &game);
 
     // about next mvoe
     move_ready = false;

@@ -12,7 +12,7 @@ Point_t make_point(int row, int col) {
     return pt;
 }
 
-Point_t make_point(pair<int,int>& p) {
+Point_t make_point(const pair<int,int>& p) {
     Point_t pt;
     pt.row = p.first;
     pt.col = p.second;
@@ -242,22 +242,5 @@ Move_t operator+(const Move_t& a, const Move_t& b) {
 int one_norm(const Move_t & m) {
     return one_norm(m.destination - m.token.location);
 }
-
-
-/***************************** additional operators ***************************/
-set<Point_t> move_cols(const Point_t& direc, const set<Point_t>& pts,
-                       set<int> cols) {
-    set<Point_t> cols_moved;
-    for(auto pt = pts.begin(); pt != pts.end(); ++pt){
-        if(cols.find(pt->col) != cols.end()) {
-            cols_moved.insert(*pt + direc);
-        }
-        else {
-            cols_moved.insert(*pt);
-        }
-    }
-    return cols_moved;
-}
-
 
 
