@@ -6,9 +6,14 @@
 #include "Specific_Move_Handler.h"
 #include "testing_util.h"
 #include "Men_Mover.h"
+#include <queue>
 
 class Smart_Mover : public Men_Mover {
 private:
+
+	// fun times with queues
+	queue<Move_t> q;
+
     // about current state
     int front_row;
     int back_row;
@@ -121,6 +126,18 @@ private:
          * postcondition: this object is unchanged
          */
         Move_t fail_safe(Move_t suggested);
+
+		Move_t kill_tiger_handling();
+
+		bool safe();
+
+		Move_t get_in();
+
+		Move_t stage_men();
+
+		Move_t get_move_in_cage();
+
+		Move_t get_move_into_cage();
 
     public:
         /*       Men_Mover(const State& s)

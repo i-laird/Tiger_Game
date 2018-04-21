@@ -123,3 +123,77 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
     return !jump;
 }
 
+
+Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from) {
+
+	queue<Point_t> frontier;
+
+	bool visited[NUM_ROW][NUM_COL];
+	int dist[NUM_ROW][NUM_COL];
+	Point_t pred[NUM_ROW][NUM_COL];
+	for (int r = 0; r < NUM_ROW; ++r) {
+		for (int c = 0; c < NUM_COL; ++c) {
+			visited[r][c] = false;
+			dist[r][c] = INFTY;
+			pred[r][c] = NULL_POINT;
+		}
+	}
+
+	Point_t current = from;
+	visited[current.row][current.col] = true;
+	dist[current.row][current.col] = 0;
+	frontier.push(current);
+	pair<Point_t*, pair<bool*, int> > moves;
+	while (!frontier.empty()) {
+		current = frontier.front();
+		// mark visited
+		frontier.pop();
+
+		// add each reachable new position to the frontier
+		moves = g->validMoves(*st, make_man(current));
+		Point_t to;
+		for (int t = 0; t < moves.second.second; ++t) {
+			to = moves.first[t];
+			if (!visited[to.row][to.col]) {
+				visited[to.row][to.col] = true;
+				dist[to.row][to.col] = dist[current.row][current.col] + 1;
+				pred[to.row][to.col] = current;
+				frontier.push(to);
+			}
+		}
+		// free memory
+		if (moves.first)
+			delete[] moves.first;
+		if (moves.second.first)
+			delete[] moves.second.first;
+	}
+
+	set<pair<int, int>> bad_locs;
+	for (int i = 0; i < 8; i++) {
+		bad_locs.insert(KILL[i].row, KILL[i].col);
+	}
+
+	Point_t to = NULL_POINT;
+	int min_len = INFTY;
+	for (int i = 0; i < NUM_ROW; i++) {
+		for (int j = 0; j < NUM_COL; j++) {
+			if (dist[i][j] < min_len && 
+				bad_locs.find(make_pair(i, j)) == bad_locs.end()) {
+				min_len = dist[i][j];
+				to = make_point(i, j);
+			}
+		}
+	}
+
+	if (to == NULL_POINT) {
+		return NULL_MOVE;
+	}
+
+	while (pred[to.row][to.col] != NULL_POINT) {
+		to = pred[to.row][to.col];
+	}
+
+	return make_move(make_man(from), to);
+}
+
+

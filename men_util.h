@@ -9,6 +9,15 @@ using namespace std;
 #ifndef MEN_UTIL_H_INCLUDED
 #define MEN_UTIL_H_INCLUDED
 
+const Point_t KILL[8] = { make_point(4, 3), 
+						make_point(4, 4), 
+						make_point(4, 5), 
+						make_point(5, 3), 
+						make_point(5, 4), 
+						make_point(5, 5), 
+						make_point(6, 2), 
+						make_point(6, 6) };
+
 typedef pair<int,int> Hash_val;
 
 /*            hash_locs(const Unordered_State& st, int back_row)
@@ -62,5 +71,7 @@ bool tiger_can_jump(const Unordered_State * st, GameRunner *g);
  *                are unchanged
  */
 bool secure(Unordered_State* st, GameRunner* g, Move_t off_move = NULL_MOVE);
+
+Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from);
 
 #endif // MEN_UTIL_H_INCLUDED

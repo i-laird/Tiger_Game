@@ -512,12 +512,207 @@ Move_t Smart_Mover::execute_move() {
 }
 
 
+Move_t Smart_Mover::kill_tiger_handling() {
+
+	Move_t ret = NULL_MOVE;
+	Point_t tiger_loc = current.get_tiger().location;
+
+	if (!q.empty()) {
+		ret = q.front();
+		q.pop();
+		return ret;
+	}
+
+	if (tiger_loc.row >= 4) {
+		for (int c = 0; c < NUM_COL; c++) {
+			auto r = current.rows_in_col(c).begin();
+			while (r != current.rows_in_col(c).end()) {
+				Token_t man = make_man(make_point(*r, c));
+				pair<Point_t*, pair<bool*, int>> val_moves = game.validMoves(current, man);
+				for (int i = 0; i < val_moves.second.second; i++) {
+					Move_t mv = make_move(man, val_moves.first[i]);
+					Point_t to = mv.destination, from = mv.token.location;
+					Move_t mv2 = make_move(make_man(from - (to - from)), from);
+
+					current.do_move(mv);
+					current.do_move(mv2);
+					if (secure(&current, &game)) {
+						q.push(mv);
+						q.push(mv2);
+					}
+					current.do_move(-mv2);
+					if (q.empty() && secure(&current, &game)) {
+						q.push(mv);
+					}
+					current.do_move(-mv);
+
+					if (val_moves.first) {
+						delete[] val_moves.first;
+					}
+					if (val_moves.second.first) {
+						delete[] val_moves.second.first;
+					}
+
+					if (!q.empty()) {
+						ret = q.front();
+						q.pop();
+						return ret;
+					}
+				}
+
+				r++;
+			}
+		}
+	}
+	/* Probably unneeded
+	if (!(tiger_loc.row < 4 && current.is_occupied(make_point(4, 4)))) {
+		return get_in();
+	}
+	*/
+	if (!safe()) {
+		return stage_men();
+	}
+
+	ret = get_move_in_cage();
+
+	if (ret != NULL_MOVE) {
+		return ret;
+	}
+
+	ret = get_move_into_cage();
+
+	return ret;
+}
+
+
+bool Smart_Mover::safe() {
+	for (int i = 0; i < 8; i++) {
+		if (!current.is_occupied(KILL[i]) || current.get_tiger().location == KILL[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+Move_t Smart_Mover::stage_men() {
+	Move_t move;
+	for (int i = 0; i < 8; i++) {
+		move = bfs_move_getter(&current, &game, KILL[i]);
+		if (move != NULL_MOVE) {
+			return move;
+		}
+	}
+
+	return NULL_MOVE;
+}
+
+
+Move_t Smart_Mover::get_move_in_cage() {
+	for (int c = 2; c < 7; c++) {
+		auto r = current.rows_in_col(c).begin();
+		while (r != current.rows_in_col(c).end()) {
+			if (*r < 4) {
+				Token_t man = make_man(make_point(*r, c));
+				auto moves = game.validMoves(current, man);
+				for (int i = 0; i < moves.second.second; i++) {
+					if (moves.first[i].row < *r && moves.first[i] != TIGER_START) {
+						Move_t mv = make_move(man, moves.first[i]);
+						Point_t to = mv.destination, from = mv.token.location;
+						Move_t mv2 = make_move(make_man(to), to + to - from);
+
+						current.do_move(mv);
+						bool moved = current.do_move(mv2);
+						if (secure(&current, &game)) {
+							q.push(mv);
+							if (moved) {
+								q.push(mv2);
+								current.do_move(-mv2);
+							}
+						}
+						current.do_move(-mv);
+						if (!q.empty()) {
+							Move_t ret = q.front();
+							q.pop();
+							return ret;
+						}
+					}
+				}
+				if (moves.first) {
+					delete[] moves.first;
+				}
+				if (moves.second.first) {
+					delete[] moves.second.first;
+				}
+			}
+			r++;
+		}
+	}
+
+	return NULL_MOVE;
+}
+
+
+Move_t Smart_Mover::get_move_into_cage() {
+	if (!(current.is_occupied(make_point(4, 4)) && current.get_tiger().location != make_point(4, 4))) {
+		return NULL_MOVE;
+	}
+	Token_t man = make_man(make_point(4, 4));
+	auto moves = game.validMoves(current, man);
+	for (int i = 0; i < moves.second.second; i++) {
+		Move_t mv = make_move(man, moves.first[i]);
+		Point_t to = mv.destination, from = mv.token.location;
+		Move_t mv2 = NULL_MOVE;
+		Point_t fills[3];
+		fills[0] = make_point(4, 3);
+		fills[1] = make_point(5, 4);
+		fills[2] = make_point(4, 5);
+
+		for (int j = 0; j < 3; j++) {
+			if (current.is_occupied(fills[j])) {
+				mv2 = make_move(make_man(fills[j]), from);
+				break;
+			}
+		}
+		
+		if (mv2 == NULL_MOVE) {
+			return mv2;
+		}
+
+		current.do_move(mv);
+		current.do_move(mv2);
+		if (secure(&current, &game)) {
+			q.push(mv);
+			q.push(mv2);
+		}
+		current.do_move(-mv2);
+		if (secure(&current, &game) && q.empty()) {
+			q.push(mv);
+		}
+		current.do_move(-mv);
+
+		if (!q.empty()) {
+			Move_t ret = q.front();
+			q.pop();
+			return ret;
+		}
+	}
+	if (moves.first) {
+		delete[] moves.first;
+	}
+	if (moves.second.first) {
+		delete[] moves.second.first;
+	}
+
+	return NULL_MOVE;
+}
+
+
 Smart_Mover::Smart_Mover(const State& s):Men_Mover(s){
     back_row = NUM_ROW - 1;
     front_row = back_row - 2;
     special_moves = Specific_Move_Handler(&current, &game);
 
-    // about next mvoe
+    // about next move
     move_ready = false;
     off_move_ready = false;
     path.clear();
@@ -530,3 +725,6 @@ Smart_Mover::Smart_Mover(const State& s):Men_Mover(s){
     // whether or not to tiger
     to_tiger_cage = false;
 }
+
+
+

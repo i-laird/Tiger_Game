@@ -7,7 +7,7 @@
 #include <queue>
 #include "game_runner.h"
 Move_t  My_Move(vector<Token_t>, Color_t turn){
-
+	return NULL_MOVE;
 }
 
 /*
