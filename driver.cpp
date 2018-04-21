@@ -42,8 +42,8 @@ int main()
     bool play_game = true;
     while(play_game) {
         p_board(game_state);
-        cout << "Press any key to continue.\n";
-        cin.get();
+        cout << "Press Enter to continue.\n";
+        getline(cin, trash);
 
         Move_t tiger_move;
         if(!auto_tiger) {
@@ -76,7 +76,7 @@ int main()
                     cout << tiger_move.token.location << " --> " << tiger_move.destination;
                     cout << "\n";
                     cout << "<valid moves>:\n";
-                    pair<Point_t *, pair<bool *, int>> valid_moves;
+                    std::pair<Point_t *, std::pair<bool *, int>> valid_moves;
                     valid_moves = game.validMoves(game_state, gs[0]);
                     for (auto i = 0; i < valid_moves.second.second; ++i) {
                         Point_t to = valid_moves.first[i];
@@ -108,15 +108,13 @@ int main()
                     delete[] valid_moves.first;
                     delete[] valid_moves.second.first;
                 }
-            } while (play_game && !game.isValidMove(gs, tiger_move));
+            } while (play_game && !game.isValidMove(game_state, tiger_move));
         }
         else {
-            cout << "getting tiger move...\n";
-            tiger_move = game.Tiger_Move(gs);
-            cout << "tiger move is " << tiger_move << "\n";
+            State cur = game_state;
+            tiger_move = game.Tiger_Move(cur);
         }
 
-        gs[0].location = tiger_move.destination;
         game_state.do_move(tiger_move);
         time_t start = clock();
         Move_t men_move = men->next_move(tiger_move);
@@ -129,15 +127,9 @@ int main()
             cout << "<ERROR>: men move invalid\n";
             cout << "         " << men_move << "\n";
         }
-        // move men
-        for(int i = 1; i < 19; ++i) {
-            if(gs[i] == men_move.token) {
-                gs[i].location = men_move.destination;
-                break;
-            }
-        }
+
         game_state.do_move(men_move);
-        pair<Point_t *, pair<bool*,int>> t_moves;
+        std::pair<Point_t *, std::pair<bool*,int>> t_moves;
         t_moves = game.validMoves(game_state, game_state.get_tiger());
 
         if(tiger_can_jump(&game_state, &game)) {

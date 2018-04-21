@@ -13,7 +13,7 @@
 #include <list>
 #include <sstream>
 
-int const MAX_NUMBER_MOVES = 7;
+int const MAX_NUMBER_MOVES = 8;
 string const graph = "BOARD SQUARE SECTION DIMENSIONS\n13 9\nUNUSUAL EDGES"
                      "\n2 12 4 11 3 11 5\n1 11 3 10 2\n1 10 2 9 1\n"
         "1 9 1 8 0\n1 8 0 7 1\n1 7 1 6 2\n1 6 2 5 3\n1 5 3 4 4\n"
