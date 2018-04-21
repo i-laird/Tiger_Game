@@ -550,9 +550,12 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
                 if (isValidMove(tokens, returnMove)) {
                     moveFound = true;
                 } else {
-                    //If no special move or previous just make whatever move
-                    // has already been calculated
-                    returnMove.destination = returnMoves.first[0];
+                    //If no special move or previous just go backwards if possible
+                    for(int k = 0; k < returnMoves.second.second; k++) {
+                        returnMove.destination = returnMoves.first[k];
+                        if((returnMove.destination.row - origRow != 0))
+                            break;
+                    }
                     moveFound = true;
                 }
             }
