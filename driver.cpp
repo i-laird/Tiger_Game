@@ -9,15 +9,23 @@ using namespace std;
 
 int main()
 {
-    //play_as_tiger();
+    bool auto_tiger = false;
+    cout << "Auto tiger (y/n)?\n";
+    string trash;
+    cin >> trash;
+    if(tolower(trash[0]) == 'y') {
+        auto_tiger = true;
+    }
 
-    cout << "   TIGER GAME:    \n\n\n";
-    cout << " Use wasd keys to move the tiger, then press Enter.\n";
-    cout << " To use diagonals, use two keys. For example: to \n";
-    cout << " move down and left, enter 'sd' or 'ds'\n";
-    cout << " Enter 'q' to quit\n";
-    cout << "\n";
-    cout << "Your Turn: \n\n";
+    if(!auto_tiger) {
+        cout << "   TIGER GAME:    \n\n\n";
+        cout << " Use wasd keys to move the tiger, then press Enter.\n";
+        cout << " To use diagonals, use two keys. For example: to \n";
+        cout << " move down and left, enter 'sd' or 'ds'\n";
+        cout << " Enter 'q' to quit\n";
+        cout << "\n";
+        cout << "Your Turn: \n\n";
+    }
 
     State gs(19, NULL_TOKEN);
     gs[0] = make_tiger(make_point(2,4));
@@ -34,65 +42,79 @@ int main()
     bool play_game = true;
     while(play_game) {
         p_board(game_state);
+        cout << "Press any key to continue.\n";
+        cin.get();
 
         Move_t tiger_move;
-        string kb;
-        do {
-            tiger_move = make_move(gs[0], NULL_POINT);
-            tiger_move.destination = tiger_move.token.location;
-            getline(cin, kb);
-            for(unsigned int i = 0; i < kb.size(); ++i) {
-                switch(tolower(kb[i])){
-                    case 'w': tiger_move.destination += UP;
-                              break;
-                    case 'a': tiger_move.destination += LEFT;
-                              break;
-                    case 's': tiger_move.destination += DOWN;
-                              break;
-                    case 'd': tiger_move.destination += RIGHT;
-                              break;
-                    case 'q': play_game = false;
-                              break;
+        if(!auto_tiger) {
+            string kb;
+            do {
+                tiger_move = make_move(gs[0], NULL_POINT);
+                tiger_move.destination = tiger_move.token.location;
+                getline(cin, kb);
+                for (unsigned int i = 0; i < kb.size(); ++i) {
+                    switch (tolower(kb[i])) {
+                        case 'w':
+                            tiger_move.destination += UP;
+                            break;
+                        case 'a':
+                            tiger_move.destination += LEFT;
+                            break;
+                        case 's':
+                            tiger_move.destination += DOWN;
+                            break;
+                        case 'd':
+                            tiger_move.destination += RIGHT;
+                            break;
+                        case 'q':
+                            play_game = false;
+                            break;
+                    }
                 }
-            }
-            if(play_game && !game.isValidMove(game_state, tiger_move)){
-                cout << "<ERROR>: " << kb << " is not a valid move: ";
-                cout << tiger_move.token.location << " --> " << tiger_move.destination;
-                cout << "\n";
-                cout << "<valid moves>:\n";
-                pair<Point_t*, pair<bool*, int>> valid_moves;
-                valid_moves = game.validMoves(game_state, gs[0]);
-                for(auto i = 0; i < valid_moves.second.second; ++i) {
-                    Point_t to = valid_moves.first[i];
-                    string cmd = "";
-                    string direc = " (";
-                    Point_t diff = to - gs[0].location;
-                    while(diff.row > 0) {
-                        --diff.row;
-                        cmd += "w";
-                        direc += " UP";
+                if (play_game && !game.isValidMove(game_state, tiger_move)) {
+                    cout << "<ERROR>: " << kb << " is not a valid move: ";
+                    cout << tiger_move.token.location << " --> " << tiger_move.destination;
+                    cout << "\n";
+                    cout << "<valid moves>:\n";
+                    pair<Point_t *, pair<bool *, int>> valid_moves;
+                    valid_moves = game.validMoves(game_state, gs[0]);
+                    for (auto i = 0; i < valid_moves.second.second; ++i) {
+                        Point_t to = valid_moves.first[i];
+                        string cmd = "";
+                        string direc = " (";
+                        Point_t diff = to - gs[0].location;
+                        while (diff.row > 0) {
+                            --diff.row;
+                            cmd += "w";
+                            direc += " UP";
+                        }
+                        while (diff.row < 0) {
+                            ++diff.row;
+                            cmd += "s";
+                            direc += " DOWN";
+                        }
+                        while (diff.col < 0) {
+                            ++diff.col;
+                            cmd += "a";
+                            direc += " RIGHT";
+                        }
+                        while (diff.col > 0) {
+                            --diff.col;
+                            cmd += "d";
+                            direc += " LEFT";
+                        }
+                        cout << " " << cmd << direc << " to " << to << ")\n";
                     }
-                    while(diff.row < 0) {
-                        ++diff.row;
-                        cmd += "s";
-                        direc += " DOWN";
-                    }
-                    while(diff.col < 0) {
-                        ++diff.col;
-                        cmd += "a";
-                        direc += " RIGHT";
-                    }
-                    while(diff.col > 0) {
-                        --diff.col;
-                        cmd += "d";
-                        direc += " LEFT";
-                    }
-                    cout << " " << cmd << direc << " to " << to << ")\n";
+                    delete[] valid_moves.first;
+                    delete[] valid_moves.second.first;
                 }
-                delete [] valid_moves.first;
-                delete [] valid_moves.second.first;
-            }
-        }while(play_game && !game.isValidMove(gs, tiger_move));
+            } while (play_game && !game.isValidMove(gs, tiger_move));
+        }
+        else {
+            cout << "getting tiger move...\n";
+            tiger_move = game.Tiger_Move(gs);
+            cout << "tiger move is " << tiger_move << "\n";
+        }
 
         gs[0].location = tiger_move.destination;
         game_state.do_move(tiger_move);
