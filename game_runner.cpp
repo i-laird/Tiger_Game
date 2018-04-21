@@ -604,8 +604,12 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
     }
     if(currToken.location == desiredLoc) {
         //Now find what Point should be moved to
-        evaluatePoint = currToken.location;
-        while (!(previous[evaluatePoint] == (temp = originalPoint))) {
+        temp = evaluatePoint = currToken.location;;
+        while(true){
+            temp = previous[temp];
+            if(temp == originalPoint){
+                break;
+            }
             evaluatePoint = temp;
         }
         success = true;
