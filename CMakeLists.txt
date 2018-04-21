@@ -1,20 +1,15 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.7.1)
 project(Tiger-Game)
-project(WhatIsTHis)
 
 set(CMAKE_CXX_STANDARD 11)
 
-include_directories(.)
-include_directories(Tiger-Game)
-
-add_executable(WhatIsTHis
+add_executable(Tiger-Game
         driver.cpp
         function_api.h
         game_runner.cpp
         game_runner.h
         general_util.cpp
         general_util.h
-        Men_Mover.cpp
         Men_Mover.h
         men_util.cpp
         men_util.h
@@ -25,19 +20,4 @@ add_executable(WhatIsTHis
         Transition.cpp
         Transition.h
         Unorderded_State.cpp
-        Unorderded_State.h)
-
-
-add_executable(Tiger-Game
-        Tiger-Game/Board.cpp
-        Tiger-Game/Board.h
-        Tiger-Game/function_api.h
-        Tiger-Game/game_runner.cpp
-        Tiger-Game/game_runner.h
-        Tiger-Game/main.cpp
-        Tiger-Game/man_move_helper_functions.cpp
-        Tiger-Game/man_move_helper_functions.h
-        Tiger-Game/Man_Mover.h
-        Tiger-Game/Play_Tiger.cpp
-        Tiger-Game/Play_Tiger.h
-        Tiger-Game/Smart_Mover.cpp Tiger-Game/Smart_Mover.h Tiger-Game/Scored_MMover.cpp Tiger-Game/Scored_MMover.h)
+        Unorderded_State.h Smart_Mover.cpp Smart_Mover.h Scored_MMover.h Scored_MMover.cpp Men_Mover.cpp)

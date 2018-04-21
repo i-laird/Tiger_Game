@@ -1,4 +1,4 @@
-#include "Men_Mover.h"
+#include "Smart_Mover.h"
 #include "testing_util.h"
 #include <iomanip>
 using namespace std;
@@ -25,7 +25,7 @@ int main()
         }
     }
     GameRunner game;
-    Men_Mover men(gs);
+    Men_Mover* men = new Smart_Mover(gs);
     Unordered_State game_state(gs);
     bool play_game = true;
     while(play_game) {
@@ -92,7 +92,7 @@ int main()
 
         gs[0].location = tiger_move.destination;
         game_state.do_move(tiger_move);
-        Move_t men_move = men.next_move(tiger_move);
+        Move_t men_move = men->next_move(tiger_move);
         if(men_move == NULL_MOVE) {
             cout << "<ERROR>: no men move received\n";
         }
@@ -118,6 +118,8 @@ int main()
             cout << "<ALERT> tiger is not red\n";
         }
     }
+
+    delete men;
 
     cout << "\nGAME OVER\n";
     return 0;
