@@ -481,7 +481,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
     returnMove.token.location = tokens[0].location;
     returnMove.token.color = RED;
     static Point_t previousLocation;
-    Point_t closestPoint;
+    Point_t closestPoint, record = NULL_POINT, record2;
     int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol, totaler;
 
     //Get all of the valid moves for the Tiger
@@ -500,6 +500,9 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
         }
     }
     if(!moveFound){
+        //Temporarily reset tiger Position
+        record2 = tokens[0].location;
+        tokens[0].location = record;
         //Add all points within 1 of the Men to the set to be evaluated
         for(unsigned int i = 1; i < tokens.size(); i++){
             tokenMoves = validMoves(tokens, tokens[i]);
@@ -509,6 +512,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             delete [] tokenMoves.second.first;
             delete [] tokenMoves.first;
         }
+        tokens[0].location = record2;
         //Now find the closest point
         for(Point_t toCheck : checkPoints){
             destRow = toCheck.row;
@@ -546,7 +550,6 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             //If no non traditional move can be found see if can just move
             // back to previous location
             if (!moveFound) {
-                Point_t record;
                 //Try and go upwards
                 for(int k = 0; !moveFound && k < returnMoves.second.second; k++) {
                     returnMove.destination = returnMoves.first[k];
