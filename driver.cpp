@@ -3,6 +3,8 @@
 #include "Scored_MMover.h"
 #include "Scored_MMovers/Upward.h"
 #include "Scored_MMovers/Inward.h"
+#include "Scored_MMovers/AvoidCapture.h"
+#include "Scored_MMovers/MarkTiger.h"
 #include <iomanip>
 #include <ctime>
 using namespace std;
@@ -37,7 +39,7 @@ int main()
         }
     }
     GameRunner game;
-    Men_Mover* men = (new Scored_MMover(gs))->addMod(new Upward())->addMod(new Upward())->addMod(new Inward());//new Smart_Mover(gs);
+    Men_Mover* men = (new Scored_MMover(gs))->addMod(new Upward())->addMod(new Upward())->addMod(new Inward())->addMod(new AvoidCapture())->addMod(new MarkTiger());//new Smart_Mover(gs);
     Unordered_State game_state(gs);
     bool play_game = true;
     while(play_game) {

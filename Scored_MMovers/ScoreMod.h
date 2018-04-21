@@ -6,9 +6,12 @@
 #define TIGER_GAME_SCOREMOD_H
 
 
+#include "../game_runner.h"
+
 class ScoreMod {
 public:
-    virtual void genScores(int ** scores) = 0;
+    virtual void
+    genScores(int **scores, GameRunner &game, Unordered_State &current) = 0;
 };
 
 
