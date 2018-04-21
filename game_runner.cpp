@@ -74,9 +74,10 @@ void GameRunner::createGraph(std::istream & graphFile, std::istream & startingPo
         this->gameState->push_back(tempToken);
     }
 }
-bool operator<(Point_t a, Point_t b){
+// This was conflicting with the version in general_util.h ~Aidan
+/*bool operator<(Point_t a, Point_t b){
     return (a.row < b.row ? true : (a.col < b.col && a.row == b.col));
-}
+}*/
 bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
     this->manJumpedLastCheck = false;
     Point_t jumpedMan;

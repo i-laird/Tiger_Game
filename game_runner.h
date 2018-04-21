@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 //
 // Created by iancl on 3/25/2018.
 //
@@ -8,7 +7,7 @@
 
 #include "function_api.h"
 #include "general_util.h"
-#include "Unorderded_State.h"
+#include "Unordered_State.h"
 #include <iostream>
 #include <map>
 #include <list>
