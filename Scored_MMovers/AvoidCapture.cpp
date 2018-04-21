@@ -5,7 +5,8 @@
 #include "AvoidCapture.h"
 
 
-void AvoidCapture::genScores(int **scores, GameRunner game, Unordered_State current) {
+void AvoidCapture::genScores(int **scores, GameRunner &game,
+                             Unordered_State &current) {
     auto tigerMoves = game.validMoves(current, current.get_tiger());
     for(int i = 0; i < tigerMoves.second.second; i++){
         if(tigerMoves.second.first[i]){

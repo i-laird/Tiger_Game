@@ -11,7 +11,7 @@
 class ScoreMod {
 public:
     virtual void
-    genScores(int **scores, GameRunner game, Unordered_State current) = 0;
+    genScores(int **scores, GameRunner &game, Unordered_State &current) = 0;
 };
 
 

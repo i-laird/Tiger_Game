@@ -4,7 +4,7 @@
 
 #include "Upward.h"
 
-void Upward::genScores(int **scores, GameRunner game, Unordered_State current) {
+void Upward::genScores(int **scores, GameRunner &game, Unordered_State &current) {
     int mod = 0;
     for(int r = 0; r < 13; r++){
         for(int c = 0; c < 9; c++){

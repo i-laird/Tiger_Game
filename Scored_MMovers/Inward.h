@@ -11,7 +11,7 @@
 class Inward : public ScoreMod {
 public:
     void
-    genScores(int **scores, GameRunner game, Unordered_State current) override;
+    genScores(int **scores, GameRunner &game, Unordered_State &current) override;
 };
 
 
