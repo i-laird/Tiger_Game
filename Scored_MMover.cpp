@@ -43,8 +43,14 @@ Move_t Scored_MMover::execute_move() {
                     }
                 }
             }
+            delete[] moves.first;
+            delete[] moves.second.first;
         }
     }
+    for(int i = 0; i < 13; i++){
+        delete[] scores[i];
+    }
+    delete[] scores;
     current.do_move(best);
     return best;
 }
