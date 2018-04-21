@@ -1,6 +1,8 @@
 #include <iostream>
 
-#include "Unordered_State.h"
+#include "Unorderded_State.h"
+#include "game_runner.h"
+#include "men_util.h"
 #include <queue>
 
 using namespace std;
@@ -10,15 +12,20 @@ using namespace std;
 
 class Specific_Move_Handler {
     private:
-        const Unordered_State * current;
+        Unordered_State * current;
+        GameRunner* g;
         queue<Move_t> response;
         int front_row, back_row;
 
         bool one_col_two_back();
+        bool three_by_diag();
+        bool lagging_col();
+        bool try_switch();
     public:
-        Specific_Move_Handler(const Unordered_State* = nullptr);
+        Specific_Move_Handler(Unordered_State* = nullptr, GameRunner* g = nullptr);
         void set_front_back_row(int front_row, int back_row);
-        bool handle_special_case();
+        bool handle_special_case(Move_t off_move);
+        void clear_moves();
         Move_t get_move();
 };
 
