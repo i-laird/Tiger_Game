@@ -10,7 +10,10 @@ void AvoidCapture::genScores(int **scores, GameRunner &game,
     auto tigerMoves = game.validMoves(current, current.get_tiger());
     for(int i = 0; i < tigerMoves.second.second; i++){
         if(tigerMoves.second.first[i]){
+            //std::cout << "Can capture if jumping too " << tigerMoves.first[i].row << ", " << tigerMoves.first[i].col << std::endl;
             scores[tigerMoves.first[i].row][tigerMoves.first[i].col] += 100;
+        }else{
+            //std::cout << "Safe Tiger move at " << tigerMoves.first[i].row << ", " << tigerMoves.first[i].col << std::endl;
         }
     }
     delete[] tigerMoves.first;
