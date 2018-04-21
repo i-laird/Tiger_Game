@@ -75,9 +75,10 @@ bool Specific_Move_Handler::three_by_diag() {
     // if at tiger cage or not enough to front return false
     if(front_row <= 4 || (row_to_col[front_row].size() < 4 &&
                           front_row > 6) || (front_row <= 6 &&
-                          secure(current, g))) {
+                          !secure(current, g))) {
         return false;
     }
+
     int front_row_diag_cols[2];
 
     // compute diagonals

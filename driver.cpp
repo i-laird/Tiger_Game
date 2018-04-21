@@ -39,7 +39,8 @@ int main()
         }
     }
     GameRunner game;
-    Men_Mover* men = (new Scored_MMover(gs))->addMod(new Upward())->addMod(new Upward())->addMod(new Inward())->addMod(new AvoidCapture())->addMod(new MarkTiger());//new Smart_Mover(gs);
+    //Men_Mover* men = (new Scored_MMover(gs))->addMod(new Inward());//->addMod(new Upward())->addMod(new Upward())->addMod(new Inward())->addMod(new AvoidCapture())->addMod(new MarkTiger());//new Smart_Mover(gs);
+    Men_Mover* men = new Smart_Mover(gs);
     Unordered_State game_state(gs);
     bool play_game = true;
     while(play_game) {

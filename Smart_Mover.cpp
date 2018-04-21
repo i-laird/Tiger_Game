@@ -71,6 +71,14 @@ Move_t Smart_Mover::off_move_handling() {
         if(current.get_tiger().location.col < 4) {
             off_col = NUM_COL - 1;
         }
+
+        if(off_col == prev_off_col) {
+            if(abs(current.get_tiger().location.col - 4) < 2) {
+                off_col = NUM_COL - 1 - off_col;
+                prev_off_col = off_col;
+            }
+        }
+
         int row = -1;
         // pick lowest token in off_col
         auto r = current.rows_in_col(off_col).begin();
@@ -95,6 +103,7 @@ Move_t Smart_Mover::off_move_handling() {
 
     /// if doing an off move, cancel all other plans
     if(off_move_ready) {
+        prev_off_col = to_do.destination.col;
         move_ready = false;
         path.clear();
         desired.clear();
@@ -524,6 +533,7 @@ Smart_Mover::Smart_Mover(const State& s):Men_Mover(s){
     desired.clear();
 
     // about off move
+    prev_off_col = 0;
     off_move_active = false;
     off_move = NULL_MOVE;
 
