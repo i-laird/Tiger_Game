@@ -159,6 +159,13 @@ bool Unordered_State::do_move(const Move_t& m) {
         else {
             valid_move = false;
         }
+
+        // if a jump, remove the man that was jumped
+        Point_t jumped_pos = (to + from) / 2;
+        if(rows_in_col(jumped_pos.col).find(jumped_pos.row) !=
+                                            rows_in_col(jumped_pos.col).end()) {
+            col_to_rows[jumped_pos.col].erase(jumped_pos.row);
+        }
     }
 
     return valid_move;
