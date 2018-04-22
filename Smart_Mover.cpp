@@ -295,6 +295,11 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
                            DOWN, DOWN + LEFT, DOWN + RIGHT};
         for(int i = 0; i < 8 && !fail_safe_found; ++i) {
             for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
+                // don't try to move away from the middle
+                if((c < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
+                   (c > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
+                    continue;
+                }
                 auto r = current.rows_in_col(c).begin();
                 while(r != current.rows_in_col(c).end() && !fail_safe_found) {
                     Token_t man = make_man(make_point(*r,c));
@@ -314,6 +319,11 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
         // if cannot find a safe valid move, just try to find a valid move
         for(int i = 0; i < 8 && !fail_safe_found; ++i) {
             for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
+                // don't try to move away from the middle
+                if((c < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
+                   (c > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
+                    continue;
+                }
                 auto r = current.rows_in_col(c).begin();
                 while(r != current.rows_in_col(c).end() && !fail_safe_found) {
                     Token_t man = make_man(make_point(*r,c));
@@ -347,6 +357,11 @@ Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
                            DOWN, DOWN + LEFT, DOWN + RIGHT};
         for(int i = 0; i < 8 && !fail_safe_found; ++i) {
             for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
+                // don't try to move away from the middle
+                if((c < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
+                   (c > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
+                    continue;
+                }
                 auto r = current.rows_in_col(c).begin();
                 while(r != current.rows_in_col(c).end() && !fail_safe_found) {
                     Token_t man = make_man(make_point(*r,c));
@@ -450,6 +465,7 @@ Move_t Smart_Mover::execute_move() {
     if(off_move_ready) {
         to_do = off_move_to_do;
     }
+
     // perform failsafe
     Move_t fs = fail_safe(to_do);
     if(fs != NULL_MOVE) {
@@ -482,7 +498,7 @@ Move_t Smart_Mover::kill_tiger_handling() {
 
 	Move_t ret = NULL_MOVE;
 	Point_t tiger_loc = current.get_tiger().location;
-    cout << "handling tiger kill\n";
+
 	if (!q.empty()) {
 		ret = q.front();
 		q.pop();
@@ -563,19 +579,16 @@ Move_t Smart_Mover::kill_tiger_handling() {
 
 	// if cage not staged, try to stage it
 	if (!cage_staged()) {
-	    cout << "trying to stage men\n";
 		ret = stage_men();
 	}
 
 	// if no move yet found, try to move inside the cage
-	if(ret == NULL_MOVE) {
-	    cout << "trying to move inside of cage\n";
+	if(ret == NULL_MOVE && cage_staged()) {
 	    ret = get_move_in_cage();
 	}
 
 	// if no move yet found, try to move into the cage
-	if (ret == NULL_MOVE) {
-	    cout << "trying to move into cage\n";
+	if (ret == NULL_MOVE && cage_staged()) {
 		ret = get_move_into_cage();
 	}
 
@@ -645,9 +658,11 @@ Move_t Smart_Mover::get_move_in_cage() {
 				}
 				if (moves.first) {
 					delete[] moves.first;
+					moves.first = nullptr;
 				}
 				if (moves.second.first) {
 					delete[] moves.second.first;
+					moves.second.first = nullptr;
 				}
 			}
 			r++;
@@ -702,11 +717,8 @@ Move_t Smart_Mover::get_move_into_cage() {
 			q.push(mv);
 			q.push(mv2);
 		}
+
 		current.do_move(-mv2);
-		// ----- I don't think this is necessary -----
-		if (secure(&current, &game) && q.empty()) {
-			q.push(mv);
-		}//-----                                 -----
 		current.do_move(-mv);
 
 		if (!q.empty()) {
@@ -718,9 +730,11 @@ Move_t Smart_Mover::get_move_into_cage() {
 	// free memory
 	if (moves.first) {
 		delete[] moves.first;
+		moves.first = nullptr;
 	}
 	if (moves.second.first) {
 		delete[] moves.second.first;
+		moves.second.first = nullptr;
 	}
 
 	return NULL_MOVE;
