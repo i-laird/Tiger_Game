@@ -75,9 +75,10 @@ bool Specific_Move_Handler::three_by_diag() {
     // if at tiger cage or not enough to front return false
     if(front_row <= 4 || (row_to_col[front_row].size() < 4 &&
                           front_row > 6) || (front_row <= 6 &&
-                          secure(current, g))) {
+                          !secure(current, g))) {
         return false;
     }
+
     int front_row_diag_cols[2];
 
     // compute diagonals
@@ -152,6 +153,11 @@ bool Specific_Move_Handler::three_by_diag() {
         else {
             from = make_point(back_row - 1, diag_col);
             to = make_point(back_row - 2, diag_col);
+            if(abs(tig_pos.col - diag_col) > 1) {
+                this->response.push(make_move(make_man(from),to));
+                from = make_point(back_row, diag_col);
+                to = make_point(back_row - 1, diag_col);
+            }
         }
         this->response.push(make_move(make_man(from),to));
     }

@@ -67,8 +67,9 @@ bool tiger_can_jump(const Unordered_State * st, GameRunner *g);
  *              could jump given an arbitrary number of moves starting from the
  *              tiger position with the off_move undone
  * return: bool
- * precondition: the given Unordered_State* points to a valid Unordered_State
- *               the given GameRunner* points to a valid GameRunner
+ * precondition: - the given Unordered_State* points to a valid Unordered_State
+ *               - the given GameRunner* points to a valid GameRunner
+ *               - no man is in the tiger start position TIGER_START
  * postcondition: the given Unorderd_State and GameRunner pointed to
  *                are unchanged
  */

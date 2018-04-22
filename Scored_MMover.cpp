@@ -5,7 +5,7 @@
 #include "Scored_MMover.h"
 
 int ** Scored_MMover::genScores() {
-    int** out = new int*[11];
+    int** out = new int*[13];
     for(int i = 0; i < 13; i++){
         out[i] = new int[9];
         for(int j = 0; j < 9; j++){
@@ -13,7 +13,7 @@ int ** Scored_MMover::genScores() {
         }
     }
     for(ScoreMod* mod : mods){
-        mod->genScores(out);
+        mod->genScores(out, game, current);
     }
     for(int i = 0; i < 13; i++){
         std::cout << std::endl;
@@ -43,8 +43,14 @@ Move_t Scored_MMover::execute_move() {
                     }
                 }
             }
+            delete[] moves.first;
+            delete[] moves.second.first;
         }
     }
+    for(int i = 0; i < 13; i++){
+        delete[] scores[i];
+    }
+    delete[] scores;
     current.do_move(best);
     return best;
 }

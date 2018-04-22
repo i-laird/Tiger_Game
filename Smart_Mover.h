@@ -26,6 +26,7 @@ private:
         Specific_Move_Handler special_moves;
 
         // about off move
+        int prev_off_col;
         bool off_move_ready;
         int off_move_active;
         Move_t off_move;

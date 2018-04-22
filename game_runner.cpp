@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <set>
 #include <queue>
+#include <ctime>
+#include <cstdlib>
 #include "game_runner.h"
 Move_t  My_Move(vector<Token_t>, Color_t turn){
 	return NULL_MOVE;
@@ -474,18 +476,28 @@ pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(Unordered_State const
 }
 
 
-Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
-    set<Point_t> checkPoints;
-    pair<Point_t * , pair< bool *, int > > tokenMoves;
+Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
     Move_t returnMove;
     returnMove.token.location = tokens[0].location;
     returnMove.token.color = RED;
-    static Point_t previousLocation;
-    Point_t closestPoint;
-    int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol, totaler;
 
+    srand(time(NULL));
     //Get all of the valid moves for the Tiger
     pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
+    //Act randomly
+    if(9 -(rand() % 10) < randomProbability){
+        //If random make random move
+        returnMove.destination = returnMoves.first[rand() % returnMoves.second.second];
+        delete [] returnMoves.second.first;
+        delete [] returnMoves.first;
+        return returnMove;
+    }
+    set<Point_t> checkPoints;
+    pair<Point_t * , pair< bool *, int > > tokenMoves;
+    static Point_t previousLocation;
+    Point_t closestPoint, record = NULL_POINT, record2;
+    int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol, totaler;
+
     bool moveFound = false;
     origCol = tokens[0].location.row;
     origRow = tokens[0].location.col;
@@ -500,6 +512,9 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
         }
     }
     if(!moveFound){
+        //Temporarily reset tiger Position
+        record2 = tokens[0].location;
+        tokens[0].location = record;
         //Add all points within 1 of the Men to the set to be evaluated
         for(unsigned int i = 1; i < tokens.size(); i++){
             tokenMoves = validMoves(tokens, tokens[i]);
@@ -509,6 +524,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             delete [] tokenMoves.second.first;
             delete [] tokenMoves.first;
         }
+        tokens[0].location = record2;
         //Now find the closest point
         for(Point_t toCheck : checkPoints){
             destRow = toCheck.row;
@@ -546,14 +562,19 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
             //If no non traditional move can be found see if can just move
             // back to previous location
             if (!moveFound) {
-                returnMove.destination = previousLocation;
-                if (isValidMove(tokens, returnMove)) {
+                //Try and go upwards
+                for(int k = 0; !moveFound && k < returnMoves.second.second; k++) {
+                    returnMove.destination = returnMoves.first[k];
+                    if((returnMove.destination.row - origRow != 0)) {
+                        moveFound = true;
+                    }
+                }
+                if(!moveFound){
                     moveFound = true;
-                } else {
-                    //If no special move or previous just make whatever move
-                    // has already been calculated
-                    returnMove.destination = returnMoves.first[0];
-                    moveFound = true;
+                    record = returnMove.destination;
+                    returnMove.destination = previousLocation;
+                    if (!isValidMove(tokens, returnMove))
+                        returnMove.destination = record;
                 }
             }
         }
@@ -604,8 +625,8 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
     }
     if(currToken.location == desiredLoc) {
         //Now find what Point should be moved to
-        evaluatePoint = currToken.location;
-        while (!(previous[evaluatePoint] == (temp = originalPoint))) {
+        temp = evaluatePoint = currToken.location;;
+        while(!((temp = previous[temp]) == originalPoint)){
             evaluatePoint = temp;
         }
         success = true;

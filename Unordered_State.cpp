@@ -9,6 +9,18 @@ Unordered_State::Unordered_State() {
 }
 
 
+/// assignment operator
+const Unordered_State& Unordered_State::operator=(const Unordered_State& that) {
+    if(this != &that) {
+        this->tiger = that.tiger;
+        for(int c = 0; c < NUM_COL; ++c) {
+            this->col_to_rows[c] = that.col_to_rows[c];
+        }
+    }
+
+    return *this;
+}
+
 Unordered_State::Unordered_State(const State& st) {
     for(int i = 0; i < NUM_COL; ++i) {
         col_to_rows[i] = set<int>();
@@ -158,6 +170,13 @@ bool Unordered_State::do_move(const Move_t& m) {
         }
         else {
             valid_move = false;
+        }
+
+        // if a jump, remove the man that was jumped
+        Point_t jumped_pos = (to + from) / 2;
+        if(rows_in_col(jumped_pos.col).find(jumped_pos.row) !=
+                                            rows_in_col(jumped_pos.col).end()) {
+            col_to_rows[jumped_pos.col].erase(jumped_pos.row);
         }
     }
 
