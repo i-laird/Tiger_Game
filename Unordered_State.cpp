@@ -28,10 +28,15 @@ Unordered_State::Unordered_State(const State& st) {
     // look at each token in State, if tiger store in tiger,
     // if a man add its location to the set of men
     for(auto i = st.begin(); i != st.end(); ++i) {
-        if(i->color == RED) {
+        bool valid = true;
+        // index protection
+        if(i->location.col < 0 || i->location.col >= NUM_COL) {
+            valid = false;
+        }
+        if(i->color == RED && valid) {
             this->tiger = *i;
         }
-        else if(i->color == BLUE) {
+        else if(i->color == BLUE && valid) {
             this->col_to_rows[i->location.col].insert(i->location.row);
         }
     }
@@ -107,7 +112,7 @@ const Token_t& Unordered_State::get_tiger() const {
 
 
 const set<int>& Unordered_State::rows_in_col(int col) const {
-    // set col to nearest column in range
+    // set col to nearest column in range for index protection
     col = max(0, col);
     col = min(col, NUM_COL - 1);
 
