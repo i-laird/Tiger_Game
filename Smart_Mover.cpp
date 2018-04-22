@@ -470,6 +470,14 @@ Move_t Smart_Mover::execute_move() {
         }
     }
 
+    // if to tiger cage, try a tiger cage move
+    if(to_tiger_cage) {
+        to_do = kill_tiger_handling();
+        if (to_do != NULL_MOVE) {
+            move_ready = true;
+        }
+    }
+
     // if no move found still, try an off move
     if(!move_ready && !to_tiger_cage) {
         off_move_active = !off_move_active;

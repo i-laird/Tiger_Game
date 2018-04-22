@@ -168,9 +168,9 @@ Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from) {
 			delete[] moves.second.first;
 	}
 
-	set<pair<int, int>> bad_locs;
+	set<Point_t> bad_locs;
 	for (int i = 0; i < 8; i++) {
-		bad_locs.insert(KILL[i].row, KILL[i].col);
+		bad_locs.insert(make_point(KILL[i].row, KILL[i].col));
 	}
 
 	Point_t to = NULL_POINT;
@@ -178,7 +178,7 @@ Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from) {
 	for (int i = 0; i < NUM_ROW; i++) {
 		for (int j = 0; j < NUM_COL; j++) {
 			if (dist[i][j] < min_len && 
-				bad_locs.find(make_pair(i, j)) == bad_locs.end()) {
+				bad_locs.find(make_point(i, j)) == bad_locs.end()) {
 				min_len = dist[i][j];
 				to = make_point(i, j);
 			}

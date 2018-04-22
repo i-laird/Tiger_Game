@@ -9,6 +9,8 @@ using namespace std;
 #ifndef MEN_UTIL_H_INCLUDED
 #define MEN_UTIL_H_INCLUDED
 
+// these points are those which should be occupied in order to
+// keep the tiger in the cage
 const Point_t KILL[8] = { make_point(4, 3), 
 						make_point(4, 4), 
 						make_point(4, 5), 
