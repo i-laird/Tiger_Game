@@ -137,15 +137,19 @@ Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t dest) {
 
 	bool visited[NUM_ROW][NUM_COL];
 	int dist[NUM_ROW][NUM_COL];
-	Point_t pred[NUM_ROW][NUM_COL];
 	// initialize visited to false, dist to infinity, and predecessor to null
 	for (int r = 0; r < NUM_ROW; ++r) {
 		for (int c = 0; c < NUM_COL; ++c) {
 			visited[r][c] = false;
 			dist[r][c] = INFTY;
-			pred[r][c] = NULL_POINT;
 		}
 	}
+
+    set<Point_t> bad_locs;
+    // we don't want to move any men that are needed to stage the tiger cage
+    for (int i = 0; i < STAGE_POS_SIZE; i++) {
+        bad_locs.insert(STAGE_POSITIONS[i]);
+    }
 
 	// initialize current
 	Point_t current = dest;
@@ -153,67 +157,35 @@ Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t dest) {
 	dist[current.row][current.col] = 0;
 	frontier.push(current);
 	pair<Point_t*, pair<bool*, int> > moves;
-	// perform a standard bfs
-	while (!frontier.empty()) {
+	// perform a bfs from the dest without using diagonals
+    Point_t dirs[4] = {UP, DOWN, LEFT, RIGHT};
+    Move_t mv_todo = NULL_MOVE;
+	while (!frontier.empty() && mv_todo == NULL_MOVE) {
 		current = frontier.front();
 		// mark visited
 		frontier.pop();
 
 		// add each reachable new position to the frontier
-		moves = g->validMoves(*st, make_man(current));
-		Point_t to;
-		for (int t = 0; t < moves.second.second; ++t) {
-			to = moves.first[t];
-			if (!visited[to.row][to.col]) {
-				visited[to.row][to.col] = true;
-				dist[to.row][to.col] = dist[current.row][current.col] + 1;
-				pred[to.row][to.col] = current;
-				frontier.push(to);
-			}
-		}
-		// free memory
-		if (moves.first)
-			delete[] moves.first;
-		if (moves.second.first)
-			delete[] moves.second.first;
-	}
-
-	set<Point_t> bad_locs;
-	// we don't want to move any men that are needed to stage the tiger cage
-	for (int i = 0; i < STAGE_POS_SIZE; i++) {
-		bad_locs.insert(make_point(STAGE_POSITIONS[i].row, STAGE_POSITIONS[i].col));
-	}
-
-	Point_t closest_man_loc = NULL_POINT;
-	int min_len = INFTY;
-	// find the man closest to from that is not a bad_loc
-	for (int c = 0; c < NUM_COL; c++) {
-	    auto r = st->rows_in_col(c).begin();
-	    while(r != st->rows_in_col(c).end()) {
-	        Point_t pt = make_point(*r,c);
-			if (dist[pt.row][pt.col] < min_len &&
-				bad_locs.find(pt) == bad_locs.end()) {
-				min_len = dist[pt.row][pt.col];
-                closest_man_loc = pt;
-			}
-			++r;
+		for(int i = 0; i < 4 && mv_todo == NULL_MOVE; ++i) {
+		    // if not a populated point and in bounds and unvisited,
+            Point_t to = current + dirs[i];
+		    if(!visited[to.row][to.col] && !st->is_occupied(to)) {
+		        // don't need to check tiger cage because not using diagonals
+		        if((to.row >= 4 && to.col >= 0 && to.col < NUM_COL)) {
+		            visited[to.row][to.col] = true;
+		            dist[to.row][to.col] = dist[current.row][current.col] + 1;
+		            frontier.push(to);
+		        }
+		    }
+		    // if found a man not in a bad loc, move him to the predecessor
+		    else if(st->is_occupied(to) && st->get_tiger() != make_tiger(to) &&
+                    bad_locs.find(to) == bad_locs.end()) {
+		        mv_todo = make_move(make_man(to), current);
+		    }
 		}
 	}
 
-
-	if (closest_man_loc == NULL_POINT) {
-		return NULL_MOVE;
-	}
-
-	// we want to move the closest man towards its predecessor
-	Point_t to = pred[closest_man_loc.row][closest_man_loc.col];
-	Move_t mv = make_move(make_man(closest_man_loc), to);
-	// ensure validity
-	if(!g->isValidMove(*st, mv)) {
-	    mv = NULL_MOVE;
-	}
-
-	return mv;
+	return mv_todo;
 }
 
 
