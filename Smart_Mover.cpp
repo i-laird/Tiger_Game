@@ -482,15 +482,21 @@ Move_t Smart_Mover::kill_tiger_handling() {
 
 	Move_t ret = NULL_MOVE;
 	Point_t tiger_loc = current.get_tiger().location;
-
+    cout << "handling tiger kill\n";
 	if (!q.empty()) {
 		ret = q.front();
 		q.pop();
 		return ret;
 	}
 
-	// ensure tiger is at top row / in tiger cage
-	if (tiger_loc.row <= 4) {
+	// ensure tiger is at top row / trapped in
+    bool man_in_cage_entrance = false;
+	if(current.is_occupied(CAGE_ENTRANCE)) {
+	    if(current.get_tiger().location != CAGE_ENTRANCE) {
+            man_in_cage_entrance = true;
+        }
+	}
+	if(tiger_loc.row <= 4 && !man_in_cage_entrance) {
 	    // for each man
 		for (int c = 0; c < NUM_COL; c++) {
 			auto r = current.rows_in_col(c).begin();
@@ -547,31 +553,29 @@ Move_t Smart_Mover::kill_tiger_handling() {
                 }
                 if (val_moves.second.first) {
                     delete[] val_moves.second.first;
+                    val_moves.second.first = nullptr;
                 }
 
 				r++;
 			}
 		}
 	}
-	/* Probably unneeded
-	if (!(tiger_loc.row < 4 && current.is_occupied(make_point(4, 4)))) {
-		return get_in();
-	}
-	*/
-	cout << "here\n";
+
 	// if cage not staged, try to stage it
 	if (!cage_staged()) {
-	    cout << "staging men\n";
+	    cout << "trying to stage men\n";
 		ret = stage_men();
 	}
 
 	// if no move yet found, try to move inside the cage
-	if(ret != NULL_MOVE) {
+	if(ret == NULL_MOVE) {
+	    cout << "trying to move inside of cage\n";
 	    ret = get_move_in_cage();
 	}
 
 	// if no move yet found, try to move into the cage
-	if (ret != NULL_MOVE) {
+	if (ret == NULL_MOVE) {
+	    cout << "trying to move into cage\n";
 		ret = get_move_into_cage();
 	}
 
@@ -583,7 +587,7 @@ Move_t Smart_Mover::kill_tiger_handling() {
 bool Smart_Mover::cage_staged() {
     // the cage is staged iff every position in STAGE_POSITIONS is filled by a man
     bool staged = true;
-	for (int i = 0; i < 8 && staged; i++) {
+	for (int i = 0; i < STAGE_POS_SIZE && staged; i++) {
 		if (!current.is_occupied(STAGE_POSITIONS[i]) || current.get_tiger().location == STAGE_POSITIONS[i]) {
 			staged = false;
 		}
@@ -596,7 +600,7 @@ Move_t Smart_Mover::stage_men() {
 	Move_t move;
 	// for each position that needs to be filled in order
     // for the cage to be staged
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < STAGE_POS_SIZE; i++) {
 	    // look for a move from a non-stage position towards an
         // unfilled STAGE_POSITION
 		move = bfs_move_getter(&current, &game, STAGE_POSITIONS[i]);

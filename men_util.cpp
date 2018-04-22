@@ -180,7 +180,7 @@ Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t dest) {
 
 	set<Point_t> bad_locs;
 	// we don't want to move any men that are needed to stage the tiger cage
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < STAGE_POS_SIZE; i++) {
 		bad_locs.insert(make_point(STAGE_POSITIONS[i].row, STAGE_POSITIONS[i].col));
 	}
 

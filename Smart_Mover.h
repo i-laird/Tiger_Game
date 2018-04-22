@@ -132,8 +132,6 @@ private:
 
 		bool cage_staged();
 
-		Move_t get_in();
-
 		Move_t stage_men();
 
 		Move_t get_move_in_cage();

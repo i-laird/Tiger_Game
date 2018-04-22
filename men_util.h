@@ -11,14 +11,13 @@ using namespace std;
 
 // these points are those which should be occupied in order to
 // keep the tiger in the cage
-const Point_t STAGE_POSITIONS[8] = { make_point(4, 3),
+const int STAGE_POS_SIZE = 6;
+const Point_t STAGE_POSITIONS[STAGE_POS_SIZE] = { make_point(4, 3),
 						make_point(4, 4), 
 						make_point(4, 5), 
 						make_point(5, 3), 
 						make_point(5, 4), 
-						make_point(5, 5), 
-						make_point(6, 2), 
-						make_point(6, 6) };
+						make_point(5, 5) };
 
 typedef pair<int,int> Hash_val;
 

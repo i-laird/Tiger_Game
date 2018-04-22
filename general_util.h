@@ -392,6 +392,8 @@ const Point_t UP    = make_point(-1, 0);
 const Point_t DOWN  = make_point(1, 0);
 const Point_t LEFT  = make_point(0, -1);
 const Point_t RIGHT = make_point(0, 1);
+
+const Point_t CAGE_ENTRANCE = make_point(4,4);
 const Point_t TIGER_START = make_point(2,4);
 
 /// simple types
