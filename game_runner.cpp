@@ -486,8 +486,8 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
     pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
     //Act randomly
     if(9 -(rand() % 10) < randomProbability){
-        //If random just make first move
-        returnMove.destination = returnMoves.first[0];
+        //If random make random move
+        returnMove.destination = returnMoves.first[rand() % returnMoves.second.second];
         delete [] returnMoves.second.first;
         delete [] returnMoves.first;
         return returnMove;
