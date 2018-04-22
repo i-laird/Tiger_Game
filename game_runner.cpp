@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <set>
 #include <queue>
+#include <ctime>
+#include <cstdlib>
 #include "game_runner.h"
 Move_t  My_Move(vector<Token_t>, Color_t turn){
 
@@ -474,18 +476,28 @@ pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(Unordered_State const
 }
 
 
-Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens){
-    set<Point_t> checkPoints;
-    pair<Point_t * , pair< bool *, int > > tokenMoves;
+Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
     Move_t returnMove;
     returnMove.token.location = tokens[0].location;
     returnMove.token.color = RED;
+
+    srand(time(NULL));
+    //Get all of the valid moves for the Tiger
+    pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
+    //Act randomly
+    if(9 -(rand() % 10) < randomProbability){
+        //If random just make first move
+        returnMove.destination = returnMoves.first[0];
+        delete [] returnMoves.second.first;
+        delete [] returnMoves.first;
+        return returnMove;
+    }
+    set<Point_t> checkPoints;
+    pair<Point_t * , pair< bool *, int > > tokenMoves;
     static Point_t previousLocation;
     Point_t closestPoint, record = NULL_POINT, record2;
     int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol, totaler;
 
-    //Get all of the valid moves for the Tiger
-    pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
     bool moveFound = false;
     origCol = tokens[0].location.row;
     origRow = tokens[0].location.col;

@@ -129,7 +129,7 @@ public:
 
     Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo, Color_t, bool &);
 
-    Move_t Tiger_Move(vector<Token_t> &);
+    Move_t Tiger_Move(vector<Token_t> &, int randomProbability = 0);
 
 };
 
