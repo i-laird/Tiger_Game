@@ -130,7 +130,7 @@ private:
 
 		Move_t kill_tiger_handling();
 
-		bool safe();
+		bool cage_staged();
 
 		Move_t get_in();
 

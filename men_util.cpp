@@ -123,14 +123,22 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
     return !jump;
 }
 
-
-Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from) {
+// returns the move from the man closest to dest which moves him
+// towards dest as quickly as possible
+//
+// returns  NULL_MOVE if no such move exists or if from is occupied
+Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t dest) {
+    // if from is occupied, don't try to move towards it
+    if(st->is_occupied(dest)) {
+        return NULL_MOVE;
+    }
 
 	queue<Point_t> frontier;
 
 	bool visited[NUM_ROW][NUM_COL];
 	int dist[NUM_ROW][NUM_COL];
 	Point_t pred[NUM_ROW][NUM_COL];
+	// initialize visited to false, dist to infinity, and predecessor to null
 	for (int r = 0; r < NUM_ROW; ++r) {
 		for (int c = 0; c < NUM_COL; ++c) {
 			visited[r][c] = false;
@@ -139,11 +147,13 @@ Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from) {
 		}
 	}
 
-	Point_t current = from;
+	// initialize current
+	Point_t current = dest;
 	visited[current.row][current.col] = true;
 	dist[current.row][current.col] = 0;
 	frontier.push(current);
 	pair<Point_t*, pair<bool*, int> > moves;
+	// perform a standard bfs
 	while (!frontier.empty()) {
 		current = frontier.front();
 		// mark visited
@@ -169,31 +179,41 @@ Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from) {
 	}
 
 	set<Point_t> bad_locs;
+	// we don't want to move any men that are needed to stage the tiger cage
 	for (int i = 0; i < 8; i++) {
-		bad_locs.insert(make_point(KILL[i].row, KILL[i].col));
+		bad_locs.insert(make_point(STAGE_POSITIONS[i].row, STAGE_POSITIONS[i].col));
 	}
 
-	Point_t to = NULL_POINT;
+	Point_t closest_man_loc = NULL_POINT;
 	int min_len = INFTY;
-	for (int i = 0; i < NUM_ROW; i++) {
-		for (int j = 0; j < NUM_COL; j++) {
-			if (dist[i][j] < min_len && 
-				bad_locs.find(make_point(i, j)) == bad_locs.end()) {
-				min_len = dist[i][j];
-				to = make_point(i, j);
+	// find the man closest to from that is not a bad_loc
+	for (int c = 0; c < NUM_COL; c++) {
+	    auto r = st->rows_in_col(c).begin();
+	    while(r != st->rows_in_col(c).end()) {
+	        Point_t pt = make_point(*r,c);
+			if (dist[pt.row][pt.col] < min_len &&
+				bad_locs.find(pt) == bad_locs.end()) {
+				min_len = dist[pt.row][pt.col];
+                closest_man_loc = pt;
 			}
+			++r;
 		}
 	}
 
-	if (to == NULL_POINT) {
+
+	if (closest_man_loc == NULL_POINT) {
 		return NULL_MOVE;
 	}
 
-	while (pred[to.row][to.col] != NULL_POINT) {
-		to = pred[to.row][to.col];
+	// we want to move the closest man towards its predecessor
+	Point_t to = pred[closest_man_loc.row][closest_man_loc.col];
+	Move_t mv = make_move(make_man(closest_man_loc), to);
+	// ensure validity
+	if(!g->isValidMove(*st, mv)) {
+	    mv = NULL_MOVE;
 	}
 
-	return make_move(make_man(from), to);
+	return mv;
 }
 
 

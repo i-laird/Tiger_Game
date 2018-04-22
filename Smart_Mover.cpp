@@ -113,6 +113,7 @@ Move_t Smart_Mover::off_move_handling() {
     return to_do;
 }
 
+
 Move_t** Smart_Mover::find_moves_to_do() {
     /// store forward moves for each column except for the
     /// off_move column, and if there are more than two
@@ -169,6 +170,7 @@ Move_t** Smart_Mover::find_moves_to_do() {
 
     return moves_to_do;
 }
+
 
 Move_t Smart_Mover::try_for_specific_move() {
     Move_t to_do = NULL_MOVE;
@@ -281,6 +283,7 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
     if(to_do != NULL_MOVE) {
         suggested = to_do;
     }
+
     // now ensure validity
     if(!game.isValidMove(current, suggested)) {
         // if move not valid, look for a valid safe move
@@ -486,42 +489,65 @@ Move_t Smart_Mover::kill_tiger_handling() {
 		return ret;
 	}
 
-	if (tiger_loc.row >= 4) {
+	// ensure tiger is at top row / in tiger cage
+	if (tiger_loc.row <= 4) {
+	    // for each man
 		for (int c = 0; c < NUM_COL; c++) {
 			auto r = current.rows_in_col(c).begin();
 			while (r != current.rows_in_col(c).end()) {
 				Token_t man = make_man(make_point(*r, c));
 				pair<Point_t*, pair<bool*, int>> val_moves = game.validMoves(current, man);
+				// check each move the man can make that is not downward
 				for (int i = 0; i < val_moves.second.second; i++) {
 					Move_t mv = make_move(man, val_moves.first[i]);
 					Point_t to = mv.destination, from = mv.token.location;
+					// if moving downward, don't do this move
+                    if((to - from).row > 0) {
+                        continue;
+                    }
+                    // if moving side-to-side away from the middle, don't do this move
+                    int middle = (NUM_COL - 1) / 2;
+                    if((to - from).row == 0 && abs(to.col - middle) > abs(from.col - middle)) {
+                        continue;
+                    }
+					// mv2 is in direction of mv but its destination is the source point of mv
 					Move_t mv2 = make_move(make_man(from - (to - from)), from);
 
+					// if mv, mv2 leaves the board secure and both are valid, do them
 					current.do_move(mv);
-					current.do_move(mv2);
-					if (secure(&current, &game)) {
-						q.push(mv);
-						q.push(mv2);
-					}
-					current.do_move(-mv2);
+					if(game.isValidMove(current, mv2)) {
+					    // if tiger is too close, mv2 may not be guaranteed,
+                        // so don't do it
+                        if(one_norm(mv2.destination - tiger_loc) > 4) {
+                            current.do_move(mv2);
+                            if (secure(&current, &game)) {
+                                q.push(mv);
+                                q.push(mv2);
+                            }
+                            current.do_move(-mv2);
+                        }
+                    }
+					// else if mv leaves the board secure, do it
 					if (q.empty() && secure(&current, &game)) {
 						q.push(mv);
 					}
 					current.do_move(-mv);
 
-					if (val_moves.first) {
-						delete[] val_moves.first;
-					}
-					if (val_moves.second.first) {
-						delete[] val_moves.second.first;
-					}
-
+					// if there is a move to do, return it
 					if (!q.empty()) {
 						ret = q.front();
 						q.pop();
 						return ret;
 					}
 				}
+				//free memory
+                if (val_moves.first) {
+                    delete[] val_moves.first;
+                    val_moves.first = nullptr;
+                }
+                if (val_moves.second.first) {
+                    delete[] val_moves.second.first;
+                }
 
 				r++;
 			}
@@ -532,35 +558,48 @@ Move_t Smart_Mover::kill_tiger_handling() {
 		return get_in();
 	}
 	*/
-	if (!safe()) {
-		return stage_men();
+	cout << "here\n";
+	// if cage not staged, try to stage it
+	if (!cage_staged()) {
+	    cout << "staging men\n";
+		ret = stage_men();
 	}
 
-	ret = get_move_in_cage();
+	// if no move yet found, try to move inside the cage
+	if(ret != NULL_MOVE) {
+	    ret = get_move_in_cage();
+	}
 
+	// if no move yet found, try to move into the cage
 	if (ret != NULL_MOVE) {
-		return ret;
+		ret = get_move_into_cage();
 	}
 
-	ret = get_move_into_cage();
 
 	return ret;
 }
 
 
-bool Smart_Mover::safe() {
-	for (int i = 0; i < 8; i++) {
-		if (!current.is_occupied(KILL[i]) || current.get_tiger().location == KILL[i]) {
-			return false;
+bool Smart_Mover::cage_staged() {
+    // the cage is staged iff every position in STAGE_POSITIONS is filled by a man
+    bool staged = true;
+	for (int i = 0; i < 8 && staged; i++) {
+		if (!current.is_occupied(STAGE_POSITIONS[i]) || current.get_tiger().location == STAGE_POSITIONS[i]) {
+			staged = false;
 		}
 	}
-	return true;
+	return staged;
 }
+
 
 Move_t Smart_Mover::stage_men() {
 	Move_t move;
+	// for each position that needs to be filled in order
+    // for the cage to be staged
 	for (int i = 0; i < 8; i++) {
-		move = bfs_move_getter(&current, &game, KILL[i]);
+	    // look for a move from a non-stage position towards an
+        // unfilled STAGE_POSITION
+		move = bfs_move_getter(&current, &game, STAGE_POSITIONS[i]);
 		if (move != NULL_MOVE) {
 			return move;
 		}
@@ -616,27 +655,39 @@ Move_t Smart_Mover::get_move_in_cage() {
 
 
 Move_t Smart_Mover::get_move_into_cage() {
+    // if there is no man in the cage entrance, cannot get
+    // a move into the cage
 	if (!(current.is_occupied(make_point(4, 4)) && current.get_tiger().location != make_point(4, 4))) {
 		return NULL_MOVE;
 	}
+
 	Token_t man = make_man(make_point(4, 4));
 	auto moves = game.validMoves(current, man);
 	for (int i = 0; i < moves.second.second; i++) {
 		Move_t mv = make_move(man, moves.first[i]);
 		Point_t to = mv.destination, from = mv.token.location;
+		// ensure mv is into the tiger cage
+        if((to - from).row >= 0) {
+            continue;
+        }
 		Move_t mv2 = NULL_MOVE;
-		Point_t fills[3];
+		Point_t fills[3]; // points from which it is valid to fill in behind
+                          // the man entering the cage
 		fills[0] = make_point(4, 3);
 		fills[1] = make_point(5, 4);
 		fills[2] = make_point(4, 5);
 
+		// find a man in one of the fill positions and make the filling
+        // move mv2
 		for (int j = 0; j < 3; j++) {
 			if (current.is_occupied(fills[j])) {
 				mv2 = make_move(make_man(fills[j]), from);
 				break;
 			}
 		}
-		
+
+		// if no man in one of the fill positions, we are not ready to
+        // move into the tiger cage
 		if (mv2 == NULL_MOVE) {
 			return mv2;
 		}
@@ -648,9 +699,10 @@ Move_t Smart_Mover::get_move_into_cage() {
 			q.push(mv2);
 		}
 		current.do_move(-mv2);
+		// ----- I don't think this is necessary -----
 		if (secure(&current, &game) && q.empty()) {
 			q.push(mv);
-		}
+		}//-----                                 -----
 		current.do_move(-mv);
 
 		if (!q.empty()) {
@@ -659,6 +711,7 @@ Move_t Smart_Mover::get_move_into_cage() {
 			return ret;
 		}
 	}
+	// free memory
 	if (moves.first) {
 		delete[] moves.first;
 	}

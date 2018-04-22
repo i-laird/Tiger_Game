@@ -11,7 +11,7 @@ using namespace std;
 
 // these points are those which should be occupied in order to
 // keep the tiger in the cage
-const Point_t KILL[8] = { make_point(4, 3), 
+const Point_t STAGE_POSITIONS[8] = { make_point(4, 3),
 						make_point(4, 4), 
 						make_point(4, 5), 
 						make_point(5, 3), 
