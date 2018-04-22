@@ -19,6 +19,7 @@ class Specific_Move_Handler {
 
         bool one_col_two_back();
         bool three_by_diag();
+        bool near_top_finish_three_by_diag();
         bool lagging_col();
         bool try_switch();
     public:

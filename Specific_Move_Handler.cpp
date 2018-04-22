@@ -166,6 +166,93 @@ bool Specific_Move_Handler::three_by_diag() {
 }
 
 
+bool Specific_Move_Handler::near_top_finish_three_by_diag() {
+    set<int> row_to_col[NUM_ROW];
+    for(int c = 0; c < NUM_COL; ++c) {
+        auto r = current->rows_in_col(c).begin();
+        while(r != current->rows_in_col(c).end()) {
+            row_to_col[*r].insert(c);
+            ++r;
+        }
+    }
+    /// verify that in this position
+    bool in_pos = false;
+    int left_col = -1;
+    // if at tiger cage or not near front return false
+    if(front_row <= 4 || (front_row > 6)) {
+        return false;
+    }
+
+    int front_row_diag_cols[2];
+    // compute diagonals
+    if(front_row <= 8) {
+        front_row_diag_cols[0] = front_row;
+    }
+    else {
+        front_row_diag_cols[0] = (front_row + 1) % NUM_COL;
+    }
+    front_row_diag_cols[1] = NUM_COL - 1 - front_row_diag_cols[0];
+
+    Point_t tig_pos = current->get_tiger().location;
+    for(int j = 0; j < 2 && left_col < 0; ++j) {
+        in_pos = true;
+        int c = front_row_diag_cols[j];
+        // if haven't started a three by diag special move, not in position
+        if(!current->is_occupied(make_point(front_row, c)) || tig_pos == make_point(front_row,c)){
+            in_pos = false;
+        }
+        // c, c + 1, c+ 2 should be three consecutive columns
+        // with the diagonal intersecting the front_row at
+        // either c or c + 1, and continues down into c
+        for(int i = 0; i < 3 && in_pos; ++i) {
+            if(c + i < 0 || c + i >= NUM_COL) {
+                continue;
+            }
+            if(current->rows_in_col(c + i).size() != 2) {
+                in_pos = false;
+            }
+            // if don't have back row filled in each column, not in pos
+            if(current->rows_in_col(c + i).find(back_row) ==
+               current->rows_in_col(c + i).end()) {
+                in_pos = false;
+            }
+            // if dont have row above back row filled in each column except
+            // that with the diagonal, not in pos
+            if(c + i != front_row_diag_cols[j]) {
+                if (current->rows_in_col(c + i).find(back_row - 1) ==
+                    current->rows_in_col(c + i).end()) {
+                    in_pos = false;
+                }
+            }
+        }
+        if(in_pos) {
+            left_col = c;
+        }
+    }
+
+    if(in_pos) {
+        this->response = queue<Move_t>();
+        int diag_col, lim_col, mid_col;;
+        if(left_col == front_row_diag_cols[0] ||
+           left_col == front_row_diag_cols[1]) {
+            diag_col = left_col;
+            lim_col = left_col + 2;
+        }
+        else {
+            lim_col = left_col;
+            diag_col = left_col + 2;
+        }
+        mid_col = (lim_col + diag_col) / 2;
+        Point_t from, to;
+        from = make_point(back_row, diag_col);
+        to = make_point(back_row - 1, diag_col);
+        this->response.push(make_move(make_man(from),to));
+    }
+
+    return in_pos;
+}
+
+
 bool Specific_Move_Handler::lagging_col() {
     set<int> row_to_col[NUM_ROW];
     for(int c = 0; c < NUM_COL; ++c) {
@@ -392,6 +479,9 @@ bool Specific_Move_Handler::handle_special_case(Move_t off_move) {
     in_specific_case = one_col_two_back();
     if(!in_specific_case) {
         in_specific_case = three_by_diag();
+    }
+    if(!in_specific_case) {
+        in_specific_case = this->near_top_finish_three_by_diag();
     }
     if(!in_specific_case) {
         in_specific_case = lagging_col();

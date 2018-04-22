@@ -298,7 +298,7 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
         returnFlag = true;
     }
     //If at least one man alive Tiger has not won yet
-    if(!returnFlag && tokens.size() > 1){
+    if(!returnFlag && tokens.size() < 1){
         color = RED;
         returnFlag = true;
     }
@@ -500,7 +500,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
     //Get all of the valid moves for the Tiger
     pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
     //Act randomly
-    if(9 -(rand() % 10) < randomProbability){
+    if(9 -(rand() % 10) < randomProbability && returnMoves.second.second > 0){
         //If random make random move
         returnMove.destination = returnMoves.first[rand() % returnMoves.second.second];
         delete [] returnMoves.second.first;

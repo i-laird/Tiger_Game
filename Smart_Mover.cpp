@@ -72,13 +72,6 @@ Move_t Smart_Mover::off_move_handling() {
             off_col = NUM_COL - 1;
         }
 
-        if(off_col == prev_off_col) {
-            if(abs(current.get_tiger().location.col - 4) < 2) {
-                off_col = NUM_COL - 1 - off_col;
-                prev_off_col = off_col;
-            }
-        }
-
         int row = -1;
         // pick lowest token in off_col
         auto r = current.rows_in_col(off_col).begin();
@@ -103,7 +96,6 @@ Move_t Smart_Mover::off_move_handling() {
 
     /// if doing an off move, cancel all other plans
     if(off_move_ready) {
-        prev_off_col = to_do.destination.col;
         move_ready = false;
         path.clear();
         desired.clear();
@@ -471,14 +463,18 @@ Move_t Smart_Mover::execute_move() {
     if(fs != NULL_MOVE) {
         // if was performing an off move, undo that
         if(off_move_ready) {
-            if(off_move_active) {
+            if (off_move_active) {
                 off_move_active = false;
                 off_move = NULL_MOVE;
-            }
-            else {
+            } else {
                 off_move_active = true;
                 off_move = -to_do;
             }
+        }
+        // if moving the off move token, turn off move active to false
+        if(fs.token.location == off_move.destination) {
+            off_move = NULL_MOVE;
+            off_move_active = false;
         }
         move_ready = false;
         this->path.clear();
@@ -505,14 +501,59 @@ Move_t Smart_Mover::kill_tiger_handling() {
 		return ret;
 	}
 
+	// see if any move kills the tiger
+    for(int c = 0; c < NUM_COL && ret == NULL_MOVE; ++c) {
+	    auto r = current.rows_in_col(c).begin();
+	    while(r != current.rows_in_col(c).end()) {
+	        Token_t man = make_man(make_point(*r,c));
+	        auto moves = game.validMoves(current, man);
+	        for(int i = 0; i < moves.second.second && ret == NULL_MOVE; ++i) {
+	            Move_t mv = make_move(man, moves.first[i]);
+	            current.do_move(mv);
+	            auto t_moves = game.validMoves(current, current.get_tiger());
+	            if(t_moves.second.second = 0) {
+	                ret = mv;
+	            }
+	            // free memory
+                if(t_moves.first) {
+                    delete[] t_moves.first;
+                    t_moves.first = nullptr;
+                }
+                if(t_moves.second.first) {
+                    delete[] t_moves.second.first;
+                    t_moves.second.first = nullptr;
+                }
+                // undo move
+                current.do_move(-mv);
+	        }
+	        // free memory
+            if(moves.first) {
+                delete[] moves.first;
+                moves.first = nullptr;
+            }
+            if(moves.second.first) {
+                delete[] moves.second.first;
+                moves.second.first = nullptr;
+            }
+	        if(ret != NULL_MOVE) {
+	            break;
+	        }
+	        ++r;
+	    }
+	}
+	// if found a kill-tiger move, do it
+	if(ret != NULL_MOVE) {
+	    return ret;
+	}
+
 	// ensure tiger is at top row / trapped in
-    bool man_in_cage_entrance = false;
+    bool trapped_in = false;
 	if(current.is_occupied(CAGE_ENTRANCE)) {
-	    if(current.get_tiger().location != CAGE_ENTRANCE) {
-            man_in_cage_entrance = true;
+	    if(current.get_tiger().location.row < 4) {
+            trapped_in = true;
         }
 	}
-	if(tiger_loc.row <= 4 && !man_in_cage_entrance) {
+	if(tiger_loc.row <= 4 && !trapped_in) {
 	    // for each man
 		for (int c = 0; c < NUM_COL; c++) {
 			auto r = current.rows_in_col(c).begin();
@@ -637,7 +678,7 @@ Move_t Smart_Mover::get_move_in_cage() {
 					if (moves.first[i].row < *r && moves.first[i] != TIGER_START) {
 						Move_t mv = make_move(man, moves.first[i]);
 						Point_t to = mv.destination, from = mv.token.location;
-						Move_t mv2 = make_move(make_man(to), to + to - from);
+                        Move_t mv2 = make_move(make_man(to), to + to - from);
 
 						current.do_move(mv);
 						bool moved = current.do_move(mv2);
@@ -753,7 +794,6 @@ Smart_Mover::Smart_Mover(const State& s):Men_Mover(s){
     desired.clear();
 
     // about off move
-    prev_off_col = 0;
     off_move_active = false;
     off_move = NULL_MOVE;
 
