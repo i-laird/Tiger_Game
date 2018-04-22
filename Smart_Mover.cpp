@@ -267,60 +267,6 @@ void Smart_Mover::search_for_state() {
         }
     }
 
-
-    /// look for moves which move forward individual columns
-    /*
-    for(int c = 0; c < NUM_COL && !move_ready; ++c) {
-        if(c == off_col) {
-            continue;
-        }
-        desired.clear();
-        path.clear();
-
-        // desired states are those which do all moves_to_do in column
-        // c
-        int req_moves = 0;
-        Move_t mv;
-        Hash_val desired_hash = hash_locs(current, back_row);
-        for(int k = 0; k < 2; ++k) {
-            mv = moves_to_do[c][k];
-            if(mv != NULL_MOVE) {
-                ++req_moves;
-                current.do_move(mv);
-                desired_hash = next_hash(mv, desired_hash, back_row);
-            }
-        }
-        // if the suggested desired state is secure, add it to the set
-        // of desired states
-        if(secure(&current, &game, off_move) && req_moves > 0) {
-            desired.insert(desired_hash);
-        }
-        else {
-            req_moves = 0;
-        }
-
-        // undo moves
-        for(int k = 1; k >= 0; --k) {
-            mv = moves_to_do[c][k];
-            if(mv != NULL_MOVE) {
-                current.do_move(-mv);
-            }
-        }
-
-        // create transition, and have it look for a path to the desired states
-        if(desired.size() > 0) {
-            int left_bd = max(0, c-1);
-            int r_bd = min(NUM_COL, c + 1);
-            Transition t(&current, &desired, &game, back_row, make_pair(left_bd, r_bd),
-                         make_pair(front_row, back_row + 1));
-            move_ready = t.find_path_to_state(2 * req_moves);
-            if(move_ready) {
-                path = t.get_path();
-            }
-        }
-    }
-    */
-
     // free memory
     for(int c = 0; c < NUM_COL; ++c) {
         delete [] moves_to_do[c];
