@@ -190,6 +190,21 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
        to.col >= col_boundary || to.row >= row_boundary) {
             return false;
    }
+   // ensure moving an existing token
+    bool existing_token = true;
+    if(!st.is_occupied(move.token.location)) {
+        existing_token = false;
+    }
+    else if(move.token.color == RED && st.get_tiger() != move.token) {
+        existing_token = false;
+    }
+    else if(move.token.color == BLUE &&
+            st.rows_in_col(from.col).find(from.row) == st.rows_in_col(from.col).end()) {
+        existing_token = false;
+    }
+    if(!existing_token) {
+        return false;
+    }
 
     bool validMove = false, tigerJumpedMan = false;
     // if the destination is occupied, return false
@@ -256,7 +271,7 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
         return false;
     }
 
-    //See if a man was actual present where the tiger is said to have jumped him
+    //See if a man was actually present where the tiger is said to have jumped him
     if(tigerJumpedMan && validMove){
         validMove = false;
         //See if a man is present at the jumped position
