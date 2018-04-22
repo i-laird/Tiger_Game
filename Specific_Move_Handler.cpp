@@ -153,6 +153,11 @@ bool Specific_Move_Handler::three_by_diag() {
         else {
             from = make_point(back_row - 1, diag_col);
             to = make_point(back_row - 2, diag_col);
+            if(abs(tig_pos.col - diag_col) > 1) {
+                this->response.push(make_move(make_man(from),to));
+                from = make_point(back_row, diag_col);
+                to = make_point(back_row - 1, diag_col);
+            }
         }
         this->response.push(make_move(make_man(from),to));
     }
