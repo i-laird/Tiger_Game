@@ -826,7 +826,7 @@ Move_t Smart_Mover::get_move_in_cage() {
         Token_t man = cur[i];
         if (man.location.row < 4) {
             auto moves = game.validMoves(current, man);
-            for (int j = 0; j < moves.second.second; j++) {
+            for (int j = 0; j < moves.second.second && q.empty(); j++) {
                 if (moves.first[j].row < man.location.row) {
                     Move_t mv = make_move(man, moves.first[j]);
                     Point_t to = mv.destination, from = mv.token.location;
@@ -845,11 +845,6 @@ Move_t Smart_Mover::get_move_in_cage() {
                         }
                     }
                     current.do_move(-mv);
-                    if (!q.empty()) {
-                        Move_t ret = q.front();
-                        q.pop();
-                        return ret;
-                    }
                 }
             }
             if (moves.first) {
@@ -859,6 +854,11 @@ Move_t Smart_Mover::get_move_in_cage() {
             if (moves.second.first) {
                 delete[] moves.second.first;
                 moves.second.first = nullptr;
+            }
+            if (!q.empty()) {
+                Move_t ret = q.front();
+                q.pop();
+                return ret;
             }
         }
 	}

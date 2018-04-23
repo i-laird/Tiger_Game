@@ -25,8 +25,8 @@ const Unordered_State& Unordered_State::operator=(const Unordered_State& that) {
 }
 
 Unordered_State::Unordered_State(const State& st) {
-    for(int i = 0; i < NUM_COL; ++i) {
-        col_to_rows[i] = set<int>();
+    for (auto &col_to_row : col_to_rows) {
+        col_to_row = set<int>();
     }
     // look at each token in State, if tiger store in tiger,
     // if a man add its location to the set of men

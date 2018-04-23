@@ -647,11 +647,12 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
         //Okay to change layout because vector is a copy :-)
         currToken.location = mapLayout[tokenIndex].location = frontier.front();
         frontier.pop();
-        tokenMoves = this->validMoves(mapLayout, currToken);
         //See if done
         if(currToken.location == desiredLoc){
             break;
         }
+
+        tokenMoves = this->validMoves(mapLayout, currToken);
         for(int i = 0; i < tokenMoves.second.second; i++){
             evaluatePoint = tokenMoves.first[i];
             //See if the key has a predecessor i.e. exists if not add
