@@ -223,6 +223,15 @@ int main()
             if (game_state.get_tiger().color != RED && !speed_run) {
                 cout << "<ALERT> tiger is not red\n";
             }
+
+            if(t_moves.first) {
+                delete [] t_moves.first;
+                t_moves.first = nullptr;
+            }
+            if(t_moves.second.first) {
+                delete [] t_moves.second.first;
+                t_moves.second.first = nullptr;
+            }
         }
 
         delete men;
