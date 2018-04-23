@@ -13,6 +13,8 @@
 #include <list>
 #include <sstream>
 
+Move_t  Move_Deep_Blue(vector<Token_t>, Color_t turn);
+
 int const MAX_NUMBER_MOVES = 8;
 string const graph = "BOARD SQUARE SECTION DIMENSIONS\n13 9\nUNUSUAL EDGES"
                      "\n2 12 4 11 3 11 5\n1 11 3 10 2\n1 10 2 9 1\n"

@@ -9,8 +9,23 @@
 #include <cstdlib>
 #include <algorithm>
 #include "game_runner.h"
-Move_t  My_Move(vector<Token_t>, Color_t turn){
+#include "Smart_Mover.h"
 
+Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
+    static Move_t savedMove = NULL_MOVE;
+    static Men_Mover * men  = nullptr;
+    if(men == nullptr)
+        men = new Smart_Mover(gameState);
+    Move_t returnMove;
+    Color_t win;
+    GameRunner tigerMove;
+    if(turn == RED){
+        returnMove = savedMove = tigerMove.Tiger_Move(gameState);
+    }
+    returnMove = men->next_move(savedMove);
+    if(tigerMove.evaluateWinState(gameState, win))
+        delete men;
+    return returnMove;
 }
 
 /*
@@ -301,7 +316,7 @@ pair<bool, Color_t> GameRunner::playGame(){
     while(counter < 10000 && !this->evaluateWinState(*this->gameState, winner)){
         this->manJumpedLastCheck = false;
         counter++;
-        returnedMove = My_Move(*this->gameState, turn);
+        returnedMove = Move_Deep_Blue(*this->gameState, turn);
         //If not valid move I will perform first available move
         if(!isValidMove(*this->gameState, returnedMove)){
             if(turn == RED){
