@@ -36,6 +36,12 @@ class GameRunner{
         row_boundary,
         tiger_cage_row_offset;
     map<Point_t, list<Point_t>> * extendedGraph;
+    /*
+     * createGraph
+     * precondition: none
+     * postcondition: the internal graph for diagonal edges is created
+     * return: void
+     */
     void createGraph(std::istream & graphFile, std::istream & boardLayout);
 public:
     vector <Token_t> * gameState;
@@ -127,12 +133,40 @@ public:
      */
     bool evaluateWinState( vector <Token_t> &, Color_t & color);
 
+    /*
+     * BFS_To_Point
+     * description: finds the shortest path to the indicated point
+     * precondition:
+     * postcondition: the game and tokens are unchanged
+     * return: if a path is found the point that should be moved to is returned
+     *     boolean passed by reference is updated
+     */
     Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo, Color_t, bool &);
 
+    /*
+     * tiger_move
+     * description: calculates the Tiger move for the indicated game state
+     * precondition: game state is valid and a move can be made
+     * postcondition: game and tokens are unchanged
+     * return: the move that should be made
+     */
     Move_t Tiger_Move(vector<Token_t> &, int randomProbability = 0);
 
+    /*
+     * getRandomizer
+     * description: calculates how random the tiger move should be
+     * precondition: game state is valid
+     * return: number between 0 and 3 indicating how random the Tiger should be
+     *      -o means 0% random
+     */
     int getRandomizer(vector<Token_t> &);
 
+    /*    Undeterministic_Tiger_Move
+     * description: calculates a Tiger move but will also inject randomness
+     * precondition: game state is valid and tiger can move
+     * postcondition: tiger move is calculated
+     * return: the tiger move that should be made
+     */
     Move_t Undeterministic_Tiger_Move(vector<Token_t> &);
 
 };
