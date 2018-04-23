@@ -242,6 +242,7 @@ void Smart_Mover::search_for_state() {
                 }
             }
         }
+
         // create transition, and have it look for a path to the desired states
         if(desired.size() > 0) {
             Transition t(&current, &desired, &game, back_row, make_pair(c, c+3),
@@ -278,53 +279,32 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
 
     // now ensure validity
     if(!game.isValidMove(current, suggested)) {
+        State cur = current;
         // if move not valid, look for a valid safe move
         bool fail_safe_found = false;
+        suggested = NULL_MOVE;
+        to_do = safety_fail_safe(suggested);
+        if(to_do != NULL_MOVE) {
+            fail_safe_found = true;
+        }
         // try each direction of moves and see if finds one that is valid
         // with no immediage jump
         Point_t dirs[8] = {UP, UP + LEFT, UP + RIGHT,
                            LEFT, RIGHT,
                            DOWN, DOWN + LEFT, DOWN + RIGHT};
-        for(int i = 0; i < 8 && !fail_safe_found; ++i) {
-            for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
-                // don't try to move away from the middle
-                if((c < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
-                   (c > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
-                    continue;
-                }
-                auto r = current.rows_in_col(c).begin();
-                while(r != current.rows_in_col(c).end() && !fail_safe_found) {
-                    Token_t man = make_man(make_point(*r,c));
-                    Move_t mv = make_move_in_direction(man, dirs[i]);
-                    if(game.isValidMove(current, mv) && mv.destination.row >= front_row) {
-                        current.do_move(mv);
-                        if(!tiger_can_jump(&current, &game)) {
-                            fail_safe_found = true;
-                            to_do = mv;
-                        }
-                        current.do_move(-mv);
-                    }
-                    ++r;
-                }
-            }
-        }
         // if cannot find a safe valid move, just try to find a valid move
-        for(int i = 0; i < 8 && !fail_safe_found; ++i) {
-            for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
+        for (int i = 0; i < 8 && !fail_safe_found; ++i) {
+            for (int j = 1; j < cur.size() && !fail_safe_found; ++j) {
+                Token_t man = cur[j];
                 // don't try to move away from the middle
-                if((c < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
-                   (c > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
+                if ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
+                    (man.location.col > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
                     continue;
                 }
-                auto r = current.rows_in_col(c).begin();
-                while(r != current.rows_in_col(c).end() && !fail_safe_found) {
-                    Token_t man = make_man(make_point(*r,c));
-                    Move_t mv = make_move_in_direction(man, dirs[i]);
-                    if(game.isValidMove(current, mv) && mv.destination.row >= front_row) {
-                        fail_safe_found = true;
-                        to_do = mv;
-                    }
-                    ++r;
+                Move_t mv = make_move_in_direction(man, dirs[i]);
+                if (game.isValidMove(current, mv) && mv.destination.row >= front_row) {
+                    fail_safe_found = true;
+                    to_do = mv;
                 }
             }
         }
@@ -341,32 +321,29 @@ Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
     bool can_jump = tiger_can_jump(&current, &game);
     current.do_move(-suggested);
     if(can_jump) {
+        State cur = current;
         bool fail_safe_found = false;
         // try each direction of moves and see if can prevent the
         // capture
         Point_t dirs[8] = {UP, UP + LEFT, UP + RIGHT,
                            LEFT, RIGHT,
                            DOWN, DOWN + LEFT, DOWN + RIGHT};
-        for(int i = 0; i < 8 && !fail_safe_found; ++i) {
-            for(int c = 0; c < NUM_COL && !fail_safe_found; ++c) {
+        for (int i = 0; i < 8 && !fail_safe_found; ++i) {
+            for (int j = 1; j < cur.size() && !fail_safe_found; ++j) {
+                Token_t man = cur[j];
                 // don't try to move away from the middle
-                if((c < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
-                   (c > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
+                if ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
+                    (man.location.col > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
                     continue;
                 }
-                auto r = current.rows_in_col(c).begin();
-                while(r != current.rows_in_col(c).end() && !fail_safe_found) {
-                    Token_t man = make_man(make_point(*r,c));
-                    Move_t mv = make_move_in_direction(man, dirs[i]);
-                    if(game.isValidMove(current, mv) && mv.destination.row >= front_row) {
-                        current.do_move(mv);
-                        if(!tiger_can_jump(&current, &game)) {
-                            fail_safe_found = true;
-                            to_do = mv;
-                        }
-                        current.do_move(-mv);
+                Move_t mv = make_move_in_direction(man, dirs[i]);
+                if (game.isValidMove(current, mv) && mv.destination.row >= front_row) {
+                    current.do_move(mv);
+                    if (!tiger_can_jump(&current, &game)) {
+                        fail_safe_found = true;
+                        to_do = mv;
                     }
-                    ++r;
+                    current.do_move(-mv);
                 }
             }
         }
@@ -501,46 +478,43 @@ Move_t Smart_Mover::kill_tiger_handling() {
 		return ret;
 	}
 
-	// see if any move kills the tiger
-    for(int c = 0; c < NUM_COL && ret == NULL_MOVE; ++c) {
-	    auto r = current.rows_in_col(c).begin();
-	    while(r != current.rows_in_col(c).end()) {
-	        Token_t man = make_man(make_point(*r,c));
-	        auto moves = game.validMoves(current, man);
-	        for(int i = 0; i < moves.second.second && ret == NULL_MOVE; ++i) {
-	            Move_t mv = make_move(man, moves.first[i]);
-	            current.do_move(mv);
-	            auto t_moves = game.validMoves(current, current.get_tiger());
-	            if(t_moves.second.second = 0) {
-	                ret = mv;
-	            }
-	            // free memory
-                if(t_moves.first) {
-                    delete[] t_moves.first;
-                    t_moves.first = nullptr;
-                }
-                if(t_moves.second.first) {
-                    delete[] t_moves.second.first;
-                    t_moves.second.first = nullptr;
-                }
-                // undo move
-                current.do_move(-mv);
-	        }
-	        // free memory
-            if(moves.first) {
-                delete[] moves.first;
-                moves.first = nullptr;
+	State cur = current;
+    // see if any move kills the tiger
+    for(int i = 1; i < cur.size(); ++i) {
+        Token_t man = cur[i];
+        auto moves = game.validMoves(current, man);
+        for(int i = 0; i < moves.second.second && ret == NULL_MOVE; ++i) {
+            Move_t mv = make_move(man, moves.first[i]);
+            current.do_move(mv);
+            auto t_moves = game.validMoves(current, current.get_tiger());
+            if(t_moves.second.second = 0) {
+                ret = mv;
             }
-            if(moves.second.first) {
-                delete[] moves.second.first;
-                moves.second.first = nullptr;
+            // free memory
+            if(t_moves.first) {
+                delete[] t_moves.first;
+                t_moves.first = nullptr;
             }
-	        if(ret != NULL_MOVE) {
-	            break;
-	        }
-	        ++r;
-	    }
-	}
+            if(t_moves.second.first) {
+                delete[] t_moves.second.first;
+                t_moves.second.first = nullptr;
+            }
+            // undo move
+            current.do_move(-mv);
+        }
+        // free memory
+        if(moves.first) {
+            delete[] moves.first;
+            moves.first = nullptr;
+        }
+        if(moves.second.first) {
+            delete[] moves.second.first;
+            moves.second.first = nullptr;
+        }
+        if(ret != NULL_MOVE) {
+            break;
+        }
+    }
 	// if found a kill-tiger move, do it
 	if(ret != NULL_MOVE) {
 	    return ret;
@@ -555,66 +529,61 @@ Move_t Smart_Mover::kill_tiger_handling() {
 	}
 	if(tiger_loc.row <= 4 && !trapped_in) {
 	    // for each man
-		for (int c = 0; c < NUM_COL; c++) {
-			auto r = current.rows_in_col(c).begin();
-			while (r != current.rows_in_col(c).end()) {
-				Token_t man = make_man(make_point(*r, c));
-				pair<Point_t*, pair<bool*, int>> val_moves = game.validMoves(current, man);
-				// check each move the man can make that is not downward
-				for (int i = 0; i < val_moves.second.second; i++) {
-					Move_t mv = make_move(man, val_moves.first[i]);
-					Point_t to = mv.destination, from = mv.token.location;
-					// if moving downward, don't do this move
-                    if((to - from).row > 0) {
-                        continue;
-                    }
-                    // if moving side-to-side away from the middle, don't do this move
-                    int middle = (NUM_COL - 1) / 2;
-                    if((to - from).row == 0 && abs(to.col - middle) > abs(from.col - middle)) {
-                        continue;
-                    }
-					// mv2 is in direction of mv but its destination is the source point of mv
-					Move_t mv2 = make_move(make_man(from - (to - from)), from);
+		for (int i = 1; i < cur.size(); ++i) {
+            Token_t man = cur[i];
+            pair<Point_t*, pair<bool*, int>> val_moves = game.validMoves(current, man);
+            // check each move the man can make that is not downward
+            for (int i = 0; i < val_moves.second.second; i++) {
+                Move_t mv = make_move(man, val_moves.first[i]);
+                Point_t to = mv.destination, from = mv.token.location;
+                // if moving downward, don't do this move
+                if((to - from).row > 0) {
+                    continue;
+                }
+                // if moving side-to-side away from the middle, don't do this move
+                int middle = (NUM_COL - 1) / 2;
+                if((to - from).row == 0 && abs(to.col - middle) > abs(from.col - middle)) {
+                    continue;
+                }
+                // mv2 is in direction of mv but its destination is the source point of mv
+                Move_t mv2 = make_move(make_man(from - (to - from)), from);
 
-					// if mv, mv2 leaves the board secure and both are valid, do them
-					current.do_move(mv);
-					if(game.isValidMove(current, mv2)) {
-					    // if tiger is too close, mv2 may not be guaranteed,
-                        // so don't do it
-                        if(one_norm(mv2.destination - tiger_loc) > 4) {
-                            current.do_move(mv2);
-                            if (secure(&current, &game)) {
-                                q.push(mv);
-                                q.push(mv2);
-                            }
-                            current.do_move(-mv2);
+                // if mv, mv2 leaves the board secure and both are valid, do them
+                current.do_move(mv);
+                if(game.isValidMove(current, mv2)) {
+                    // if tiger is too close, mv2 may not be guaranteed,
+                    // so don't do it
+                    if(one_norm(mv2.destination - tiger_loc) > 4) {
+                        current.do_move(mv2);
+                        if (secure(&current, &game)) {
+                            q.push(mv);
+                            q.push(mv2);
                         }
+                        current.do_move(-mv2);
                     }
-					// else if mv leaves the board secure, do it
-					if (q.empty() && secure(&current, &game)) {
-						q.push(mv);
-					}
-					current.do_move(-mv);
-
-					// if there is a move to do, return it
-					if (!q.empty()) {
-						ret = q.front();
-						q.pop();
-						return ret;
-					}
-				}
-				//free memory
-                if (val_moves.first) {
-                    delete[] val_moves.first;
-                    val_moves.first = nullptr;
                 }
-                if (val_moves.second.first) {
-                    delete[] val_moves.second.first;
-                    val_moves.second.first = nullptr;
+                // else if mv leaves the board secure, do it
+                if (q.empty() && secure(&current, &game)) {
+                    q.push(mv);
                 }
+                current.do_move(-mv);
 
-				r++;
-			}
+                // if there is a move to do, return it
+                if (!q.empty()) {
+                    ret = q.front();
+                    q.pop();
+                    return ret;
+                }
+            }
+            //free memory
+            if (val_moves.first) {
+                delete[] val_moves.first;
+                val_moves.first = nullptr;
+            }
+            if (val_moves.second.first) {
+                delete[] val_moves.second.first;
+                val_moves.second.first = nullptr;
+            }
 		}
 	}
 
