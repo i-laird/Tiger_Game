@@ -13,7 +13,7 @@
 
 Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
     static Move_t savedMove = NULL_MOVE;
-    static Men_Mover * men  = nullptr;
+    static Smart_Mover * men  = nullptr;
     if(men == nullptr)
         men = new Smart_Mover(gameState);
     Move_t returnMove;
