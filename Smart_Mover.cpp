@@ -302,7 +302,8 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
                     continue;
                 }
                 Move_t mv = make_move_in_direction(man, dirs[i]);
-                if (game.isValidMove(current, mv) && mv.destination.row >= front_row) {
+                if (game.isValidMove(current, mv) &&
+                    (mv.destination.row >= front_row || to_tiger_cage)) {
                     fail_safe_found = true;
                     to_do = mv;
                 }
@@ -484,8 +485,8 @@ Move_t Smart_Mover::kill_tiger_handling() {
     for(int i = 1; i < cur.size(); ++i) {
         Token_t man = cur[i];
         auto moves = game.validMoves(current, man);
-        for(int i = 0; i < moves.second.second && ret == NULL_MOVE; ++i) {
-            Move_t mv = make_move(man, moves.first[i]);
+        for(int j = 0; j < moves.second.second && ret == NULL_MOVE; ++j) {
+            Move_t mv = make_move(man, moves.first[j]);
             current.do_move(mv);
             auto t_moves = game.validMoves(current, current.get_tiger());
             if(t_moves.second.second = 0) {
@@ -534,8 +535,8 @@ Move_t Smart_Mover::kill_tiger_handling() {
             Token_t man = cur[i];
             pair<Point_t*, pair<bool*, int>> val_moves = game.validMoves(current, man);
             // check each move the man can make that is not downward
-            for (int i = 0; i < val_moves.second.second; i++) {
-                Move_t mv = make_move(man, val_moves.first[i]);
+            for (int j = 0; j < val_moves.second.second; j++) {
+                Move_t mv = make_move(man, val_moves.first[j]);
                 Point_t to = mv.destination, from = mv.token.location;
                 // if moving downward, don't do this move
                 if((to - from).row > 0) {
@@ -624,7 +625,7 @@ Move_t Smart_Mover::stage_men() {
 	Move_t move;
 	// for each position that needs to be filled in order
     // for the cage to be staged
-	for (int i = 0; i < STAGE_POS_SIZE; i++) {
+	for(int i = 0; i < STAGE_POS_SIZE; i++) {
 	    // look for a move from a non-stage position towards an
         // unfilled STAGE_POSITION
 		move = bfs_move_getter(&current, &game, STAGE_POSITIONS[i]);
@@ -648,7 +649,6 @@ Move_t Smart_Mover::get_move_in_cage() {
                     Move_t mv = make_move(man, moves.first[j]);
                     Point_t to = mv.destination, from = mv.token.location;
                     Move_t mv2 = make_move(make_man(to), to + to - from);
-
                     current.do_move(mv);
                     bool moved = current.do_move(mv2);
                     if (secure(&current, &game)) {
@@ -706,7 +706,7 @@ Move_t Smart_Mover::get_move_into_cage() {
 
 		// find a man in one of the fill positions and make the filling
         // move mv2
-		for (int j = 0; j < 3; j++) {
+		for(int j = 0; j < 3; j++) {
 			if (current.is_occupied(fills[j])) {
 				mv2 = make_move(make_man(fills[j]), from);
 				break;
@@ -725,7 +725,6 @@ Move_t Smart_Mover::get_move_into_cage() {
 			q.push(mv);
 			q.push(mv2);
 		}
-
 		current.do_move(-mv2);
 		current.do_move(-mv);
 
