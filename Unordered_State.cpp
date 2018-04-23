@@ -3,8 +3,8 @@
 /// Unordered_State constructors
 Unordered_State::Unordered_State() {
     this->tiger = NULL_TOKEN;
-    for(int i = 0; i < NUM_COL; ++i) {
-        col_to_rows[i] = set<int>();
+    for (auto &col_to_row : col_to_rows) {
+        col_to_row = set<int>();
     }
 }
 
@@ -14,7 +14,10 @@ const Unordered_State& Unordered_State::operator=(const Unordered_State& that) {
     if(this != &that) {
         this->tiger = that.tiger;
         for(int c = 0; c < NUM_COL; ++c) {
-            this->col_to_rows[c] = that.col_to_rows[c];
+            this->col_to_rows[c] = set<int>();
+            for(auto r = that.col_to_rows[c].begin(); r != that.col_to_rows[c].end(); ++r) {
+                col_to_rows[c].insert(*r);
+            }
         }
     }
 
@@ -27,17 +30,17 @@ Unordered_State::Unordered_State(const State& st) {
     }
     // look at each token in State, if tiger store in tiger,
     // if a man add its location to the set of men
-    for(auto i = st.begin(); i != st.end(); ++i) {
+    for (auto man : st) {
         bool valid = true;
         // index protection
-        if(i->location.col < 0 || i->location.col >= NUM_COL) {
+        if(man.location.col < 0 || man.location.col >= NUM_COL) {
             valid = false;
         }
-        if(i->color == RED && valid) {
-            this->tiger = *i;
+        if(man.color == RED && valid) {
+            this->tiger = man;
         }
-        else if(i->color == BLUE && valid) {
-            this->col_to_rows[i->location.col].insert(i->location.row);
+        else if(man.color == BLUE && valid) {
+            this->col_to_rows[man.location.col].insert(man.location.row);
         }
     }
 }
@@ -127,12 +130,12 @@ void Unordered_State::set_tiger(const Token_t& t) {
 
 
 void Unordered_State::set_men_locs(const set<Point_t>& locs) {
-    for(int i = 0; i < NUM_COL; ++i) {
-        col_to_rows[i] = set<int>();
+    for (auto &col_to_row : col_to_rows) {
+        col_to_row = set<int>();
     }
-    for(auto i = locs.begin(); i != locs.end(); ++i) {
-        if(i->col >= 0 && i->col < NUM_COL) {
-            col_to_rows[i->col].insert(i->row);
+    for (auto loc : locs) {
+        if(loc.col >= 0 && loc.col < NUM_COL) {
+            col_to_rows[loc.col].insert(loc.row);
         }
     }
 }
@@ -154,6 +157,8 @@ bool Unordered_State::do_move(const Move_t& m) {
         valid_move = false;
     }
 
+    const Unordered_State copy = *this;
+
     // moving a man
     if(valid_move && m.token.color == BLUE) {
         // try to erase previous location, if cannot then trying to move
@@ -161,7 +166,7 @@ bool Unordered_State::do_move(const Move_t& m) {
         if(this->col_to_rows[from.col].erase(from.row) <= 0) {
             valid_move = false;
         } // if did erase, but moving to an occupied position, that is invalid
-        else if(!this->col_to_rows[to.col].insert(to.row).second){
+        else if(!(this->col_to_rows[to.col].insert(to.row).second)){
             valid_move = false;
             this->col_to_rows[from.col].insert(from.row);
         }
@@ -179,10 +184,21 @@ bool Unordered_State::do_move(const Move_t& m) {
 
         // if a jump, remove the man that was jumped
         Point_t jumped_pos = (to + from) / 2;
-        if(rows_in_col(jumped_pos.col).find(jumped_pos.row) !=
+        bool is_jump = true;
+        if(jumped_pos == to || jumped_pos == from) {
+            is_jump = false;
+        }
+        else if(rows_in_col(jumped_pos.col).find(jumped_pos.row) !=
                                             rows_in_col(jumped_pos.col).end()) {
+            is_jump = false;
+        }
+        if(is_jump) {
             col_to_rows[jumped_pos.col].erase(jumped_pos.row);
         }
+    }
+
+    if(!valid_move && (copy != *this)) {
+        copy == *this;
     }
 
     return valid_move;

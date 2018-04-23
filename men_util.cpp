@@ -53,8 +53,7 @@ Hash_val next_hash(const Move_t& m, Hash_val old_hash, int back_row) {
 
 
 bool tiger_can_jump(const Unordered_State* st, GameRunner* g) {
-    pair<Point_t *, pair<bool*,int>> t_moves;
-    t_moves = g->validMoves(*st, st->get_tiger());
+    auto t_moves = g->validMoves(*st, st->get_tiger());
 
     bool jump = false;
     for(int t = 0; t < t_moves.second.second && !jump; ++t) {
@@ -62,8 +61,14 @@ bool tiger_can_jump(const Unordered_State* st, GameRunner* g) {
             jump = true;
         }
     }
-    delete [] t_moves.first;
-    delete [] t_moves.second.first;
+    if(t_moves.first) {
+        delete[] t_moves.first;
+        t_moves.first = nullptr;
+    }
+    if(t_moves.second.first) {
+        delete[] t_moves.second.first;
+        t_moves.second.first = nullptr;
+    }
     return jump;
 }
 
@@ -86,7 +91,6 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
     Point_t current = st->get_tiger().location;
     visited[current.row][current.col] = true;
     frontier.push(current);
-    pair<Point_t*, pair<bool*, int> > t_moves;
     while(!frontier.empty() && !jump) {
         current = frontier.front();
         // mark visited
@@ -98,7 +102,7 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
 
         // else, add each reachable new position to the frontier
         if(!jump) {
-            t_moves = g->validMoves(*st, make_tiger(current));
+            auto t_moves = g->validMoves(*st, make_tiger(current));
             Point_t to;
             for(int t = 0; t < t_moves.second.second; ++t) {
                 to = t_moves.first[t];
@@ -108,8 +112,14 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
                 }
             }
             // free memory
-            delete [] t_moves.first;
-            delete [] t_moves.second.first;
+            if(t_moves.first) {
+                delete[] t_moves.first;
+                t_moves.first = nullptr;
+            }
+            if(t_moves.second.first) {
+                delete[] t_moves.second.first;
+                t_moves.second.first = nullptr;
+            }
         }
     }
 
@@ -169,6 +179,10 @@ Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t dest) {
 		for(int i = 0; i < 4 && mv_todo == NULL_MOVE; ++i) {
 		    // if not a populated point and in bounds and unvisited,
             Point_t to = current + dirs[i];
+            // if to is in tiger cage, don't record it
+            if(to.row < CAGE_ENTRANCE.row) {
+                continue;
+            }
 		    if(!visited[to.row][to.col] && !st->is_occupied(to)) {
 		        // don't need to check tiger cage because not using diagonals
 		        if((to.row >= 4 && to.col >= 0 && to.col < NUM_COL)) {

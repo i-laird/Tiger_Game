@@ -302,8 +302,14 @@ bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
         color = RED;
         returnFlag = true;
     }
-    delete [] moveReceiver.second.first;
-    delete [] moveReceiver.first;
+    if(moveReceiver.second.first) {
+        delete[] moveReceiver.second.first;
+        moveReceiver.second.first = nullptr;
+    }
+    if(moveReceiver.first) {
+        delete[] moveReceiver.first;
+        moveReceiver.first = nullptr;
+    }
     return returnFlag;
 }
 
@@ -503,8 +509,14 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
     if(9 -(rand() % 10) < randomProbability && returnMoves.second.second > 0){
         //If random make random move
         returnMove.destination = returnMoves.first[rand() % returnMoves.second.second];
-        delete [] returnMoves.second.first;
-        delete [] returnMoves.first;
+        if(returnMoves.second.first) {
+            delete[] returnMoves.second.first;
+            returnMoves.second.first = nullptr;
+        }
+        if(returnMoves.first) {
+            delete[] returnMoves.first;
+            returnMoves.first = nullptr;
+        }
         return returnMove;
     }
     set<Point_t> checkPoints;
@@ -536,8 +548,14 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
             for(int j = 0; j < tokenMoves.second.second;j++){
                 checkPoints.insert(tokenMoves.first[j]);
             }
-            delete [] tokenMoves.second.first;
-            delete [] tokenMoves.first;
+            if(tokenMoves.second.first) {
+                delete[] tokenMoves.second.first;
+                tokenMoves.second.first = nullptr;
+            }
+            if(tokenMoves.first) {
+                delete[] tokenMoves.first;
+                tokenMoves.first = nullptr;
+            }
         }
         tokens[0].location = record2;
         //Now find the closest point
@@ -603,8 +621,14 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
             }
         }
     }
-    delete [] returnMoves.second.first;
-    delete [] returnMoves.first;
+    if(returnMoves.second.first) {
+        delete[] returnMoves.second.first;
+        returnMoves.second.first = nullptr;
+    }
+    if(returnMoves.first) {
+        delete[] returnMoves.first;
+        returnMoves.first = nullptr;
+    }
     previousLocation = tokens[0].location;
     return  returnMove;
 }
@@ -635,8 +659,14 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
                 frontier.push(evaluatePoint);
             }
         }
-        delete [] tokenMoves.second.first;
-        delete [] tokenMoves.first;
+        if(tokenMoves.second.first) {
+            delete[] tokenMoves.second.first;
+            tokenMoves.second.first = nullptr;
+        }
+        if(tokenMoves.first) {
+            delete[] tokenMoves.first;
+            tokenMoves.first = nullptr;
+        }
     }
     if(currToken.location == desiredLoc) {
         //Now find what Point should be moved to

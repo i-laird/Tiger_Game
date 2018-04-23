@@ -10,7 +10,6 @@
 
 class Smart_Mover : public Men_Mover {
 private:
-
 	// fun times with queues
 	queue<Move_t> q;
 
@@ -27,7 +26,7 @@ private:
 
         // about off move
         bool off_move_ready;
-        int off_move_active;
+        bool off_move_active;
         Move_t off_move;
 
         // whether or not to tiger cage
@@ -138,29 +137,29 @@ private:
 		Move_t get_move_into_cage();
 
     public:
-        /*       Men_Mover(const State& s)
-         *
-         * description: creates a Men_Mover object with the given State
-         *              used to create current
-         * return: none
-         * precondition: s is a valid State
-         * postcondition: a Men_Mover object is created
-         */
+    /*       Men_Mover(const State& s)
+     *
+     * description: creates a Men_Mover object with the given State
+     *              used to create current
+     * return: none
+     * precondition: s is a valid State
+     * postcondition: a Men_Mover object is created
+     */
     Smart_Mover(const State& s);
 
 protected:
-        /*       next_move(Move_t tiger_move)
-         *
-         * description: performs the tiger_move on current, then
-         *              returns the best move for the men to perform
-         *              in order to prevent capture of men and
-         *              move men forward
-         *                performs that move on current and returns it
-         * return: Move_t
-         * precondition: none
-         * postcondition: the returned move is performed on current, any
-         *                moves calculated turns in advanced are stored
-         */
+    /*       next_move(Move_t tiger_move)
+     *
+     * description: performs the tiger_move on current, then
+     *              returns the best move for the men to perform
+     *              in order to prevent capture of men and
+     *              move men forward
+     *                performs that move on current and returns it
+     * return: Move_t
+     * precondition: none
+     * postcondition: the returned move is performed on current, any
+     *                moves calculated turns in advanced are stored
+     */
     Move_t execute_move() override;
 };
 

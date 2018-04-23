@@ -2,6 +2,8 @@
 
 
 bool Transition::search_for_state(int max_moves, int num_moves) {
+    Unordered_State copy = *current;
+
     Token_t tiger = current->get_tiger();
     // if already know result of this state return it (i.e. have
     // been to this state with this many or more moves remaining)
@@ -39,6 +41,9 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
     // desired state
     bool any_good = false; // true iff path to desired state following above
                            // guidelines
+    if(copy != *current) {
+        copy == *current;
+    }
 
     // determine men to move
     vector<Token_t> to_move;
@@ -52,8 +57,7 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
     // for each man
     for(unsigned int i = 0; i < to_move.size() && !any_good; ++i) {
         Token_t man = to_move[i];
-        pair<Point_t *, pair<bool*,int>> man_moves;
-        man_moves = game->validMoves(*current, man);
+        auto man_moves = game->validMoves(*current, man);
         for(int m = 0; m <  man_moves.second.second && !any_good; ++m){
             bool m_okay = true; // true iff this move is a good response to
                                 // the current state
@@ -68,16 +72,25 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
                 continue;
            }
             // perform move
-            cur_hash_val = next_hash(mv, cur_hash_val, back_row);
+            auto next_hash_val = next_hash(mv, cur_hash_val, back_row);
+            cur_hash_val.first = next_hash_val.first;
+            cur_hash_val.second = next_hash_val.second;
+
+            if(copy != *current) {
+                copy == *current;
+            }
             current->do_move(mv);
+            const Unordered_State copy2 = *current;
             // if tiger can capture after move, this is a bad move
             if(tiger_can_jump(current, game)) {
-                visited[make_pair(cur_hash_val, tiger)] = make_pair(0, false);
+                visited.insert(make_pair(make_pair(cur_hash_val, tiger), make_pair(0, false)));
                 m_okay = false;
             }
+            if(copy2 != *current) {
+                copy2 == *current;
+            }
             // check each tiger response
-            pair<Point_t *, pair<bool*,int>> tiger_moves;
-            tiger_moves = game->validMoves(*current, tiger);
+            auto tiger_moves = game->validMoves(*current, tiger);
             for(auto t = 0; t < tiger_moves.second.second && m_okay; ++t) {
                 // move tiger
                 Move_t t_mv = make_move(tiger, tiger_moves.first[t]);
@@ -87,20 +100,45 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
                 }
                 // undo tiger move
                 current->do_move(-t_mv);
+                if(copy2 != *current) {
+                    copy2 == *current;
+                }
             }
-            delete [] tiger_moves.second.first;
-            delete [] tiger_moves.first; // free memory
+            // free memory
+            if(tiger_moves.second.first) {
+                delete[] tiger_moves.second.first;
+                tiger_moves.second.first = nullptr;
+            }
+            if(tiger_moves.first) {
+                delete[] tiger_moves.first;
+                tiger_moves.first = nullptr;
+            }
             // undo move
             current->do_move(-mv);
-            cur_hash_val = next_hash(-mv, cur_hash_val, back_row);
+            if(copy != *current) {
+                copy == *current;
+            }
+            auto ne2_hash_val = next_hash(-mv, cur_hash_val, back_row);
+            cur_hash_val.first = ne2_hash_val.first;
+            cur_hash_val.second = ne2_hash_val.second;
             // if move is okay, record it
             if(m_okay){
                 any_good = true;
                 path[ndx] = mv;
             }
         }
-        delete [] man_moves.second.first;
-        delete [] man_moves.first; // free memory
+        // free memory
+        if(man_moves.second.first) {
+            delete[] man_moves.second.first;
+            man_moves.second.first = nullptr;
+        }
+        if(man_moves.first) {
+            delete[] man_moves.first;
+            man_moves.first = nullptr;
+        }
+    }
+    if(copy != *current) {
+        copy == *current;
     }
 
     visited[ndx] = make_pair(num_moves, any_good); // record answer
@@ -128,12 +166,16 @@ Transition::Transition(Unordered_State* c, set<Hash_val>*hash_vals, GameRunner*g
 bool Transition::find_path_to_state(int max_moves, int minimum_max_moves) {
     // see if can reach a desired state "without moving" this time
     // this prevents degenerating into cycles
+    Unordered_State copy = *this->current;
     bool found = false;
     for(int i = max_moves - max(1, minimum_max_moves); i >= 0 && !found; --i) {
         this->visited.clear();
         this->path.clear();
         if(search_for_state(max_moves, i)) {
             found = true;
+        }
+        if(copy != *current) {
+            copy == *current;
         }
     }
     return found;

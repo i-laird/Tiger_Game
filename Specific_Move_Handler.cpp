@@ -34,6 +34,10 @@ bool Specific_Move_Handler::one_col_two_back() {
             }
         }
    }
+   // if back col has an off move, not in position
+    if(back_col == off_move.destination.col) {
+        in_pos = false;
+    }
 
    if(in_pos) {
         int help_col = back_col - 1;
@@ -72,10 +76,10 @@ bool Specific_Move_Handler::three_by_diag() {
     /// verify that in this position
     bool in_pos = false;
     int left_col = -1;
-    // if at tiger cage or not enough to front return false
-    if(front_row <= 4 || (row_to_col[front_row].size() < 4 &&
-                          front_row > 6) || (front_row <= 6 &&
-                          !secure(current, g))) {
+    // if at tiger cage or not secure, return false
+    if(front_row <= 4 || //(row_to_col[front_row].size() < 4 &&
+                          //front_row > 6) || (front_row <= 6 &&
+                          !secure(current, g)){//)) {
         return false;
     }
 
@@ -108,6 +112,10 @@ bool Specific_Move_Handler::three_by_diag() {
         // c, c + 1, c+ 2 should be three consecutive columns
         // with the diagonal intersecting the front_row at
         // either c or c + 1, and continues down into c
+        // if off_col in [c, c+2] then not in pos
+        if(c <= off_move.destination.col && c + 2 >= off_move.destination.col) {
+            in_pos = false;
+        }
         for(int i = 0; i < 3 && in_pos; ++i) {
             if(c + i < 0 || c + i >= NUM_COL) {
                 continue;
@@ -179,7 +187,7 @@ bool Specific_Move_Handler::near_top_finish_three_by_diag() {
     bool in_pos = false;
     int left_col = -1;
     // if at tiger cage or not near front return false
-    if(front_row <= 4 || (front_row > 6)) {
+    if(front_row <= 4){// || (front_row > 6)) {
         return false;
     }
 
@@ -204,6 +212,10 @@ bool Specific_Move_Handler::near_top_finish_three_by_diag() {
         // c, c + 1, c+ 2 should be three consecutive columns
         // with the diagonal intersecting the front_row at
         // either c or c + 1, and continues down into c
+        // if any of those has an off move, then not in position
+        if(c <= off_move.destination.col && c + 2 >= off_move.destination.col) {
+            in_pos = false;
+        }
         for(int i = 0; i < 3 && in_pos; ++i) {
             if(c + i < 0 || c + i >= NUM_COL) {
                 continue;
@@ -290,6 +302,10 @@ bool Specific_Move_Handler::lagging_col() {
    else {
         lag_col = *row_to_col[front_row + 2].begin();
         if(row_to_col[front_row].find(lag_col) != row_to_col[front_row].end()) {
+            in_pos = false;
+        }
+        // if lagging col has an off move, not in position
+        if(lag_col == off_move.destination.col) {
             in_pos = false;
         }
    }
@@ -439,6 +455,10 @@ bool Specific_Move_Handler::try_switch() {
     if(diag_threatening < 0 || diag_threatening >= NUM_COL) {
         return false;
     }
+    // if either column has an off move, not in a special move
+    if(diag_threatening == off_move.destination.col || tiger_col == off_move.destination.col) {
+        return false;
+    }
 
     // else, perform the switch on the help_col
     in_pos = true;
@@ -472,8 +492,13 @@ bool Specific_Move_Handler::handle_special_case(Move_t off_move) {
     if(front_row <= 4) {
         return false;
     }
+    this->off_move = off_move;
     // pretend no off move
-    bool undid_off = current->do_move(-off_move);
+    bool undid_off = false;
+    if(g->isValidMove(*current, -off_move)) {
+        undid_off = true;
+        current->do_move(-off_move);
+    }
 
     bool in_specific_case = false;
     in_specific_case = one_col_two_back();

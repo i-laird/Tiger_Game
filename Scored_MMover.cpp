@@ -43,14 +43,26 @@ Move_t Scored_MMover::execute_move() {
                     }
                 }
             }
-            delete[] moves.first;
-            delete[] moves.second.first;
+            if(moves.first) {
+                delete[] moves.first;
+                moves.first = nullptr;
+            }
+            if(moves.second.first) {
+                delete[] moves.second.first;
+                moves.second.first = nullptr;
+            }
         }
     }
     for(int i = 0; i < 13; i++){
-        delete[] scores[i];
+        if(scores[i]) {
+            delete[] scores[i];
+            scores[i] = nullptr;
+        }
     }
-    delete[] scores;
+    if(scores) {
+        delete[] scores;
+        scores = nullptr;
+    }
     current.do_move(best);
     return best;
 }
@@ -63,7 +75,10 @@ Scored_MMover::Scored_MMover(const State &s) : Men_Mover(s) {}
 
 Scored_MMover::~Scored_MMover() {
     for(ScoreMod* mod : mods){
-        delete mod;
+        if(mod) {
+            delete mod;
+            mod = nullptr;
+        }
     }
 }
 

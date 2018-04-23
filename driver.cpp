@@ -10,6 +10,7 @@
 using namespace std;
 
 const int MAX_TURNS = 1000;
+const int HOW_MANY_TO_STORE = 50;
 
 int main()
 {
@@ -62,7 +63,7 @@ int main()
         if((100 * q) / num_games != (100 * (q - 1)) / num_games) {
             cout << q << " / " << num_games << "...\n";
         }
-        vector<Unordered_State> the_game;
+        list<Unordered_State> the_game;
         bool men_win = false;
 
         time_t total_men_time = 0;
@@ -83,6 +84,9 @@ int main()
         bool play_game = true;
         while (play_game && num_moves < MAX_TURNS) {
             the_game.push_back(game_state);
+            if(the_game.size() > HOW_MANY_TO_STORE) {
+                the_game.pop_front();
+            }
             Color_t c;
             State cur = game_state;
             if (game.evaluateWinState(cur, c)) {
@@ -144,8 +148,7 @@ int main()
                         cout << tiger_move.token.location << " --> " << tiger_move.destination;
                         cout << "\n";
                         cout << "<valid moves>:\n";
-                        std::pair<Point_t *, std::pair<bool *, int>> valid_moves;
-                        valid_moves = game.validMoves(game_state, game_state.get_tiger());
+                        auto valid_moves = game.validMoves(game_state, game_state.get_tiger());
                         for (auto i = 0; i < valid_moves.second.second; ++i) {
                             Point_t to = valid_moves.first[i];
                             string cmd = "";
@@ -212,8 +215,7 @@ int main()
             }
 
             game_state.do_move(men_move);
-            std::pair<Point_t *, std::pair<bool *, int>> t_moves;
-            t_moves = game.validMoves(game_state, game_state.get_tiger());
+            auto t_moves = game.validMoves(game_state, game_state.get_tiger());
 
             if (tiger_can_jump(&game_state, &game) && !speed_run) {
                 cout << "<ALERT> tiger can jump men\n";
@@ -227,7 +229,9 @@ int main()
         if(!men_win && speed_run) {
             trash = "";
             cout << "game lost... watch game?(y/n)";
-            cin >> trash;
+            //cin >> trash;
+            //trash[0] = tolower(trash[0]);
+            trash = "n";
             if(trash[0] == 'y') {
                 cout << "enter a positive number to go forwards, negative to go back, 0 to quit\n";
                 cout << "enter any positive number to start.\n";
@@ -252,7 +256,11 @@ int main()
                             turn = the_game.size() - 1;
                         }
                         else {
-                            p_board(the_game[turn]);
+                            auto i = the_game.begin();
+                            for(int j = 0; j < turn; ++j) {
+                                ++i;
+                            }
+                            p_board(*i);
                         }
                     }
                 }

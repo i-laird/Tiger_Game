@@ -16,6 +16,7 @@ class Specific_Move_Handler {
         GameRunner* g;
         queue<Move_t> response;
         int front_row, back_row;
+        Move_t off_move;
 
         bool one_col_two_back();
         bool three_by_diag();

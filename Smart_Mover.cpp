@@ -1,10 +1,11 @@
 #include "Smart_Mover.h"
 
 void Smart_Mover::determine_rows() {
+    const Unordered_State copy = current;
     // pretend off move not done
-    if(off_move_active) {
+    /*if(off_move_active) {
         this->current.do_move(-off_move);
-    }
+    }*/
 
     set<int> row_to_col[NUM_ROW];
 
@@ -46,43 +47,121 @@ void Smart_Mover::determine_rows() {
             }
         }
     }
+
     /// otherwise front_row is left unchanged
     // re-do off move
-    if(off_move_active) {
+    /*if(off_move_active) {
         this->current.do_move(off_move);
+    }*/
+
+    if(copy != current) {
+        copy == current;
     }
 }
 
 
 Move_t Smart_Mover::off_move_handling() {
+    Unordered_State copy = current;
+    // ensure that if an off move is purported to exist, it actually does
+    // and it can be undone
+    if(off_move != NULL_MOVE && (current.get_tiger().location == off_move.destination
+                                || current.is_occupied(off_move.token.location) ||
+                                !current.is_occupied(off_move.destination))) {
+        off_move = NULL_MOVE;
+        off_move_active = false;
+    }
+
     off_move_ready = false;
     /// if token in danger because of off move, undo off move
+    // or if an off move too far bback, undo it
     Move_t off_move_capture = make_move(current.get_tiger(),
                                         off_move.token.location);
-    if(off_move_active && off_move != NULL_MOVE &&
-       game.isValidMove(current, off_move_capture)) {
+    if((off_move_active && off_move != NULL_MOVE &&
+       game.isValidMove(current, off_move_capture))) {
         off_move_active = false;
     }
 
     Move_t to_do = NULL_MOVE;
     /// if off_move_active but off_move is NULL_MOVE, set an off move
     if(off_move_active && off_move == NULL_MOVE) {
-        int off_col = 0; // pick column furthest from tiger
-        if(current.get_tiger().location.col < 4) {
-            off_col = NUM_COL - 1;
+        int off_col;
+        if(!to_tiger_cage) {
+            // pick column furthest from tiger
+            off_col = 0;
+            if (current.get_tiger().location.col < (NUM_COL - 1) / 2) {
+                off_col = NUM_COL - 1;
+            }
         }
-
-        int row = -1;
-        // pick lowest token in off_col
-        auto r = current.rows_in_col(off_col).begin();
-        while(r != current.rows_in_col(off_col).end()) {
-            row = max(*r, row);
-            ++r;
+        else {
+            // pick column furthest from tiger with a man not in the cage
+            // and not in stage positions
+            off_col = -1;
+            int tiger_col = current.get_tiger().location.col;
+            for(int c = 0; c < NUM_COL - 1; ++c) {
+                // if already found a potential off move and this column is no
+                // further from tiger, then look for another
+                if(off_col >= 0 && abs(off_col - tiger_col) >= abs(c - tiger_col)) {
+                    continue;
+                }
+                bool off_move_found = false;
+                auto r = current.rows_in_col(c).begin();
+                while (r != current.rows_in_col(c).end() && !off_move_found) {
+                    Point_t pt = make_point(*r,c);
+                    ++r;
+                    // don't move a man in stage position or in tiger cage
+                    bool bad_choice = false;
+                    if(pt.row < CAGE_ENTRANCE.row) {
+                        bad_choice = true;
+                    }
+                    for(int k = 0; k < STAGE_POS_SIZE; ++k) {
+                        if(pt == STAGE_POSITIONS[k]) {
+                            bad_choice = true;
+                        }
+                    }
+                    if(bad_choice) {
+                        continue;
+                    }
+                    // if not a bad choice, make the man
+                    Token_t man = make_man(pt);
+                    auto moves = game.validMoves(current, man);
+                    // if man has moves, pick one going to furthest column from tiger
+                    if(moves.second.second > 0) {
+                        off_move_found = true;
+                        off_move.token = man;
+                        off_move.destination = moves.first[0];
+                        for(int k = 1; k < moves.second.second; ++k) {
+                            if(abs(off_move.destination.col - tiger_col) <
+                                    abs(moves.first[k].col - tiger_col)) {
+                                off_move.destination = moves.first[k];
+                            }
+                        }
+                    }
+                    if(moves.first) {
+                        delete [] moves.first;
+                        moves.first = nullptr;
+                    }
+                    if(moves.second.first) {
+                        delete [] moves.second.first;
+                        moves.second.first = nullptr;
+                    }
+                }
+            }
         }
+        // if not to tiger cage, finish creating off move
+        if(!to_tiger_cage) {
+            int row = -1;
+            // pick lowest token in off_col
+            auto r = current.rows_in_col(off_col).begin();
+            while (r != current.rows_in_col(off_col).end()) {
+                row = max(*r, row);
+                ++r;
+            }
 
-        // create off move and set to_do to it
-        Token_t man = make_man(make_point(row, off_col));
-        off_move = make_move_in_direction(man, DOWN);
+            // create off move and set to_do to it
+            Token_t man = make_man(make_point(row, off_col));
+            off_move = make_move_in_direction(man, DOWN);
+        }
+        // store the off move to-do and set off_move_ready to true
         to_do = off_move;
         off_move_ready = true;
     }
@@ -92,6 +171,10 @@ Move_t Smart_Mover::off_move_handling() {
         to_do = -off_move;
         off_move = NULL_MOVE;
         off_move_ready = true;
+    }
+
+    if(copy != current) {
+        copy == current;
     }
 
     /// if doing an off move, cancel all other plans
@@ -121,9 +204,15 @@ Move_t** Smart_Mover::find_moves_to_do() {
                 if(moves_to_do[c][0] != NULL_MOVE &&
                    moves_to_do[c][1] != NULL_MOVE) {
                     for(int i = 0; i < NUM_COL; ++i) {
-                        delete [] moves_to_do[i];
+                        if(moves_to_do[i]) {
+                            delete[] moves_to_do[i];
+                            moves_to_do[i] = nullptr;
+                        }
                     }
-                    delete [] moves_to_do;
+                    if(moves_to_do) {
+                        delete[] moves_to_do;
+                        moves_to_do = nullptr;
+                    }
                     return nullptr;
                 }
                 else if(moves_to_do[c][0] == NULL_MOVE) {
@@ -135,7 +224,9 @@ Move_t** Smart_Mover::find_moves_to_do() {
                     // in front
                     if(moves_to_do[c][0].destination >
                                               moves_to_do[c][1].destination){
-                        swap(moves_to_do[c][0], moves_to_do[c][1]);
+                        Move_t temp = moves_to_do[c][0];
+                        moves_to_do[c][0] = moves_to_do[c][1];
+                        moves_to_do[c][1] = temp;
                     }
                     // if the guy in front already has a space between
                     // him and the guy below, don't try to move the top guy again
@@ -184,9 +275,17 @@ Move_t Smart_Mover::try_for_specific_move() {
 
 void Smart_Mover::search_for_state() {
 
+    Unordered_State copy = current;
+    if(copy != current) {
+        copy == current;
+    }
+
     Move_t** moves_to_do = find_moves_to_do();
     if(moves_to_do == nullptr) {
         return;
+    }
+    if(copy != current) {
+        copy == current;
     }
 
     move_ready = false;
@@ -240,33 +339,49 @@ void Smart_Mover::search_for_state() {
                         }
                     }
                 }
+                if(copy != current) {
+                    copy == current;
+                }
             }
         }
 
         // create transition, and have it look for a path to the desired states
-        if(desired.size() > 0) {
+        if(!desired.empty()) {
             Transition t(&current, &desired, &game, back_row, make_pair(c, c+3),
                          make_pair(front_row, back_row + 1));
             int min_req = INFTY;
             int max_req = -1;
-            for(int i = 0; i < 6; ++i) {
-                max_req = max(max_req, req_moves[i]);
-                if(req_moves[i] > 0) {
-                    min_req = min(req_moves[i], min_req);
+            for (int req_move : req_moves) {
+                max_req = max(max_req, req_move);
+                if(req_move > 0) {
+                    min_req = min(req_move, min_req);
                 }
             }
             move_ready = t.find_path_to_state(min(4,max_req), min_req);
             if(move_ready) {
                 path = t.get_path();
             }
+            if(copy != current) {
+                copy == current;
+            }
         }
+    }
+
+    if(copy != this->current) {
+        copy == this->current;
     }
 
     // free memory
     for(int c = 0; c < NUM_COL; ++c) {
-        delete [] moves_to_do[c];
+        if(moves_to_do[c]) {
+            delete[] moves_to_do[c];
+            moves_to_do[c] = nullptr;
+        }
     }
-    delete [] moves_to_do;
+    if(moves_to_do) {
+        delete[] moves_to_do;
+        moves_to_do = nullptr;
+    }
 }
 
 
@@ -280,6 +395,9 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
     // now ensure validity
     if(!game.isValidMove(current, suggested)) {
         State cur = current;
+        p_board(cur);
+        cout << suggested << "\n";
+        game.isValidMove(current, suggested);
         // if move not valid, look for a valid safe move
         bool fail_safe_found = false;
         suggested = NULL_MOVE;
@@ -318,10 +436,17 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
 Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
     Move_t to_do = NULL_MOVE;
 
-    current.do_move(suggested);
+    bool did_move = false;
+    if(game.isValidMove(current, suggested)) {
+        current.do_move(suggested);
+        did_move = true;
+    }
     bool can_jump = tiger_can_jump(&current, &game);
-    current.do_move(-suggested);
-    if(can_jump) {
+    if(did_move) {
+        current.do_move(-suggested);
+    }
+
+    if(can_jump || !did_move) {
         State cur = current;
         bool fail_safe_found = false;
         // try each direction of moves and see if can prevent the
@@ -332,13 +457,32 @@ Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
         for (int i = 0; i < 8 && !fail_safe_found; ++i) {
             for (int j = 1; j < cur.size() && !fail_safe_found; ++j) {
                 Token_t man = cur[j];
-                // don't try to move away from the middle
-                if ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
-                    (man.location.col > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
+                // don't try to move away from the middle if tiger in cage
+                bool bad_choice = false;
+                if (current.get_tiger().location.row < CAGE_ENTRANCE.row &&
+                        ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
+                        (man.location.col > (NUM_COL - 1) / 2 && dirs[i].col > 0))) {
+                    bad_choice = true;
+                }
+                // try not to move off man
+                if(man.location == off_move.destination) {
+                    bad_choice = true;
+                }
+                // if at tiger cage, don't move any man in a STAGE_POSITION
+                if(to_tiger_cage) {
+                    for (auto stage_pos : STAGE_POSITIONS) {
+                        if(man.location == stage_pos) {
+                            bad_choice = true;
+                        }
+                    }
+                }
+                if(bad_choice) {
                     continue;
                 }
+
                 Move_t mv = make_move_in_direction(man, dirs[i]);
-                if (game.isValidMove(current, mv) && mv.destination.row >= front_row) {
+                if (game.isValidMove(current, mv) &&
+                        (to_tiger_cage || mv.destination.row >= front_row)) {
                     current.do_move(mv);
                     if (!tiger_can_jump(&current, &game)) {
                         fail_safe_found = true;
@@ -357,6 +501,7 @@ Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
 
 Move_t Smart_Mover::execute_move() {
     Move_t to_do = NULL_MOVE; // men move to do
+    const Unordered_State copy = this->current;
 
     Hash_val cur_hash = hash_locs(current, back_row);
     pair<Hash_val, Token_t> ndx = make_pair(cur_hash, current.get_tiger());
@@ -383,9 +528,16 @@ Move_t Smart_Mover::execute_move() {
         }
     }
 
+    if(copy != this->current) {
+        cout << "shift";
+    }
+
     if(!move_ready) {
         // determine rows
         determine_rows();
+        if(copy != this->current) {
+            cout << "shift";
+        }
         if(front_row <= 4) {
             to_tiger_cage = true;
         }
@@ -394,10 +546,18 @@ Move_t Smart_Mover::execute_move() {
             this->path.clear();
             this->desired.clear();
             this->search_for_state();
+            if(copy != this->current) {
+                copy == this->current;
+            }
             if(move_ready) {
                 move_from_search = true;
             }
         }
+    }
+
+    if(copy != this->current) {
+        copy == this->current;
+        cout << "shift";
     }
 
     // if move is ready from search, do it
@@ -414,6 +574,10 @@ Move_t Smart_Mover::execute_move() {
         }
     }
 
+    if(copy != this->current) {
+        cout << "shift";
+    }
+
     // if to tiger cage, try a tiger cage move
     if(to_tiger_cage) {
         to_do = kill_tiger_handling();
@@ -422,19 +586,32 @@ Move_t Smart_Mover::execute_move() {
         }
     }
 
+    if(copy != this->current) {
+        cout << "shift";
+    }
+
     // if no move found still, try an off move
-    if(!move_ready && !to_tiger_cage) {
+    if(!move_ready){// && !to_tiger_cage) {
         off_move_active = !off_move_active;
     }
+    /*
     // undo off move if to tiger cage
     if(to_tiger_cage && off_move_active) {
         off_move_active = false;
+    }
+    */
+    if(copy != this->current) {
+        copy == current;
     }
 
     // handle off move
     Move_t off_move_to_do = off_move_handling();
     if(off_move_ready) {
         to_do = off_move_to_do;
+    }
+
+    if(copy != this->current) {
+        cout << "shift";
     }
 
     // perform failsafe
@@ -462,7 +639,16 @@ Move_t Smart_Mover::execute_move() {
         to_do = fs;
     }
 
-    // do move in this object
+    if(copy != this->current) {
+        cout << "shift";
+    }
+
+    if(!game.isValidMove(current,to_do)) {
+        p_board(current);
+        cout << to_do;
+    }
+
+    // do the move in this object
     current.do_move(to_do);
 
     return to_do;
@@ -482,14 +668,14 @@ Move_t Smart_Mover::kill_tiger_handling() {
 
 	State cur = current;
     // see if any move kills the tiger
-    for(int i = 1; i < cur.size(); ++i) {
+    for(int i = 1; i < cur.size() && ret == NULL_MOVE; ++i) {
         Token_t man = cur[i];
         auto moves = game.validMoves(current, man);
         for(int j = 0; j < moves.second.second && ret == NULL_MOVE; ++j) {
             Move_t mv = make_move(man, moves.first[j]);
             current.do_move(mv);
             auto t_moves = game.validMoves(current, current.get_tiger());
-            if(t_moves.second.second = 0) {
+            if(t_moves.second.second <= 0) {
                 ret = mv;
             }
             // free memory
@@ -513,9 +699,6 @@ Move_t Smart_Mover::kill_tiger_handling() {
             delete[] moves.second.first;
             moves.second.first = nullptr;
         }
-        if(ret != NULL_MOVE) {
-            break;
-        }
     }
 	// if found a kill-tiger move, do it
 	if(ret != NULL_MOVE) {
@@ -524,12 +707,12 @@ Move_t Smart_Mover::kill_tiger_handling() {
 
 	// ensure tiger is at top row / trapped in
     bool trapped_in = false;
-	if(current.is_occupied(CAGE_ENTRANCE)) {
+	if(current.is_occupied(CAGE_ENTRANCE)){
 	    if(current.get_tiger().location.row < 4) {
             trapped_in = true;
         }
 	}
-	if(tiger_loc.row <= 4 && !trapped_in) {
+	if(!trapped_in) {
 	    // for each man
 		for (int i = 1; i < cur.size(); ++i) {
             Token_t man = cur[i];
@@ -600,10 +783,9 @@ Move_t Smart_Mover::kill_tiger_handling() {
 	}
 
 	// if no move yet found, try to move into the cage
-	if (ret == NULL_MOVE && cage_staged()) {
+	if (ret == NULL_MOVE && cage_staged() && current.get_tiger().location.row < CAGE_ENTRANCE.row - 1) {
 		ret = get_move_into_cage();
 	}
-
 
 	return ret;
 }
@@ -650,7 +832,11 @@ Move_t Smart_Mover::get_move_in_cage() {
                     Point_t to = mv.destination, from = mv.token.location;
                     Move_t mv2 = make_move(make_man(to), to + to - from);
                     current.do_move(mv);
-                    bool moved = current.do_move(mv2);
+                    bool moved = false;
+                    if(game.isValidMove(current, mv2)) {
+                        moved = true;
+                        current.do_move(mv2);
+                    }
                     if (secure(&current, &game)) {
                         q.push(mv);
                         if (moved) {
@@ -682,9 +868,9 @@ Move_t Smart_Mover::get_move_in_cage() {
 
 
 Move_t Smart_Mover::get_move_into_cage() {
-    // if there is no man in the cage entrance, cannot get
-    // a move into the cage
-	if (!(current.is_occupied(make_point(4, 4)) && current.get_tiger().location != make_point(4, 4))) {
+    // if there is no man in the cage entrance, or tiger not in cage / near entrance
+    // of cage, there is no move into the cage
+	if (!(current.is_occupied(CAGE_ENTRANCE) && current.get_tiger().location.row < 3)) {
 		return NULL_MOVE;
 	}
 
@@ -706,9 +892,9 @@ Move_t Smart_Mover::get_move_into_cage() {
 
 		// find a man in one of the fill positions and make the filling
         // move mv2
-		for(int j = 0; j < 3; j++) {
-			if (current.is_occupied(fills[j])) {
-				mv2 = make_move(make_man(fills[j]), from);
+		for (auto fill : fills) {
+			if (current.is_occupied(fill)) {
+				mv2 = make_move(make_man(fill), from);
 				break;
 			}
 		}
