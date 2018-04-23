@@ -349,6 +349,7 @@ Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
         }
     }
 
+
     return to_do;
 }
 
@@ -637,46 +638,43 @@ Move_t Smart_Mover::stage_men() {
 
 
 Move_t Smart_Mover::get_move_in_cage() {
-	for (int c = 2; c < 7; c++) {
-		auto r = current.rows_in_col(c).begin();
-		while (r != current.rows_in_col(c).end()) {
-			if (*r < 4) {
-				Token_t man = make_man(make_point(*r, c));
-				auto moves = game.validMoves(current, man);
-				for (int i = 0; i < moves.second.second; i++) {
-					if (moves.first[i].row < *r && moves.first[i] != TIGER_START) {
-						Move_t mv = make_move(man, moves.first[i]);
-						Point_t to = mv.destination, from = mv.token.location;
-                        Move_t mv2 = make_move(make_man(to), to + to - from);
+    State cur = current;
+	for (int i = 1; i < cur.size(); i++) {
+        Token_t man = cur[i];
+        if (man.location.row < 4) {
+            auto moves = game.validMoves(current, man);
+            for (int j = 0; j < moves.second.second; j++) {
+                if (moves.first[j].row < man.location.row) {
+                    Move_t mv = make_move(man, moves.first[j]);
+                    Point_t to = mv.destination, from = mv.token.location;
+                    Move_t mv2 = make_move(make_man(to), to + to - from);
 
-						current.do_move(mv);
-						bool moved = current.do_move(mv2);
-						if (secure(&current, &game)) {
-							q.push(mv);
-							if (moved) {
-								q.push(mv2);
-								current.do_move(-mv2);
-							}
-						}
-						current.do_move(-mv);
-						if (!q.empty()) {
-							Move_t ret = q.front();
-							q.pop();
-							return ret;
-						}
-					}
-				}
-				if (moves.first) {
-					delete[] moves.first;
-					moves.first = nullptr;
-				}
-				if (moves.second.first) {
-					delete[] moves.second.first;
-					moves.second.first = nullptr;
-				}
-			}
-			r++;
-		}
+                    current.do_move(mv);
+                    bool moved = current.do_move(mv2);
+                    if (secure(&current, &game)) {
+                        q.push(mv);
+                        if (moved) {
+                            q.push(mv2);
+                            current.do_move(-mv2);
+                        }
+                    }
+                    current.do_move(-mv);
+                    if (!q.empty()) {
+                        Move_t ret = q.front();
+                        q.pop();
+                        return ret;
+                    }
+                }
+            }
+            if (moves.first) {
+                delete[] moves.first;
+                moves.first = nullptr;
+            }
+            if (moves.second.first) {
+                delete[] moves.second.first;
+                moves.second.first = nullptr;
+            }
+        }
 	}
 
 	return NULL_MOVE;
