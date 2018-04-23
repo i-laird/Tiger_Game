@@ -225,27 +225,24 @@ int main()
 
         delete men;
         if(!men_win && speed_run) {
+            trash = "";
             cout << "game lost... watch game?(y/n)";
             cin >> trash;
             if(trash[0] == 'y') {
-                cout << "press n to go forwards, p to go back, q to quit\n";
+                cout << "enter a positive number to go forwards, negative to go back, 0 to quit\n";
+                cout << "enter any positive number to start.\n";
                 bool viewing = true;
                 int turn = 0;
+                int skip;
                 while(viewing) {
-                    cin >> trash;
-                    trash[0] = tolower(trash[0]);
-                    int shift = 0;
-                    if(trash[0] == 'p') {
-                        --shift;
+                    cin >> skip;
+                    if(skip != 0) {
+                        turn += skip;
                     }
-                    else if(trash[0] == 'n') {
-                        ++shift;
-                    }
-                    else if(trash[0] == 'q') {
+                    else {
                         viewing = false;
                     }
                     if(viewing) {
-                        turn += shift;
                         if(turn < 0) {
                             cout << "at first turn...\n";
                             turn = 0;
