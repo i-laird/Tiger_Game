@@ -131,6 +131,10 @@ public:
 
     Move_t Tiger_Move(vector<Token_t> &, int randomProbability = 0);
 
+    int getRandomizer(vector<Token_t> &);
+
+    Move_t Undeterministic_Tiger_Move(vector<Token_t> &);
+
 };
 
 

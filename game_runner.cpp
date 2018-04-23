@@ -7,6 +7,7 @@
 #include <queue>
 #include <ctime>
 #include <cstdlib>
+#include <algorithm>
 #include "game_runner.h"
 Move_t  My_Move(vector<Token_t>, Color_t turn){
 
@@ -636,6 +637,33 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
     }
     return evaluatePoint;
 
+}
+
+int GameRunner::getRandomizer(vector<Token_t> & tokens){
+    //First find the average row
+    int rowTotal = 0, rowAverage, returnVal;
+    for(Token_t & temp : tokens){
+        rowTotal += temp.location.row;
+    }
+    rowAverage = rowTotal / tokens.size();
+    //Now just return a higher randomizer based on stage of play
+    if(rowAverage <= 4)
+        return 2;
+    if(rowAverage <= 10)
+        return 1;
+    return 0;
+}
+
+Move_t GameRunner::Undeterministic_Tiger_Move(vector<Token_t> & pieces){
+    static list<Point_t> previousPoints;
+    set<Point_t> movedPoints(previousPoints.begin(), previousPoints.end());
+    Move_t returnMove;
+    returnMove = (movedPoints.size() == 2 ? this->Tiger_Move(pieces, 0) :
+                  this->Tiger_Move(pieces, this->getRandomizer(pieces)));
+    previousPoints.push_back(returnMove.destination);
+    if(previousPoints.size() > 6)
+        previousPoints.pop_front();
+    return returnMove;
 }
 
 
