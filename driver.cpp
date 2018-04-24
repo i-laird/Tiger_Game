@@ -9,7 +9,7 @@
 #include <ctime>
 using namespace std;
 
-const int MAX_TURNS = 1000;
+const int MAX_TURNS = 250;
 const int HOW_MANY_TO_STORE = 50;
 
 int main()
@@ -64,6 +64,7 @@ int main()
     vector<time_t> avg_times;
     double avg_moves = 0;
     int max_moves = 0;
+    int max_moves_in_men_win = 0;
 
     for(int q = 0; q < num_games; ++q) {
         if((100 * q) / num_games != (100 * (q - 1)) / num_games) {
@@ -289,6 +290,9 @@ int main()
 
         avg_moves += num_moves;
         max_moves = max(num_moves, max_moves);
+        if(men_win) {
+            max_moves_in_men_win = max(num_moves, max_moves_in_men_win);
+        }
         avg_times.push_back(total_men_time / num_moves);
     }
 
@@ -306,6 +310,9 @@ int main()
         avg_avg_time /= avg_times.size();
         cout << "avg num turns = " << avg_moves / num_games << "\n";
         cout << "max num turns = " << max_moves << "\n";
+        if(men_wins < num_games) {
+            cout << "max num turns during win = " << max_moves_in_men_win << "\n";
+        }
         cout << "median avg time = " << avg_times[avg_times.size() / 2] << " ms\n";
         cout << "avg avg time = " << avg_avg_time << " ms\n";
         cout << "max time = " << max_time << " ms\n";
