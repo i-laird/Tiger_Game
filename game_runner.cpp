@@ -662,9 +662,9 @@ int GameRunner::getRandomizer(vector<Token_t> & tokens){
     }
     rowAverage = rowTotal / tokens.size();
     //Now just return a higher randomizer based on stage of play
-    if(rowAverage <= 4)
+    if(rowAverage <= 8)
         return 2;
-    if(rowAverage <= 10)
+    if(rowAverage <= 14)
         return 1;
     return 0;
 }
