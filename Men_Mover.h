@@ -15,7 +15,7 @@ protected:
 public:
     Men_Mover(const State &s);
 
-    virtual Move_t next_move(Move_t tiger_move);
+    virtual Move_t next_move(State s);
 protected:
     virtual Move_t execute_move() = 0;
 };

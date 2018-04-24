@@ -136,6 +136,9 @@ private:
 
 		Move_t get_move_into_cage();
 
+		set<Point_t> tiger_reachable_pos();
+		Move_t finish_off_tiger();
+
     public:
     /*       Men_Mover(const State& s)
      *

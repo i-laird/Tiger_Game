@@ -30,6 +30,7 @@ int main()
 
     int num_games = 1;
 
+    bool watch_games = true;
     if(auto_tiger) {
         cout << "Speed Run (y/n)?\n";
         cin >> trash;
@@ -38,6 +39,11 @@ int main()
             cout << "How many games?\n";
             cin >> num_games;
             num_games = max(num_games, 1);
+            cout << "Watch games?(y/n)\n";
+            cin >> trash;
+            if(tolower(trash[0]) != 'y') {
+                watch_games = false;
+            }
         }
     }
 
@@ -83,9 +89,11 @@ int main()
         Unordered_State game_state(gs);
         bool play_game = true;
         while (play_game && num_moves < MAX_TURNS) {
-            the_game.push_back(game_state);
-            if(the_game.size() > HOW_MANY_TO_STORE) {
-                the_game.pop_front();
+            if(watch_games) {
+                the_game.push_back(game_state);
+                if (the_game.size() > HOW_MANY_TO_STORE) {
+                    the_game.pop_front();
+                }
             }
             Color_t c;
             State cur = game_state;
@@ -187,7 +195,7 @@ int main()
 
             game_state.do_move(tiger_move);
             time_t start = clock();
-            Move_t men_move = men->next_move(tiger_move);
+            Move_t men_move = men->next_move(game_state);
             time_t end = clock();
             total_men_time += (end - start);
             max_time = max((end - start), max_time);
@@ -235,12 +243,11 @@ int main()
         }
 
         delete men;
-        if(!men_win && speed_run) {
+        if(!men_win && speed_run && watch_games) {
             trash = "";
             cout << "game lost... watch game?(y/n)";
-            //cin >> trash;
-            //trash[0] = tolower(trash[0]);
-            trash = "n";
+            cin >> trash;
+            trash[0] = tolower(trash[0]);
             if(trash[0] == 'y') {
                 cout << "enter a positive number to go forwards, negative to go back, 0 to quit\n";
                 cout << "enter any positive number to start.\n";

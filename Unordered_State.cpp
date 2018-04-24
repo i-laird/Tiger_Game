@@ -157,8 +157,6 @@ bool Unordered_State::do_move(const Move_t& m) {
         valid_move = false;
     }
 
-    const Unordered_State copy = *this;
-
     // moving a man
     if(valid_move && m.token.color == BLUE) {
         // try to erase previous location, if cannot then trying to move
@@ -195,10 +193,6 @@ bool Unordered_State::do_move(const Move_t& m) {
         if(is_jump) {
             col_to_rows[jumped_pos.col].erase(jumped_pos.row);
         }
-    }
-
-    if(!valid_move && (copy != *this)) {
-        copy == *this;
     }
 
     return valid_move;

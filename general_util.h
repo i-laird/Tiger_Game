@@ -326,6 +326,17 @@ bool operator==(const Move_t &a, const Move_t &b);
  */
 bool operator!=(const Move_t &a, const Move_t& b);
 
+/*            operator<(const Move_t& a, const Move_t& b)
+*
+ * description: true iff a.token < b.token or a.token == b.token and
+ *              a.destination < b.destination
+ * return: bool
+ * precondition: - the given Move_t objects are valid
+ *               - No two Token_t objects may occupy the same location
+ * postcondition: the Move_t objects passed in are unchanged
+ */
+bool operator<(const Move_t& a, const Move_t& b);
+
 /// Move operators
 /*            operator-(const Move_t& mv)
 *

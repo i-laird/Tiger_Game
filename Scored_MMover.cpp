@@ -63,7 +63,7 @@ Move_t Scored_MMover::execute_move() {
         delete[] scores;
         scores = nullptr;
     }
-    current.do_move(best);
+
     return best;
 }
 

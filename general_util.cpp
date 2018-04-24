@@ -218,6 +218,11 @@ bool operator!=(const Move_t &a, const Move_t& b) {
 }
 
 
+bool operator<(const Move_t& a, const Move_t& b) {
+    return (a.token != b.token ? a.token < b.token : a.destination < b.destination);
+}
+
+
 /// Move operators
 Move_t operator-(const Move_t& m) {
     Move_t mv = m;
