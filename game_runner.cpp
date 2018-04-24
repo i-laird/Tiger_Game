@@ -12,7 +12,6 @@
 #include "Smart_Mover.h"
 
 Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
-    static Move_t savedMove = NULL_MOVE;
     static Smart_Mover * men  = nullptr;
     if(men == nullptr)
         men = new Smart_Mover(gameState);
@@ -20,9 +19,9 @@ Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
     Color_t win;
     GameRunner tigerMove;
     if(turn == RED){
-        returnMove = savedMove = tigerMove.Tiger_Move(gameState);
+        returnMove = tigerMove.Tiger_Move(gameState);
     }
-    returnMove = men->next_move(savedMove);
+    returnMove = men->next_move(gameState);
     if(tigerMove.evaluateWinState(gameState, win))
         delete men;
     return returnMove;
