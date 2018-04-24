@@ -324,20 +324,19 @@ pair<bool, Color_t> GameRunner::playGame(){
         returnedMove = My_Move(*this->gameState, turn);
         //If not valid move I will perform first available move
         if(!isValidMove(*this->gameState, returnedMove)){
-            if(turn == RED){
-                returnedMove.token = (*gameState)[0];
-                returnedMove.destination = this->validMoves(*gameState, returnedMove.token).first[0];
-            }
-            else{
-                for(unsigned int i = 1; i < gameState->size(); i++){
-                    returnedMove.token = (*gameState)[i];
-                    pair<Point_t *, pair<bool *, int > > returnPair = this->validMoves(*gameState, returnedMove.token);
-                    if(returnPair.second.second > 0){
-                        returnedMove.destination = returnPair.first[0];
-                        break;
-                    }
+            pair<Point_t *, pair<bool *, int>> tempHolder;
+            bool found = false;
+            for(unsigned int i = (turn == RED ? 0 : 1); i < gameState->size() && !found; i++){
+                returnedMove.token = (*gameState)[i];
+                pair<Point_t *, pair<bool *, int > > returnPair = this->validMoves(*gameState, returnedMove.token);
+                if(returnPair.second.second > 0){
+                    returnedMove.destination = returnPair.first[0];
+                    found = true;
                 }
+                delete [] returnPair.first;
+                delete [] returnPair.second.first;
             }
+
         }
         for(vector<Token_t>::iterator vectorIterator = gameState->begin();
             vectorIterator != gameState->end(); vectorIterator++) {
@@ -636,7 +635,7 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
 Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Point_t desiredLoc, Color_t color, bool & success){
     queue<Point_t> frontier;
     map<Point_t, Point_t> previous;
-    Point_t evaluatePoint, originalPoint = mapLayout[tokenIndex].location, temp;
+    Point_t evaluatePoint, originalPoint = mapLayout[tokenIndex].location, temp, temp2;
     Token_t currToken;
     currToken.color = color;
     frontier.push(mapLayout[tokenIndex].location);
@@ -672,8 +671,10 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
     if(currToken.location == desiredLoc) {
         //Now find what Point should be moved to
         temp = evaluatePoint = currToken.location;;
-        while(!((temp = previous[temp]) == originalPoint)){
+        while(!(temp == originalPoint)){
             evaluatePoint = temp;
+            temp2 = previous.find(temp)->second;
+            temp = temp2;
         }
         success = true;
     }
