@@ -7,9 +7,25 @@
 #include <queue>
 #include <ctime>
 #include <cstdlib>
+#include <algorithm>
 #include "game_runner.h"
-Move_t  My_Move(vector<Token_t>, Color_t turn){
-	return NULL_MOVE;
+#include "Smart_Mover.h"
+
+Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
+    static Move_t savedMove = NULL_MOVE;
+    static Smart_Mover * men  = nullptr;
+    if(men == nullptr)
+        men = new Smart_Mover(gameState);
+    Move_t returnMove;
+    Color_t win;
+    GameRunner tigerMove;
+    if(turn == RED){
+        returnMove = savedMove = tigerMove.Tiger_Move(gameState);
+    }
+    returnMove = men->next_move(savedMove);
+    if(tigerMove.evaluateWinState(gameState, win))
+        delete men;
+    return returnMove;
 }
 
 /*
@@ -321,7 +337,7 @@ pair<bool, Color_t> GameRunner::playGame(){
     while(counter < 10000 && !this->evaluateWinState(*this->gameState, winner)){
         this->manJumpedLastCheck = false;
         counter++;
-        returnedMove = My_Move(*this->gameState, turn);
+        returnedMove = Move_Deep_Blue(*this->gameState, turn);
         //If not valid move I will perform first available move
         if(!isValidMove(*this->gameState, returnedMove)){
             pair<Point_t *, pair<bool *, int>> tempHolder;
@@ -683,6 +699,33 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
     }
     return evaluatePoint;
 
+}
+
+int GameRunner::getRandomizer(vector<Token_t> & tokens){
+    //First find the average row
+    int rowTotal = 0, rowAverage, returnVal;
+    for(Token_t & temp : tokens){
+        rowTotal += temp.location.row;
+    }
+    rowAverage = rowTotal / tokens.size();
+    //Now just return a higher randomizer based on stage of play
+    if(rowAverage <= 8)
+        return 2;
+    if(rowAverage <= 14)
+        return 1;
+    return 0;
+}
+
+Move_t GameRunner::Undeterministic_Tiger_Move(vector<Token_t> & pieces){
+    static list<Point_t> previousPoints;
+    set<Point_t> movedPoints(previousPoints.begin(), previousPoints.end());
+    Move_t returnMove;
+    returnMove = (movedPoints.size() == 2 ? this->Tiger_Move(pieces, 0) :
+                  this->Tiger_Move(pieces, this->getRandomizer(pieces)));
+    previousPoints.push_back(returnMove.destination);
+    if(previousPoints.size() > 6)
+        previousPoints.pop_front();
+    return returnMove;
 }
 
 
