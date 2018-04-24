@@ -553,6 +553,23 @@ set<Point_t> Smart_Mover::tiger_reachable_pos() {
 }
 
 
+bool Smart_Mover::leads_to_cycle(Move_t mv) {
+    bool cycling = false;
+    // see if cycling
+    Point_t net_mvmt = ZERO_VECT;
+    Point_t mvmt_todo = mv.destination - mv.token.location;
+    for(auto prev = prev_moves.rbegin(); prev != prev_moves.rend() && !cycling; ++prev) {
+        net_mvmt += prev->destination;
+        net_mvmt -= prev->token.location;
+        if(net_mvmt - mvmt_todo == ZERO_VECT) {
+            cycling = true;
+        }
+    }
+    return cycling;
+}
+
+
+
 Move_t Smart_Mover::finish_off_tiger() {
     Move_t to_do = NULL_MOVE;
 
@@ -560,6 +577,13 @@ Move_t Smart_Mover::finish_off_tiger() {
     if(!q.empty()) {
         to_do = q.front();
         q.pop();
+
+        // record move
+        if(prev_moves.size() > MAX_CYCLING_CHECK) {
+            prev_moves.pop_front();
+        }
+        prev_moves.push_back(to_do);
+
         return to_do;
     }
 
@@ -625,11 +649,9 @@ Move_t Smart_Mover::finish_off_tiger() {
         unsigned long new_reachable = tiger_reachable_pos().size();
         if(new_reachable < num_reachable || (new_reachable == num_reachable &&
                                             mv.destination.row < mv.token.location.row)) {
-            bool sec = true;
-            //if(mv.token.location.row >= CAGE_ENTRANCE.row && mv.destination.row >= CAGE_ENTRANCE.row) {
-                sec = secure(&current, &game);
-            //}
-            if(sec) {
+            bool cycling = leads_to_cycle(mv);
+            bool sec = secure(&current, &game);
+            if(sec && !cycling) {
                 move_found = true;
                 q.push(mv);
             }
@@ -649,11 +671,10 @@ Move_t Smart_Mover::finish_off_tiger() {
                         (new_reachable < num_reachable || (new_reachable == num_reachable
                                                           && mv.destination.row < mv.token.location.row
                                                           && mv2.destination.row < mv2.token.location.row))) {
-                    bool sec = true;
-                    //if(mv.token.location.row >= CAGE_ENTRANCE.row && mv.destination.row >= CAGE_ENTRANCE.row) {
-                        sec = secure(&current, &game);
-                    //}
-                    if(sec) {
+                    bool sec = secure(&current, &game);
+                    bool cycling = leads_to_cycle(mv2);
+
+                    if(sec && !cycling) {
                         move_found = true;
                         q.push(mv);
                         q.push(mv2);
@@ -671,31 +692,27 @@ Move_t Smart_Mover::finish_off_tiger() {
     Move_t towards_tiger = NULL_MOVE;
     if(!move_found) {
         Token_t tiger = current.get_tiger();
-        for(int i = 1; i < cur.size(); ++i) {
-            Token_t man = cur[i];
-            // if no towards_tiger found yet or this man
-            // further from tiger than current candidate
-            if(towards_tiger == NULL_MOVE ||
-               one_norm(tiger.location - man.location) >
-               one_norm(tiger.location - towards_tiger.token.location)) {
-                auto moves = game.validMoves(current, man);
-                for (int j = 0; j < moves.second.second; ++j) {
-                    Point_t dest = moves.first[j];
-                    // if move moves the man closer t ot he tiger
-                    if(one_norm(tiger.location - dest) <
-                            one_norm(tiger.location - man.location)) {
-                        towards_tiger = make_move(man, dest);
-                        move_found = true;
-                    }
+        for(int i = 1; i < cur.size() && !move_found; ++i) {
+        Token_t man = cur[i];
+            auto moves = game.validMoves(current, man);
+            for (int j = 0; j < moves.second.second; ++j) {
+                Point_t dest = moves.first[j];
+                Move_t mv = make_move(man, dest);
+                bool cycling = leads_to_cycle(mv);
+                // if move moves the man closer to the tiger
+                if(one_norm(tiger.location - dest) <
+                        one_norm(tiger.location - man.location) && !cycling) {
+                    towards_tiger = mv;
+                    move_found = true;
                 }
-                if(moves.first) {
-                    delete [] moves.first;
-                    moves.first = nullptr;
-                }
-                if(moves.second.first) {
-                    delete [] moves.second.first;
-                    moves.second.first = nullptr;
-                }
+            }
+            if(moves.first) {
+                delete [] moves.first;
+                moves.first = nullptr;
+            }
+            if(moves.second.first) {
+                delete [] moves.second.first;
+                moves.second.first = nullptr;
             }
         }
         if(move_found) {
@@ -706,6 +723,12 @@ Move_t Smart_Mover::finish_off_tiger() {
     if(!q.empty()) {
         to_do = q.front();
         q.pop();
+
+        // record move
+        if(prev_moves.size() > MAX_CYCLING_CHECK) {
+            prev_moves.pop_front();
+        }
+        prev_moves.push_back(to_do);
     }
 
 

@@ -8,10 +8,13 @@
 #include "Men_Mover.h"
 #include <queue>
 
+const int MAX_CYCLING_CHECK = 4;
+
 class Smart_Mover : public Men_Mover {
 private:
 	// fun times with queues
 	queue<Move_t> q;
+	list<Move_t> prev_moves;
 
     // about current state
     int front_row;
@@ -126,17 +129,10 @@ private:
          */
         Move_t fail_safe(Move_t suggested);
 
-		Move_t kill_tiger_handling();
-
-		bool cage_staged();
-
-		Move_t stage_men();
-
-		Move_t get_move_in_cage();
-
-		Move_t get_move_into_cage();
+        bool leads_to_cycle(Move_t mv);
 
 		set<Point_t> tiger_reachable_pos();
+
 		Move_t finish_off_tiger();
 
     public:
