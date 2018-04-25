@@ -10,6 +10,7 @@ const int HOW_MANY_TO_STORE = 50;
 
 int main()
 {
+
     bool auto_tiger = false;
     bool speed_run = false;
     int rando_prob = 0;
@@ -188,11 +189,14 @@ int main()
             } else {
                 State cur = game_state;
                 tiger_move = Move_Deep_Blue(cur, RED);
+                //cout << "tiger: " << tiger_move.destination.row << " " << tiger_move.destination.col << "\n";
             }
 
             game_state.do_move(tiger_move);
             time_t start = clock();
-            Move_t men_move = Move_Deep_Blue(cur, BLUE);
+            Move_t men_move = Move_Deep_Blue(game_state, BLUE);
+            //cout << "men: " << men_move.token.location.row << " " << men_move.token.location.col << " --> "
+            //                << men_move.destination.row << " " << men_move.destination.col << "\n";
             time_t end = clock();
             total_men_time += (end - start);
             max_time = max((end - start), max_time);
