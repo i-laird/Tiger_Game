@@ -850,8 +850,6 @@ bool tiger_can_jump(const Unordered_State * st, GameRunner *g);
  */
 bool secure(Unordered_State* st, GameRunner* g, Move_t off_move = NULL_MOVE);
 
-Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from);
-
 class Specific_Move_Handler {
 private:
     Unordered_State * current;
@@ -992,36 +990,60 @@ private:
      */
     Move_t fail_safe(Move_t suggested);
 
+    /*       leads_to_cycle(Move_t mv)
+     *
+     * description: If to tiger cage, returns true iff mv returns the men
+     *              locations to a previous state visited in the last
+     *              MAX_CYCLING_CHECK moves, else returns false
+     *
+     * return: bool
+     * precondition: none
+     * postcondition: this object is unchanged
+     */
     bool leads_to_cycle(Move_t mv);
 
+    /*       tiger_reachable_pos()
+     *
+     * description: Returns the set of points which the tiger could reach
+     *              in an arbitrary number of moves, not including its
+     *              current position
+     * return: set<Point_t>
+     * precondition: none
+     * postcondition: this object is unchanged
+     */
     set<Point_t> tiger_reachable_pos();
 
+    /*       finish_off_tiger()
+     *
+     * description: Returns a move to do for when at tiger cage
+     * return: Move_t
+     * precondition: the only reachable positions from the tiger include the
+     *               row in front of the tiger cage and the tiger cage itself
+     * postcondition: this object is unchanged
+     */
     Move_t finish_off_tiger();
 
 public:
-    /*       Men_Mover(const State& s)
+    /*       Smart_Mover(const State& s)
      *
-     * description: creates a Men_Mover object with the given State
+     * description: creates a Smart_Mover object with the given State
      *              used to create current
      * return: none
      * precondition: s is a valid State
-     * postcondition: a Men_Mover object is created
+     * postcondition: a Smart_Mover object is created
      */
     Smart_Mover(const State& s);
     ~Smart_Mover(){}
 
 protected:
-    /*       next_move(Move_t tiger_move)
+    /*       execute_move()
      *
-     * description: performs the tiger_move on current, then
-     *              returns the best move for the men to perform
+     * description: returns the best move for the men to perform
      *              in order to prevent capture of men and
      *              move men forward
-     *                performs that move on current and returns it
      * return: Move_t
      * precondition: none
-     * postcondition: the returned move is performed on current, any
-     *                moves calculated turns in advanced are stored
+     * postcondition: this object is unchanged
      */
     Move_t execute_move() override;
 };
@@ -2439,74 +2461,6 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
     return !jump;
 }
 
-// returns the move from the man closest to dest which moves him
-// towards dest as quickly as possible
-//
-// returns  NULL_MOVE if no such move exists or if from is occupied
-Move_t bfs_move_getter(Unordered_State* st, Point_t dest) {
-    // if from is occupied, don't try to move towards it
-    if(st->is_occupied(dest)) {
-        return NULL_MOVE;
-    }
-
-    queue<Point_t> frontier;
-
-    bool visited[NUM_ROW][NUM_COL];
-    int dist[NUM_ROW][NUM_COL];
-    // initialize visited to false, dist to infinity, and predecessor to null
-    for (int r = 0; r < NUM_ROW; ++r) {
-        for (int c = 0; c < NUM_COL; ++c) {
-            visited[r][c] = false;
-            dist[r][c] = INFTY;
-        }
-    }
-
-    set<Point_t> bad_locs;
-    // we don't want to move any men that are needed to stage the tiger cage
-    for (int i = 0; i < STAGE_POS_SIZE; i++) {
-        bad_locs.insert(STAGE_POSITIONS[i]);
-    }
-
-    // initialize current
-    Point_t current = dest;
-    visited[current.row][current.col] = true;
-    dist[current.row][current.col] = 0;
-    frontier.push(current);
-    pair<Point_t*, pair<bool*, int> > moves;
-    // perform a bfs from the dest without using diagonals
-    Point_t dirs[4] = {UP, DOWN, LEFT, RIGHT};
-    Move_t mv_todo = NULL_MOVE;
-    while (!frontier.empty() && mv_todo == NULL_MOVE) {
-        current = frontier.front();
-        // mark visited
-        frontier.pop();
-
-        // add each reachable new position to the frontier
-        for(int i = 0; i < 4 && mv_todo == NULL_MOVE; ++i) {
-            // if not a populated point and in bounds and unvisited,
-            Point_t to = current + dirs[i];
-            // if to is in tiger cage, don't record it
-            if(to.row < CAGE_ENTRANCE.row) {
-                continue;
-            }
-            if(!visited[to.row][to.col] && !st->is_occupied(to)) {
-                // don't need to check tiger cage because not using diagonals
-                if((to.row >= 4 && to.col >= 0 && to.col < NUM_COL)) {
-                    visited[to.row][to.col] = true;
-                    dist[to.row][to.col] = dist[current.row][current.col] + 1;
-                    frontier.push(to);
-                }
-            }
-                // if found a man not in a bad loc, move him to the predecessor
-            else if(st->is_occupied(to) && st->get_tiger() != make_tiger(to) &&
-                    bad_locs.find(to) == bad_locs.end()) {
-                mv_todo = make_move(make_man(to), current);
-            }
-        }
-    }
-
-    return mv_todo;
-}
 
 void Smart_Mover::determine_rows() {
     set<int> row_to_col[NUM_ROW];
