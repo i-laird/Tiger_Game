@@ -24,6 +24,13 @@
 
 using namespace std;
 
+/*
+ * move_deep_blue
+ * description: this will calculated the best move for the indicated color
+ * precondition: game state is valid
+ * postcondition: game is unchanged
+ * return: optimal move
+ */
 Move_t  Move_Deep_Blue(vector<Token_t>, Color_t turn);
 
 /// constants
@@ -35,9 +42,10 @@ int const MAX_NUMBER_MOVES = 8;
 string const graph = "BOARD SQUARE SECTION DIMENSIONS\n13 9\nUNUSUAL EDGES"
                      "\n2 12 4 11 3 11 5\n1 11 3 10 2\n1 10 2 9 1\n"
                      "1 9 1 8 0\n1 8 0 7 1\n1 7 1 6 2\n1 6 2 5 3\n1 5 3 4 4\n"
-                     "1 11 5 10 6\n1 10 6 9 7\n1 9 7 8 8\n1 8 8 7 7\n1 7 7 6 6\n"
-                     "1 6 6 5 5\n1 5 5 4 4\n2 4 4 3 5 3 3\n2 3 5 2 6 2 4\n2 3 3 2 4 2 2\n"
-                     "1 2 2 1 3\n1 2 6 1 5\n2 2 4 1 5 1 3\n1 1 5 0 4\n1 1 3 0 4";
+                   "1 11 5 10 6\n1 10 6 9 7\n1 9 7 8 8\n1 8 8 7 7\n1 7 7 6 6\n"
+                     "1 6 6 5 5\n1 5 5 4 4\n2 4 4 3 5 3 3\n2 3 5 2 6 2 4\n2 3 3"
+                     " 2 4 2 2\n"
+                   "1 2 2 1 3\n1 2 6 1 5\n2 2 4 1 5 1 3\n1 1 5 0 4\n1 1 3 0 4";
 string const startPos = "TIGER POS\n2 4\nMEN POS\n11 0\n11 1\n11 2\n"
                         "11 3\n11 4\n11 5\n11 6\n11 7\n11 8\n12 0\n12 1\n12 2\n"
                         "12 3\n12 4\n12 5\n12 6\n12 7\n12 8";
@@ -225,9 +233,11 @@ public:
 };
 
 /**
- * This class runs a game. It can be used like Booth's API to fetch moves and run them on the Game
+ * This class runs a game. It can be used like Booth's API to fetch moves
+ * and run them on the Game
  *
- * However, It can also be used in our program to find moves of a piece because it knows the board layout.
+ * However, It can also be used in our program to find moves of a piece because
+ * it knows the board layout.
  * author: Ian Laird
  */
 class GameRunner{
@@ -247,22 +257,22 @@ class GameRunner{
 public:
     vector <Token_t> * gameState;
     /**
-     * Description: Sees is the indicated move is valid. i.e. Can the indicated
+     * Description: Sees is the indicated move is valid. i.e. Can indicated
      *              token move to the position specified.
      *              return: true means valid move, false means invalid
      * precondition: game state is valid
      * postcondition: game is unchanged
-     * return: First pair element indicates if a player won, second pair element
+     * return: First pair element indicates if a player won, second element
      *             indicates which player if a win occurred
      */
     bool isValidMove(vector <Token_t> const &, Move_t) ;
     /**
-     * Description: Sees is the indicated move is valid. i.e. Can the indicated
+     * Description: Sees is the indicated move is valid. i.e. Can indicated
      *              token move to the position specified.
      *              return: true means valid move, false means invalid
      * precondition: game state is valid
      * postcondition: game is unchanged
-     * return: First pair element indicates if a player won, second pair element
+     * return: First pair element indicates if a player won, second element
      *             indicates which player if a win occurred
      */
     bool isValidMove(Unordered_State const &, Move_t) ;
@@ -287,7 +297,7 @@ public:
     /*
      * description: Custom Constructor
      *              Reads in game board and starting positions for pieces
-     *              from files. This is the one that is used for testing reasons.
+     *              from files. This is the one that is used testing reasons.
      * precondition: GameRunner does not exist
      * Return: none: GameRunner is created
      */
@@ -317,7 +327,8 @@ public:
      * postcondition: Board is unchanged.
      * Return: a pointer to the Moves along with the # of moves.
      */
-    pair<Point_t *, pair<bool *, int> >  validMoves(vector <Token_t> const &, Token_t);
+    pair<Point_t *, pair<bool *, int> >  validMoves(vector <Token_t> const &,
+                                                    Token_t);
     /*
      * description: returns all Moves a Token can make.
      *                  will return Tiger jump moves.
@@ -325,7 +336,8 @@ public:
      * postcondition: Board is unchanged.
      * Return: a pointer to the Moves along with the # of moves.
      */
-    pair<Point_t *, pair<bool *, int> >  validMoves(Unordered_State const &, Token_t);
+    pair<Point_t *, pair<bool *, int> >  validMoves(Unordered_State const &,
+                                                    Token_t);
     /*
      * description: sees if a player has won (Tiger or Men)
      * precondition: Board state is valid
@@ -342,7 +354,8 @@ public:
      * return: if a path is found the point that should be moved to is returned
      *     boolean passed by reference is updated
      */
-    Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo, Color_t, bool &);
+    Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo,
+                         Color_t, bool &);
 
     /*
      * tiger_move
@@ -373,9 +386,9 @@ public:
 };
 
 
-/**********************************            *********************************
-*********************************** Point Util *********************************
-***********************************            ********************************/
+/**********************************            ********************************
+*********************************** Point Util ********************************
+***********************************            *******************************/
 
 /// Point constructors
 /*                       make_point(int, int)
@@ -544,9 +557,9 @@ Point_t abs(const Point_t& a);
 int one_norm(const Point_t& a);
 
 
-/**********************************            *********************************
-*********************************** Token Util *********************************
-***********************************            ********************************/
+/**********************************            ********************************
+*********************************** Token Util ********************************
+***********************************            *******************************/
 
 /// Token Constructors
 /*            make_token(Color_t c, const Point_t& pt)
@@ -640,9 +653,9 @@ bool operator==(const Token_t& a, const Token_t& b);
 bool operator!=(const Token_t& a, const Token_t& b);
 
 
-/**********************************            *********************************
-*********************************** Move Util  *********************************
-***********************************            ********************************/
+/**********************************            ********************************
+*********************************** Move Util  ********************************
+***********************************            *******************************/
 
 /// Move Constructors
 /*            make_move(const Token_t& tn, const Point_t& dest)
@@ -751,7 +764,7 @@ Move_t operator+(const Move_t& a, const Move_t& b);
 int one_norm(const Move_t & m);
 
 
-/***************************** constants and simple types *********************/
+/***************************** constants and simple types ********************/
 
 
 const Point_t NULL_POINT = make_point(-INFTY, -INFTY);
@@ -1092,15 +1105,10 @@ public:
 };
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 /// Unordered_State constructors
 Unordered_State::Unordered_State() {
@@ -1112,12 +1120,13 @@ Unordered_State::Unordered_State() {
 
 
 /// assignment operator
-const Unordered_State& Unordered_State::operator=(const Unordered_State& that) {
+const Unordered_State& Unordered_State::operator=(const Unordered_State& that){
     if(this != &that) {
         this->tiger = that.tiger;
         for(int c = 0; c < NUM_COL; ++c) {
             this->col_to_rows[c] = set<int>();
-            for(auto r = that.col_to_rows[c].begin(); r != that.col_to_rows[c].end(); ++r) {
+            for(auto r = that.col_to_rows[c].begin();
+                r != that.col_to_rows[c].end(); ++r) {
                 col_to_rows[c].insert(*r);
             }
         }
@@ -1275,7 +1284,8 @@ bool Unordered_State::do_move(const Move_t& m) {
         if(from != this->tiger.location) {
             valid_move = false;
         }
-        else if(this->col_to_rows[to.col].find(to.row) == this->col_to_rows[to.col].end()) {
+        else if(this->col_to_rows[to.col].find(to.row) ==
+                this->col_to_rows[to.col].end()) {
             this->tiger.location = to;
         }
         else {
@@ -1321,7 +1331,7 @@ bool Unordered_State::is_occupied(const Point_t& pt) const {
         if(pt == this->tiger.location) {
             occupied = true;
         }
-        else if(col_to_rows[pt.col].find(pt.row) != col_to_rows[pt.col].end()) {
+        else if(col_to_rows[pt.col].find(pt.row) != col_to_rows[pt.col].end()){
             occupied = true;
         }
     }
@@ -1366,14 +1376,14 @@ GameRunner::GameRunner(std::istream & graphFile, std::istream & startingPos){
 }
 
 /*
- * Custom constructor can make custom game with default map but custom locations
+ * Custom constructor can make custom game with default map custom locations
  */
 GameRunner::GameRunner(std::istream & startingPos){
     istringstream graphFile(graph);
     this->createGraph(graphFile, startingPos);
 }
 
-void GameRunner::createGraph(std::istream & graphFile, std::istream & startingPos){
+void GameRunner::createGraph(istream & graphFile, istream & startingPos){
     this->tiger_cage_row_offset = 4;
     string trashline = "";
     this->gameState = new vector<Token_t>();
@@ -1392,11 +1402,13 @@ void GameRunner::createGraph(std::istream & graphFile, std::istream & startingPo
     getline(graphFile, trashline);
     while(graphFile >> readNum){
         graphFile >> tempPoint.row >> tempPoint.col;
-        mapIter = (extendedGraph->insert(make_pair(tempPoint, tempList))).first;
+        mapIter = (extendedGraph->insert(make_pair(tempPoint,
+                                                   tempList))).first;
         for(int i = 0; i < readNum; i++) {
             graphFile >> tempPoint2.row >> tempPoint2.col;
             mapIter->second.push_back(tempPoint2);
-            mapIter2 = (extendedGraph->insert(make_pair(tempPoint2, tempList))).first;
+            mapIter2 = (extendedGraph->insert(make_pair(tempPoint2,
+                                                        tempList))).first;
             mapIter2->second.push_back(tempPoint);
         }
     }
@@ -1419,7 +1431,8 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
     this->manJumpedLastCheck = false;
     Point_t jumpedMan;
     if(move.destination.col < 0 || move.destination.row < 0
-       || move.destination.col >= col_boundary || move.destination.row >= row_boundary)
+       || move.destination.col >= col_boundary || move.destination.row >=
+                                                  row_boundary)
         return false;
 
     bool validMove = false, tigerJumpedMan = false;
@@ -1431,18 +1444,24 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
         }
         //Checking if move indicated is valid IF token found is right token
         if(moves[i] == move.token && !validMove) {
-            map<Point_t, list<Point_t> >::iterator mapIter; // to check for special edges
+            // to check for special edges
+            map<Point_t, list<Point_t> >::iterator mapIter;
 
             bool inSquareSection = false;
             int destRow = move.destination.row, destCol = move.destination.col,
-                    origRow = moves[i].location.row, origCol = moves[i].location.col;
+                    origRow = moves[i].location.row, origCol =
+                    moves[i].location.col;
             int colDifference = destCol - origCol,
                     rowDifference = destRow - origRow;
-            colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
-            rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
-            if(origRow >= tiger_cage_row_offset && origRow < row_boundary && origCol < col_boundary
-               && destRow >= tiger_cage_row_offset && destRow < row_boundary && destCol < col_boundary){
-                inSquareSection = true;
+            colDifference = (colDifference < 0) ?
+                            colDifference * -1 : colDifference;
+            rowDifference = (rowDifference < 0) ?
+                            rowDifference * -1 : rowDifference;
+            if(origRow >= tiger_cage_row_offset &&
+               origRow < row_boundary && origCol < col_boundary
+               && destRow >= tiger_cage_row_offset &&
+               destRow < row_boundary && destCol < col_boundary){
+                    inSquareSection = true;
             }
             //Men can only move 1 ever except Tiger cage
             if(move.token.color == BLUE){
@@ -1458,19 +1477,24 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                 if(rowDifference == 2 || colDifference == 2){
                     tigerJumpedMan = true;
                     //Now find coordinates of jumped dude
-                    jumpedMan.col = jumpedManCol = (move.destination.col + origCol) / 2;
-                    jumpedMan.row = jumpedManRow = (move.destination.row + origRow) / 2;
+                    jumpedMan.col = jumpedManCol =
+                            (move.destination.col + origCol) / 2;
+                    jumpedMan.row = jumpedManRow =
+                            (move.destination.row + origRow) / 2;
                 }
             }
-            //See if the move starts and ends in the Square section and is not diagonal
-            if((rowDifference > 0 && colDifference == 0) || (colDifference > 0 && rowDifference == 0)){
+            //See if the move starts and ends in Square and is not diagonal
+            if((rowDifference > 0 && colDifference == 0)
+               || (colDifference > 0 && rowDifference == 0)){
                 if(inSquareSection){
                     validMove = true;
                 }
             }
                 //See if the move involved an unusual edge in some way
-            else if((mapIter = extendedGraph->find(moves[i].location)) != extendedGraph->end()){
-                list<Point_t>::const_iterator listIter = mapIter->second.begin();
+            else if((mapIter = extendedGraph->find(moves[i].location))
+                    != extendedGraph->end()){
+                list<Point_t>::const_iterator listIter =
+                        mapIter->second.begin();
                 while(!validMove && listIter != mapIter->second.end()){
                     if(move.destination == *listIter){
                         validMove = true;
@@ -1478,8 +1502,10 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                     else if(tigerJumpedMan && jumpedMan == *listIter){
                         map<Point_t, list<Point_t> >::iterator mapIter2;
                         mapIter2 = extendedGraph->find(jumpedMan);
-                        list<Point_t>::const_iterator listIter2 = mapIter2->second.begin();
-                        while(!validMove && listIter2 != mapIter2->second.end()){
+                        list<Point_t>::const_iterator listIter2 =
+                                mapIter2->second.begin();
+                        while(!validMove && listIter2 !=
+                                            mapIter2->second.end()){
                             if(move.destination == *listIter2){
                                 validMove = true;
                             }
@@ -1488,7 +1514,7 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
                     }
                     listIter++;
                 }
-                //Move end position not reachable from the indicated start position
+                //Move end position not reachable from indicated start position
                 if(!validMove){
                     return false;
                 }
@@ -1499,12 +1525,13 @@ bool GameRunner::isValidMove(vector <Token_t> const & moves, Move_t move) {
             }
         }
     }
-    //See if a man was actual present where the tiger is said to have jumped him
+    //See if a man was actual present where the tiger jumped him
     if(tigerJumpedMan && validMove){
         validMove = false;
         //See if a man is present at the jumped position
         for(unsigned i = 1 ; i < moves.size() && !validMove; i++){
-            if(moves[i].location.row == jumpedManRow && moves[i].location.col == jumpedManCol){
+            if(moves[i].location.row == jumpedManRow &&
+               moves[i].location.col == jumpedManCol){
                 validMove = true;
             }
         }
@@ -1537,7 +1564,8 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
         existing_token = false;
     }
     else if(move.token.color == BLUE &&
-            st.rows_in_col(from.col).find(from.row) == st.rows_in_col(from.col).end()) {
+            st.rows_in_col(from.col).find(from.row) ==
+            st.rows_in_col(from.col).end()) {
         existing_token = false;
     }
     if(!existing_token) {
@@ -1553,8 +1581,10 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
     map<Point_t, list<Point_t> >::iterator mapIter; // to check for special edges
     bool inSquareSection = false;
     Point_t diff = abs(to - from);
-    if(from.row >= tiger_cage_row_offset && from.row < row_boundary && from.col < col_boundary
-       && to.row >= tiger_cage_row_offset && to.row < row_boundary && to.col < col_boundary){
+    if(from.row >= tiger_cage_row_offset && from.row <
+            row_boundary && from.col < col_boundary
+       && to.row >= tiger_cage_row_offset && to.row <
+               row_boundary && to.col < col_boundary){
         inSquareSection = true;
     }
     //Men can only move 1
@@ -1574,8 +1604,9 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
             jumpedMan = (to + from) / 2;
         }
     }
-    //See if the move starts and ends in the Square section and is not diagonal
-    if((diff.row > 0 && diff.col == 0) || (diff.col > 0 && diff.row == 0)){
+    //See if the move starts and ends in the Square section and not diagonal
+    if((diff.row > 0 && diff.col == 0) || (diff.col > 0
+                                           && diff.row == 0)){
         if(inSquareSection){
             validMove = true;
         }
@@ -1590,8 +1621,10 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
             else if(tigerJumpedMan && jumpedMan == *listIter){
                 map<Point_t, list<Point_t> >::iterator mapIter2;
                 mapIter2 = extendedGraph->find(jumpedMan);
-                list<Point_t>::const_iterator listIter2 = mapIter2->second.begin();
-                while(!validMove && listIter2 != mapIter2->second.end()){
+                list<Point_t>::const_iterator listIter2 =
+                        mapIter2->second.begin();
+                while(!validMove && listIter2 !=
+                                    mapIter2->second.end()){
                     if(to == *listIter2){
                         validMove = true;
                     }
@@ -1609,7 +1642,7 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
         return false;
     }
 
-    //See if a man was actually present where the tiger is said to have jumped him
+    //See if a man was actually present where the tiger jumped him
     if(tigerJumpedMan && validMove){
         validMove = false;
         //See if a man is present at the jumped position
@@ -1629,7 +1662,8 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
 
 bool GameRunner::evaluateWinState( vector <Token_t> & tokens, Color_t & color){
     bool returnFlag = false;
-    pair<Point_t *, pair<bool *, int> > moveReceiver = this->validMoves(tokens, tokens[0]);
+    pair<Point_t *, pair<bool *, int> > moveReceiver =
+            this->validMoves(tokens, tokens[0]);
     //Means the tiger cannot move so MEN WIN
     if(moveReceiver.second.second == 0){
         color = BLUE;
@@ -1656,7 +1690,8 @@ pair<bool, Color_t> GameRunner::playGame(){
     Move_t returnedMove;
     int counter = 0;
     //Keep playing until game is finished or 10000 turns have passed
-    while(counter < 10000 && !this->evaluateWinState(*this->gameState, winner)){
+    while(counter < 10000 && !this->evaluateWinState(*this->gameState,
+                                                     winner)){
         this->manJumpedLastCheck = false;
         counter++;
         returnedMove = Move_Deep_Blue(*this->gameState, turn);
@@ -1664,9 +1699,11 @@ pair<bool, Color_t> GameRunner::playGame(){
         if(!isValidMove(*this->gameState, returnedMove)){
             pair<Point_t *, pair<bool *, int>> tempHolder;
             bool found = false;
-            for(unsigned int i = (turn == RED ? 0 : 1); i < gameState->size() && !found; i++){
+            for(unsigned int i = (turn == RED ? 0 : 1);
+                i < gameState->size() && !found; i++){
                 returnedMove.token = (*gameState)[i];
-                pair<Point_t *, pair<bool *, int > > returnPair = this->validMoves(*gameState, returnedMove.token);
+                pair<Point_t *, pair<bool *, int > > returnPair =
+                        this->validMoves(*gameState, returnedMove.token);
                 if(returnPair.second.second > 0){
                     returnedMove.destination = returnPair.first[0];
                     found = true;
@@ -1701,7 +1738,8 @@ pair<bool, Color_t> GameRunner::playGame(){
     return make_pair(true, BLUE);
 }
 
-pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(vector <Token_t> const & boardState, Token_t piece){
+pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(
+        vector <Token_t> const & boardState, Token_t piece){
     //Maximum number of valid moves
     Point_t * validPoints = new Point_t[MAX_NUMBER_MOVES];
     bool * jumpMade = new bool[MAX_NUMBER_MOVES];
@@ -1742,14 +1780,19 @@ pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(vector <Token_t> cons
         }
     }
     //Now check for diagonal moves
-    map<Point_t, list<Point_t> >::const_iterator mapIter = extendedGraph->find(piece.location);
+    map<Point_t, list<Point_t> >::const_iterator mapIter =
+            extendedGraph->find(piece.location);
     list<Point_t>::const_iterator listIter;
     if(mapIter != extendedGraph->end()){
         listIter = mapIter->second.begin();
         while(listIter != mapIter->second.end()){
             tempMove.destination = *listIter;
-            jumpMove.destination.row = ((tempMove.destination.row - piece.location.row) * 2) + piece.location.row;
-            jumpMove.destination.col = ((tempMove.destination.col - piece.location.col) * 2) + piece.location.col;
+            jumpMove.destination.row = ((tempMove.destination.row -
+                                         piece.location.row) * 2) +
+                                       piece.location.row;
+            jumpMove.destination.col = ((tempMove.destination.col -
+                                         piece.location.col) * 2) +
+                                       piece.location.col;
             //See if diagonal move valid
             if(isValidMove(boardState, tempMove)) {
                 validPoints[size] = tempMove.destination;
@@ -1769,7 +1812,8 @@ pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(vector <Token_t> cons
 }
 
 
-pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(Unordered_State const & boardState, Token_t piece){
+pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(
+        Unordered_State const & boardState, Token_t piece){
     //Maximum number of valid moves
     Point_t * validPoints = new Point_t[MAX_NUMBER_MOVES];
     bool * jumpMade = new bool[MAX_NUMBER_MOVES];
@@ -1807,14 +1851,16 @@ pair<Point_t *, pair<bool *, int> > GameRunner::validMoves(Unordered_State const
     }
     //Now check for diagonal moves
     tempMove.token = jumpMove.token = piece; // ensure token is piece
-    map<Point_t, list<Point_t> >::const_iterator mapIter = extendedGraph->find(piece.location);
+    map<Point_t, list<Point_t> >::const_iterator mapIter =
+            extendedGraph->find(piece.location);
     list<Point_t>::const_iterator listIter;
     if(mapIter != extendedGraph->end()){
         listIter = mapIter->second.begin();
         while(listIter != mapIter->second.end()){
             tempMove.destination = *listIter;
             jumpMove.destination = tempMove.destination +
-                                   (tempMove.destination - tempMove.token.location);
+                                   (tempMove.destination -
+                                    tempMove.token.location);
             //See if diagonal move valid
             if(isValidMove(boardState, tempMove)) {
                 validPoints[size] = tempMove.destination;
@@ -1841,11 +1887,13 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
 
     srand(time(NULL));
     //Get all of the valid moves for the Tiger
-    pair<Point_t *, pair<bool *, int> > returnMoves = this->validMoves(tokens, tokens[0]);
+    pair<Point_t *, pair<bool *, int> > returnMoves =
+            this->validMoves(tokens, tokens[0]);
     //Act randomly
     if(9 -(rand() % 10) < randomProbability && returnMoves.second.second > 0){
         //If random make random move
-        returnMove.destination = returnMoves.first[rand() % returnMoves.second.second];
+        returnMove.destination = returnMoves.first[rand() %
+                                                   returnMoves.second.second];
         if(returnMoves.second.first) {
             delete[] returnMoves.second.first;
             returnMoves.second.first = nullptr;
@@ -1860,7 +1908,8 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
     pair<Point_t * , pair< bool *, int > > tokenMoves;
     static Point_t previousLocation;
     Point_t closestPoint, record = NULL_POINT, record2;
-    int smallestRowColDistance = 1000, rowDifference, colDifference, destRow,destCol, origRow, origCol, totaler;
+    int smallestRowColDistance = 1000, rowDifference, colDifference,
+            destRow,destCol, origRow, origCol, totaler;
 
     bool moveFound = false;
     origCol = tokens[0].location.row;
@@ -1901,8 +1950,10 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
             destCol = toCheck.col;
             colDifference = destCol - origCol;
             rowDifference = destRow - origRow;
-            colDifference = (colDifference < 0) ? colDifference * -1 : colDifference;
-            rowDifference = (rowDifference < 0) ? rowDifference * -1 : rowDifference;
+            colDifference = (colDifference < 0) ? colDifference * -1 :
+                            colDifference;
+            rowDifference = (rowDifference < 0) ? rowDifference * -1 :
+                            rowDifference;
             totaler = rowDifference + colDifference;
             //see if it is a point that is more desirable i.e. has diagonal
             //We want tiger to gravitate to diagonal edges
@@ -1918,8 +1969,10 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
         bool alreadyClosest = (closestPoint == tokens[0].location);
         //See if should alternate if already there
         if(alreadyClosest) {
-            map<Point_t, list<Point_t>>::const_iterator mapIter = this->extendedGraph->find(tokens[0].location);
-            //See if non traditional move can be made because they are harder to counter
+            map<Point_t, list<Point_t>>::const_iterator mapIter =
+                    this->extendedGraph->find(tokens[0].location);
+            //See if non traditional move can be made because they
+            // are harder to counter
             if (mapIter != extendedGraph->end()) {
                 for (Point_t temp : mapIter->second) {
                     returnMove.destination = temp;
@@ -1933,7 +1986,8 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
             // back to previous location
             if (!moveFound) {
                 //Try and go upwards
-                for(int k = 0; !moveFound && k < returnMoves.second.second; k++) {
+                for(int k = 0; !moveFound && k < returnMoves.second.second;
+                    k++) {
                     returnMove.destination = returnMoves.first[k];
                     if((returnMove.destination.row - origRow != 0)) {
                         moveFound = true;
@@ -1951,7 +2005,8 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
             //Case not already as close as can be then I will BFS to him
         else{
             bool success;
-            returnMove.destination = BFS_To_Point(tokens, 0, closestPoint, RED, success);
+            returnMove.destination = BFS_To_Point(tokens, 0, closestPoint,
+                                                  RED, success);
             //If no path can be found then just make a move
             if(!success){
                 returnMove.destination = returnMoves.first[0];
@@ -1970,17 +2025,21 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
     return  returnMove;
 }
 
-Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Point_t desiredLoc, Color_t color, bool & success){
+Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout,
+                                 int tokenIndex, Point_t desiredLoc,
+                                 Color_t color, bool & success){
     queue<Point_t> frontier;
     map<Point_t, Point_t> previous;
-    Point_t evaluatePoint, originalPoint = mapLayout[tokenIndex].location, temp, temp2;
+    Point_t evaluatePoint, originalPoint = mapLayout[tokenIndex].location,
+            temp, temp2;
     Token_t currToken;
     currToken.color = color;
     frontier.push(mapLayout[tokenIndex].location);
     previous[currToken.location] = currToken.location;
     pair<Point_t * , pair< bool *, int > > tokenMoves;
     while(!frontier.empty()){
-        //Reseting the position because validMoves will check if a piece actually exists there!
+        //Reseting the position because validMoves will check if a
+        // piece actually exists there!
         //Okay to change layout because vector is a copy :-)
         currToken.location = mapLayout[tokenIndex].location = frontier.front();
         frontier.pop();
@@ -1993,7 +2052,8 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
         for(int i = 0; i < tokenMoves.second.second; i++){
             evaluatePoint = tokenMoves.first[i];
             //See if the key has a predecessor i.e. exists if not add
-            if(previous.insert(make_pair(evaluatePoint, currToken.location)).second) {
+            if(previous.insert(make_pair(evaluatePoint,
+                                         currToken.location)).second) {
                 frontier.push(evaluatePoint);
             }
         }
@@ -2050,9 +2110,9 @@ Move_t GameRunner::Undeterministic_Tiger_Move(vector<Token_t> & pieces){
     return returnMove;
 }
 
-/**********************************            *********************************
-*********************************** Point Util *********************************
-***********************************            ********************************/
+/**********************************            ********************************
+*********************************** Point Util ********************************
+***********************************            *******************************/
 
 /// Point constructors
 Point_t make_point(int row, int col) {
@@ -2176,9 +2236,9 @@ int one_norm(const Point_t& a) {
 }
 
 
-/**********************************            *********************************
-*********************************** Token Util *********************************
-***********************************            ********************************/
+/**********************************            ********************************
+*********************************** Token Util ********************************
+***********************************            *******************************/
 
 /// Token Constructors
 
@@ -2237,9 +2297,9 @@ bool operator!=(const Token_t& a, const Token_t& b) {
 }
 
 
-/**********************************            *********************************
-*********************************** Move Util  *********************************
-***********************************            ********************************/
+/**********************************            ********************************
+*********************************** Move Util  ********************************
+***********************************            *******************************/
 
 /// Move Constructors
 Move_t make_move(const Token_t& tn, const Point_t& dest) {
@@ -2269,7 +2329,8 @@ bool operator!=(const Move_t &a, const Move_t& b) {
 
 
 bool operator<(const Move_t& a, const Move_t& b) {
-    return (a.token != b.token ? a.token < b.token : a.destination < b.destination);
+    return (a.token != b.token ? a.token < b.token : a.destination <
+            b.destination);
 }
 
 
@@ -2310,9 +2371,11 @@ Hash_val hash_locs(const Unordered_State& st, int back_row) {
     Hash_val h = make_pair(0,0);
     // for each man
     for(int c = 0; c < NUM_COL; ++c) {
-        for(auto r = st.rows_in_col(c).begin(); r != st.rows_in_col(c).end(); ++r) {
+        for(auto r = st.rows_in_col(c).begin(); r !=
+                                                st.rows_in_col(c).end(); ++r) {
             Point_t loc = make_point(*r, c);
-            int val = pow(2, loc.col + + ((back_row - loc.row) % 2) * NUM_COL);
+            int val = pow(2, loc.col + + ((back_row - loc.row) % 2)
+                                       * NUM_COL);
 
             if(back_row - loc.row < 2) {
                 h.first += val;
@@ -2536,7 +2599,8 @@ void Smart_Mover::determine_rows() {
              row_to_col[back_row - 2].size() == NUM_COL - 1 &&
              row_to_col[back_row].size() == 1) {
         int col = *row_to_col[back_row].begin();
-        if(row_to_col[back_row - 2].find(col) == row_to_col[back_row - 2].end()){
+        if(row_to_col[back_row - 2].find(col) ==
+           row_to_col[back_row - 2].end()){
             if(this->current.get_tiger().location.row >= back_row - 3 &&
                this->current.get_tiger().location.col == col) {
                 // if lagging column is
@@ -2557,9 +2621,12 @@ void Smart_Mover::determine_rows() {
 Move_t Smart_Mover::off_move_handling() {
     // ensure that if an off move is purported to exist, it actually does
     // and it can be undone
-    if(off_move != NULL_MOVE && (current.get_tiger().location == off_move.destination
-                                 || current.is_occupied(off_move.token.location) ||
-                                 !current.is_occupied(off_move.destination))) {
+    if(off_move != NULL_MOVE && (current.get_tiger().location ==
+                                 off_move.destination
+                                 || current.is_occupied(
+                                         off_move.token.location) ||
+                                 !current.is_occupied(
+                                         off_move.destination))) {
         off_move = NULL_MOVE;
         off_move_active = false;
     }
@@ -2659,8 +2726,9 @@ Move_t** Smart_Mover::find_moves_to_do() {
                         moves_to_do[c][1] = temp;
                     }
                     // if the guy in front already has a space between
-                    // him and the guy below, don't try to move the top guy again
-                    if(moves_to_do[c][1].destination.row - moves_to_do[c][0].destination.row > 1) {
+                    // him and the guy below, don't try to move top guy again
+                    if(moves_to_do[c][1].destination.row -
+                       moves_to_do[c][0].destination.row > 1) {
                         moves_to_do[c][0] = moves_to_do[c][1];
                         moves_to_do[c][1] = NULL_MOVE;
                     }
@@ -2735,7 +2803,8 @@ void Smart_Mover::search_for_state() {
                             if(mv != NULL_MOVE) {
                                 ++req_moves[ndx];
                                 current.do_move(mv);
-                                desired_hash = next_hash(mv, desired_hash, back_row);
+                                desired_hash = next_hash(mv, desired_hash,
+                                                         back_row);
                             }
                         }
                     }
@@ -2824,8 +2893,8 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
             for (int j = 1; j < (int)cur.size() && !fail_safe_found; ++j) {
                 Token_t man = cur[j];
                 // don't try to move away from the middle
-                if ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
-                    (man.location.col > (NUM_COL - 1) / 2 && dirs[i].col > 0)) {
+                if((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
+                    (man.location.col > (NUM_COL - 1) / 2 && dirs[i].col > 0)){
                     continue;
                 }
                 Move_t mv = make_move_in_direction(man, dirs[i]);
@@ -2869,8 +2938,8 @@ Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
                 // don't try to move away from the middle if tiger in cage
                 bool bad_choice = false;
                 if (current.get_tiger().location.row < CAGE_ENTRANCE.row &&
-                    ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
-                     (man.location.col > (NUM_COL - 1) / 2 && dirs[i].col > 0))) {
+                  ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
+                   (man.location.col > (NUM_COL - 1) / 2 && dirs[i].col > 0))){
                     bad_choice = true;
                 }
                 // try not to move off man
@@ -3066,7 +3135,8 @@ bool Smart_Mover::leads_to_cycle(Move_t mv) {
     // see if cycling
     Point_t net_mvmt = ZERO_VECT;
     Point_t mvmt_todo = mv.destination - mv.token.location;
-    for(auto prev = prev_moves.rbegin(); prev != prev_moves.rend() && !cycling; ++prev) {
+    for(auto prev = prev_moves.rbegin(); prev != prev_moves.rend() &&
+                                         !cycling; ++prev) {
         net_mvmt += prev->destination;
         net_mvmt -= prev->token.location;
         if(net_mvmt - mvmt_todo == ZERO_VECT) {
@@ -3124,7 +3194,7 @@ Move_t Smart_Mover::finish_off_tiger() {
                     // don't look at man moving right now
                     if(next_man.location != mv.destination) {
                         // see if moves into man positions
-                        Move_t fill_in = make_move(next_man, mv.token.location);
+                       Move_t fill_in = make_move(next_man, mv.token.location);
                         // if fills in behind the mv, add to set of Moves that
                         // fill in behind it
                         if(game.isValidMove(current, fill_in)) {
@@ -3156,7 +3226,8 @@ Move_t Smart_Mover::finish_off_tiger() {
         current.do_move(mv);
         unsigned long new_reachable = tiger_reachable_pos().size();
         if(new_reachable < num_reachable || (new_reachable == num_reachable &&
-                                             mv.destination.row < mv.token.location.row)) {
+                                             mv.destination.row <
+                                             mv.token.location.row)) {
             bool cycling = leads_to_cycle(mv);
             bool sec = secure(&current, &game);
             if(sec && !cycling) {
@@ -3177,8 +3248,8 @@ Move_t Smart_Mover::finish_off_tiger() {
                 new_reachable = tiger_reachable_pos().size();
                 if (!tiger_can_jump(&current, &game) &&
                     (new_reachable < num_reachable || (new_reachable == num_reachable
-                                                       && mv.destination.row < mv.token.location.row
-                                                       && mv2.destination.row < mv2.token.location.row))) {
+                    && mv.destination.row < mv.token.location.row
+                    && mv2.destination.row < mv2.token.location.row))) {
                     bool sec = secure(&current, &game);
                     bool cycling = leads_to_cycle(mv2);
 
@@ -3283,11 +3354,11 @@ bool Specific_Move_Handler::one_col_two_back() {
        row_to_col[back_row - 2].size() == NUM_COL - 1 &&
        row_to_col[back_row - 3].size() == NUM_COL - 1 && front_row >= 4) {
 
-        if(*row_to_col[back_row].begin() == *row_to_col[back_row - 1].begin()) {
+        if(*row_to_col[back_row].begin() == *row_to_col[back_row - 1].begin()){
             in_pos = true;
             back_col = *row_to_col[back_row].begin();
         }
-        if(current->get_tiger().location != make_point(back_row - 3, back_col)){
+       if(current->get_tiger().location != make_point(back_row - 3, back_col)){
             in_pos = false;
         }
 
@@ -3376,7 +3447,7 @@ bool Specific_Move_Handler::three_by_diag() {
         // with the diagonal intersecting the front_row at
         // either c or c + 1, and continues down into c
         // if off_col in [c, c+2] then not in pos
-        if(c <= off_move.destination.col && c + 2 >= off_move.destination.col) {
+        if(c <= off_move.destination.col && c + 2 >= off_move.destination.col){
             in_pos = false;
         }
         for(int i = 0; i < 3 && in_pos; ++i) {
@@ -3469,7 +3540,8 @@ bool Specific_Move_Handler::near_top_finish_three_by_diag() {
         in_pos = true;
         int c = front_row_diag_cols[j];
         // if haven't started a three by diag special move, not in position
-        if(!current->is_occupied(make_point(front_row, c)) || tig_pos == make_point(front_row,c)){
+        if(!current->is_occupied(make_point(front_row, c)) ||
+           tig_pos == make_point(front_row,c)){
             in_pos = false;
         }
         // c, c + 1, c+ 2 should be three consecutive columns
@@ -3719,7 +3791,8 @@ bool Specific_Move_Handler::try_switch() {
         return false;
     }
     // if either column has an off move, not in a special move
-    if(diag_threatening == off_move.destination.col || tiger_col == off_move.destination.col) {
+    if(diag_threatening == off_move.destination.col ||
+       tiger_col == off_move.destination.col) {
         return false;
     }
 
@@ -3731,8 +3804,10 @@ bool Specific_Move_Handler::try_switch() {
     to = make_point(front_row, tiger_col);
     response.push(make_move(make_man(from),to));
     // move guy protecting diag up
-    from = make_point(front_row + 2, diag_threatening + (diag_threatening - tiger_col));
-    to = make_point(front_row + 1, diag_threatening + (diag_threatening - tiger_col));
+    from = make_point(front_row + 2, diag_threatening +
+                                     (diag_threatening - tiger_col));
+    to = make_point(front_row + 1, diag_threatening +
+                                   (diag_threatening - tiger_col));
     response.push(make_move(make_man(from),to));
     // protect him
     from = make_point(front_row + 2, tiger_col);
@@ -3743,7 +3818,8 @@ bool Specific_Move_Handler::try_switch() {
 }
 
 
-Specific_Move_Handler::Specific_Move_Handler(Unordered_State* st, GameRunner* g) {
+Specific_Move_Handler::Specific_Move_Handler(Unordered_State* st,
+                                             GameRunner* g) {
     this->current = st;
     this->g = g;
     this->front_row = front_row;
@@ -3751,7 +3827,7 @@ Specific_Move_Handler::Specific_Move_Handler(Unordered_State* st, GameRunner* g)
 }
 
 
-bool Specific_Move_Handler::handle_special_case(Move_t off_move) {
+bool Specific_Move_Handler::handle_special_case(Move_t off_move){
     if(front_row <= 4) {
         return false;
     }
@@ -3786,7 +3862,7 @@ bool Specific_Move_Handler::handle_special_case(Move_t off_move) {
 }
 
 
-void Specific_Move_Handler::set_front_back_row(int front_row, int back_row) {
+void Specific_Move_Handler::set_front_back_row(int front_row, int back_row){
     this->front_row = front_row;
     this->back_row = back_row;
 }
@@ -3878,7 +3954,8 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
             current->do_move(mv);
             // if tiger can capture after move, this is a bad move
             if(tiger_can_jump(current, game)) {
-                visited.insert(make_pair(make_pair(cur_hash_val, tiger), make_pair(0, false)));
+                visited.insert(make_pair(make_pair(cur_hash_val, tiger),
+                                         make_pair(0, false)));
                 m_okay = false;
             }
             // check each tiger response
@@ -3927,7 +4004,8 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
 }
 
 
-Transition::Transition(Unordered_State* c, set<Hash_val>*hash_vals, GameRunner*game,
+Transition::Transition(Unordered_State* c, set<Hash_val>*hash_vals,
+                       GameRunner*game,
                        int back_row, pair<int,int> left_right_bds,
                        pair<int,int> low_high_bds) {
 
@@ -3943,7 +4021,7 @@ Transition::Transition(Unordered_State* c, set<Hash_val>*hash_vals, GameRunner*g
 }
 
 
-bool Transition::find_path_to_state(int max_moves, int minimum_max_moves) {
+bool Transition::find_path_to_state(int max_moves, int minimum_max_moves){
     // see if can reach a desired state "without moving" this time
     // this prevents degenerating into cycles
     bool found = false;
