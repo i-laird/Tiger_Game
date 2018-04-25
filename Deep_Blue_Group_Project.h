@@ -767,7 +767,7 @@ const Point_t RIGHT = make_point(0, 1);
 const Point_t CAGE_ENTRANCE = make_point(4,4);
 const Point_t TIGER_START = make_point(2,4);
 
-
+/// TO-DO ---- ADD COMMENTS!!!
 class Men_Mover {
 protected:
     // about current state
@@ -850,6 +850,7 @@ bool tiger_can_jump(const Unordered_State * st, GameRunner *g);
  */
 bool secure(Unordered_State* st, GameRunner* g, Move_t off_move = NULL_MOVE);
 
+/// TO-DO --- ADD COMMENTS!!!!
 class Specific_Move_Handler {
 private:
     Unordered_State * current;
