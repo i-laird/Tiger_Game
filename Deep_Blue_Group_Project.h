@@ -1526,10 +1526,12 @@ Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
 
     if(new_game && men) {
         delete men;
+        men = nullptr;
     }
 
-    if(men == nullptr || new_game)
+    if(men == nullptr || new_game) {
         men = new Smart_Mover(gameState);
+    }
     Move_t returnMove;
     Color_t win;
     GameRunner tigerMove;
@@ -1537,8 +1539,10 @@ Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
         returnMove = tigerMove.Tiger_Move(gameState);
     }
     returnMove = men->next_move(gameState);
-    if(tigerMove.evaluateWinState(gameState, win))
+    if(tigerMove.evaluateWinState(gameState, win)) {
         delete men;
+        men = nullptr;
+    }
     return returnMove;
 }
 
