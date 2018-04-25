@@ -1536,10 +1536,14 @@ Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
     Move_t returnMove;
     Color_t win;
     GameRunner tigerMove;
+
     if(turn == RED){
         returnMove = tigerMove.Tiger_Move(gameState, 1);
     }
-    returnMove = men->next_move(gameState);
+    else {
+        returnMove = men->next_move(gameState);
+    }
+
     if(tigerMove.evaluateWinState(gameState, win)) {
         delete men;
         men = nullptr;

@@ -187,12 +187,12 @@ int main()
                 } while (play_game && !game.isValidMove(game_state, tiger_move));
             } else {
                 State cur = game_state;
-                tiger_move = game.Tiger_Move(cur, rando_prob);
+                tiger_move = Move_Deep_Blue(cur, RED);
             }
 
             game_state.do_move(tiger_move);
             time_t start = clock();
-            Move_t men_move = men->next_move(game_state);
+            Move_t men_move = Move_Deep_Blue(cur, BLUE);
             time_t end = clock();
             total_men_time += (end - start);
             max_time = max((end - start), max_time);
