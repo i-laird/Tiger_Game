@@ -1,5 +1,6 @@
-#include "Smart_Mover.h"
-#include "testing_util.h"
+#include "Deep_Blue_Group_Project.h"
+//#include "Smart_Mover.h"-
+//#include "testing_util.h"
 #include <iomanip>
 #include <ctime>
 using namespace std;
@@ -109,12 +110,12 @@ int main()
                 }
             }
             if (!play_game && num_games <= 1) {
-                p_board(game_state);
+                //p_board(game_state);
                 break;
             }
 
             if (!speed_run) {
-                p_board(game_state);
+                //p_board(game_state);
             }
             if (auto_tiger && !speed_run) {
                 cout << "Press Enter to continue.\n";
@@ -149,7 +150,7 @@ int main()
                     }
                     if (play_game && !game.isValidMove(game_state, tiger_move)) {
                         cout << "<ERROR>: " << kb << " is not a valid move: ";
-                        cout << tiger_move.token.location << " --> " << tiger_move.destination;
+                        //cout << tiger_move.token.location << " --> " << tiger_move.destination;
                         cout << "\n";
                         cout << "<valid moves>:\n";
                         auto valid_moves = game.validMoves(game_state, game_state.get_tiger());
@@ -178,7 +179,7 @@ int main()
                                 cmd += "d";
                                 direc += " LEFT";
                             }
-                            cout << " " << cmd << direc << " to " << to << ")\n";
+                            //cout << " " << cmd << direc << " to " << to << ")\n";
                         }
                         delete[] valid_moves.first;
                         delete[] valid_moves.second.first;
@@ -202,18 +203,18 @@ int main()
             if (men_move == NULL_MOVE) {
                 cout << "<ERROR>: no men move received\n";
                 cout << "BOARD STATE\n";
-                p_board(game_state);
+                //p_board(game_state);
                 if (speed_run) {
-                    p_board(game_state);
+                    //p_board(game_state);
                     break;
                 }
             } else if (!game.isValidMove(game_state, men_move)) {
                 cout << "<ERROR>: men move invalid\n";
-                cout << "         " << men_move << "\n";
+                //cout << "         " << men_move << "\n";
                 cout << "BOARD STATE\n";
-                p_board(game_state);
+                //p_board(game_state);
                 if (speed_run) {
-                    p_board(game_state);
+                    //p_board(game_state);
                     break;
                 }
             }
@@ -272,7 +273,7 @@ int main()
                             for(int j = 0; j < turn; ++j) {
                                 ++i;
                             }
-                            p_board(*i);
+                            //p_board(*i);
                         }
                     }
                 }
