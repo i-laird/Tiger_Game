@@ -38,6 +38,7 @@ Move_t  Move_Deep_Blue(vector<Token_t>, Color_t turn);
 const int NUM_COL = 9;
 const int NUM_ROW = 13;
 const int MAX_CYCLING_CHECK = 4;
+const int MAX_RECURSION_DEPTH = 4;
 const int INFTY = NUM_ROW * NUM_COL + 1; // longer than any simple path
 int const MAX_NUMBER_MOVES = 8;
 string const graph = "BOARD SQUARE SECTION DIMENSIONS\n13 9\nUNUSUAL EDGES"
@@ -2963,7 +2964,8 @@ void Smart_Mover::search_for_state() {
                     min_req = min(req_move, min_req);
                 }
             }
-            move_ready = t.find_path_to_state(min(4,max_req), min_req);
+            move_ready = t.find_path_to_state(
+                    min(MAX_RECURSION_DEPTH, max_req), min_req);
             if(move_ready) {
                 path = t.get_path();
             }
