@@ -2081,8 +2081,8 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
             destRow,destCol, origRow, origCol, totaler;
 
     bool moveFound = false;
-    origCol = tokens[0].location.row;
-    origRow = tokens[0].location.col;
+    origCol = tokens[0].location.col;
+    origRow = tokens[0].location.row;
 
     //First see if jump can be made
     //Will probably implement min max here later
