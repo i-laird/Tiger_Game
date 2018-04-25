@@ -21,6 +21,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
