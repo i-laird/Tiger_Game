@@ -1428,7 +1428,7 @@ bool Unordered_State::do_move(const Move_t& m) {
     Point_t to = m.destination; // where going to
     // this is a bad move if not in the column range
     if(from.col < 0 || from.col >= NUM_COL || to.col < 0 ||
-       from.col >= NUM_COL) {
+       to.col >= NUM_COL) {
         valid_move = false;
     }
     // this is a bad move if moving into tiger location
@@ -1532,7 +1532,6 @@ Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
         men = new Smart_Mover(gameState);
     }
     Move_t returnMove;
-    Color_t win;
     GameRunner tigerMove;
 
     if(turn == RED){
@@ -1542,10 +1541,6 @@ Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
         returnMove = men->next_move(gameState);
     }
 
-    if(tigerMove.evaluateWinState(gameState, win)) {
-        delete men;
-        men = nullptr;
-    }
     return returnMove;
 }
 
