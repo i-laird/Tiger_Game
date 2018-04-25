@@ -1,11 +1,16 @@
-//
-// Created by iancl on 4/25/2018.
-//
+/*
+* Author: Ben Sepanski, Ian laird, J.R. Diehl, Wyatt Snyder, Aidan Edwards
+* Assignment Title: Deep Blue Tiger Game AI
+* Assignment Description: This program can play as both the Tiger and men
+* Due Date: 4/27/2018
+* Date Created: 4/24/2018
+* Date Last Modified: 4/25/2018
+ */
 
-#ifndef TIGER_GAME_SUBMIT_H
-#define TIGER_GAME_SUBMIT_H
+#ifndef DEEP_BLUE_GROUP_PROJECT_H
+#define DEEP_BLUE_GROUP_PROJECT_H
 //Stub this out for submission
-#include "function_api.h"
+//#include "function_api.h"
 
 #include <iostream>
 #include <map>
@@ -3956,4 +3961,4 @@ bool Transition::find_path_to_state(int max_moves, int minimum_max_moves) {
 map<pair<Hash_val,Token_t>, Move_t> Transition::get_path() {
     return this->path;
 }
-#endif //TIGER_GAME_SUBMIT_H
+#endif //DEEP_BLUE_GROUP_PROJECT_H
