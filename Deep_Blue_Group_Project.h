@@ -1764,7 +1764,7 @@ bool GameRunner::isValidMove(Unordered_State const & st, Move_t move) {
         return false;
     }
     //Checking if move indicated is valid
-    map<Point_t, list<Point_t> >::iterator mapIter; // to check for special edges
+    map<Point_t, list<Point_t> >::iterator mapIter;// to check for special edges
     bool inSquareSection = false;
     Point_t diff = abs(to - from);
     if(from.row >= tiger_cage_row_offset && from.row <
@@ -3781,7 +3781,8 @@ bool Specific_Move_Handler::lagging_col() {
     Token_t tiger = current->get_tiger();
     Point_t tig_pos = tiger.location;
     if(tig_pos != make_point(front_row, lag_col) &&
-       !g->isValidMove(*current, make_move(tiger, make_point(front_row, lag_col)))){
+       !g->isValidMove(*current,
+                       make_move(tiger, make_point(front_row, lag_col)))){
         in_pos = false;
     }
 
