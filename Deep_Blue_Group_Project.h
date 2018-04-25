@@ -790,8 +790,7 @@ protected:
 public:
     /*       Men_Mover(const State& s)
      *
-     * description: creates a Men_Mover object, no members are set. Should be
-     *              overloaded to set current to s.
+     * description: creates a Men_Mover object, sets current to s
      * return: none
      * precondition: s is a valid State
      * postcondition: a Men_Mover object is created
@@ -804,7 +803,7 @@ public:
      *              given state
      * return: Move_t
      * precondition: s is a valid State
-     * postcondition: this current should be set to s
+     * postcondition: this current is set to s
      */
     virtual Move_t next_move(State s);
 
@@ -1524,8 +1523,7 @@ Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
             }
         }
     }
-
-    if(new_game && men) {
+    if(new_game && men != nullptr) {
         delete men;
         men = nullptr;
     }
