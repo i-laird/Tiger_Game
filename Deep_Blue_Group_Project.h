@@ -1537,7 +1537,7 @@ Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
     Color_t win;
     GameRunner tigerMove;
     if(turn == RED){
-        returnMove = tigerMove.Tiger_Move(gameState);
+        returnMove = tigerMove.Tiger_Move(gameState, 1);
     }
     returnMove = men->next_move(gameState);
     if(tigerMove.evaluateWinState(gameState, win)) {
@@ -2076,21 +2076,6 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
     //Get all of the valid moves for the Tiger
     pair<Point_t *, pair<bool *, int> > returnMoves =
             this->validMoves(tokens, tokens[0]);
-    //Act randomly
-    if(9 -(rand() % 10) < randomProbability && returnMoves.second.second > 0){
-        //If random make random move
-        returnMove.destination = returnMoves.first[rand() %
-                                                   returnMoves.second.second];
-        if(returnMoves.second.first) {
-            delete[] returnMoves.second.first;
-            returnMoves.second.first = nullptr;
-        }
-        if(returnMoves.first) {
-            delete[] returnMoves.first;
-            returnMoves.first = nullptr;
-        }
-        return returnMove;
-    }
     set<Point_t> checkPoints;
     pair<Point_t * , pair< bool *, int > > tokenMoves;
     static Point_t previousLocation;
@@ -2112,6 +2097,21 @@ Move_t GameRunner::Tiger_Move(vector<Token_t> & tokens, int randomProbability){
         }
     }
     if(!moveFound){
+        //Act randomly
+        if(9 -(rand() % 10) < randomProbability && returnMoves.second.second > 0){
+            //If random make random move
+            returnMove.destination = returnMoves.first[rand() %
+                                                       returnMoves.second.second];
+            if(returnMoves.second.first) {
+                delete[] returnMoves.second.first;
+                returnMoves.second.first = nullptr;
+            }
+            if(returnMoves.first) {
+                delete[] returnMoves.first;
+                returnMoves.first = nullptr;
+            }
+            return returnMove;
+        }
         //Temporarily reset tiger Position
         record2 = tokens[0].location;
         tokens[0].location = record;
