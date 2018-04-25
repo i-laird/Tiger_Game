@@ -21,6 +21,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -780,18 +781,49 @@ const Point_t RIGHT = make_point(0, 1);
 const Point_t CAGE_ENTRANCE = make_point(4,4);
 const Point_t TIGER_START = make_point(2,4);
 
-
 class Men_Mover {
 protected:
     // about current state
     GameRunner game;
     Unordered_State current;
 public:
+    /*       Men_Mover(const State& s)
+     *
+     * description: creates a Men_Mover object, no members are set. Should be
+     *              overloaded to set current to s.
+     * return: none
+     * precondition: s is a valid State
+     * postcondition: a Men_Mover object is created
+     */
     Men_Mover(const State &s);
 
+    /*       next_move(State s)
+     *
+     * description: returns the Move_t which the men should perform in the
+     *              given state
+     * return: Move_t
+     * precondition: s is a valid State
+     * postcondition: this current should be set to s
+     */
     virtual Move_t next_move(State s);
+
+    /*       ~Men_Mover()
+     *
+     * description: destructor
+     * return: none
+     * precondition: none
+     * postcondition: this object is deleted
+     */
     virtual ~Men_Mover() = default;
 protected:
+    /*       execute_move()
+     *
+     * description: returns the Move_t which the men should perform given
+     *              that current is the current state
+     * return: Move_t
+     * precondition: current is a valid State
+     * postcondition: none
+     */
     virtual Move_t execute_move() = 0;
 };
 
@@ -863,8 +895,6 @@ bool tiger_can_jump(const Unordered_State * st, GameRunner *g);
  */
 bool secure(Unordered_State* st, GameRunner* g, Move_t off_move = NULL_MOVE);
 
-Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t from);
-
 class Specific_Move_Handler {
 private:
     Unordered_State * current;
@@ -873,16 +903,130 @@ private:
     int front_row, back_row;
     Move_t off_move;
 
+    /*          one_col_two_back()
+     *
+     * description: Returns true if current is in the case where all
+     *              columns are in the same two rows except for one column which
+     *              is lagging to columns back. If in the case, adds the moves
+     *              to do to response
+     * return: bool
+     * precondition: none
+     * postcondition: If in this special state, response is set to the series
+     *                of moves that the men should take in response to this
+     *                case
+     */
     bool one_col_two_back();
+
+    /*          three_by_diag()
+     *
+     * description: Returns true if current is in the in the case
+     *              where three columns with a diagonal through the left or
+     *              right column are  being held down by the tiger.
+     *              If in the case, adds the moves to do to response
+     * return: bool
+     * precondition: none
+     * postcondition: If in this special state, response is set to the series
+     *                of moves that the men should take in response to this
+     *                case
+     */
     bool three_by_diag();
+
+    /*          near_top_finish_three_by_diag()
+     *
+     * description: Returns true if current is in the in the case
+     *              where three columns with a diagonal through the left or
+     *              right column were being held down by the tiger, but the
+     *              tiger has left and the three_by_diag() case needs to be
+     *              finished.
+     *              If in the case, adds the moves to do to response
+     * return: bool
+     * precondition: none
+     * postcondition: If in this special state, response is set to the series
+     *                of moves that the men should take in response to this
+     *                case
+     */
     bool near_top_finish_three_by_diag();
+
+    /*          lagging_col()
+     *
+     * description: Returns true if current is in the in the case
+     *              where one column is lagging behind all the others and in
+     *              the middle column if on the lower half of the board, or
+     *              one of the edge columns if on the upper half.
+     *              If in the case, adds the moves to do to response
+     * return: bool
+     * precondition: none
+     * postcondition: If in this special state, response is set to the series
+     *                of moves that the men should take in response to this
+     *                case
+     */
     bool lagging_col();
+
+    /*          try_switch()
+     *
+     * description: Returns true if current is in the in the case
+     *              where one column is lagging behind all the others but not
+     *              in the middle column if on the lower half of the board, or
+     *              not on  one of the edge columns if on the upper half.
+     *              If in the case, adds the moves to do to response to try
+     *              to shift the lag to the appropriate column
+     * return: bool
+     * precondition: none
+     * postcondition: If in this special state, response is set to the series
+     *                of moves that the men should take in response to this
+     *                case
+     */
     bool try_switch();
 public:
+    /*         Specific_Move_Handler(Unordered_State*, GameRunner* g)
+     *
+     * description: default constructor, creates a Specific_Move_Handler
+     * return: none
+     * precondition: none
+     * postcondition: A Specific_Move_Handler object is created
+     */
     Specific_Move_Handler(Unordered_State* = nullptr, GameRunner* g = nullptr);
+
+    /*         set_front_back_row(int front_row, int back_row)
+     *
+     * description: mutator function, sets front and back row to given values
+     * return: none
+     * precondition: none
+     * postcondition: front_row and back_row in this object are set to the
+     *                given values
+     */
     void set_front_back_row(int front_row, int back_row);
+
+    /*         set_front_back_row(int front_row, int back_row)
+     *
+     * description: Returns true if in one of the special cases detailed
+     *              above in the private member functions. If in one of these
+     *              cases, response is filled with the appropriate men response
+     * return: bool
+     * precondition: none
+     * postcondition: If in a special state, response is set to the series
+     *                of moves that the men should take in response to this
+     *                case
+     */
     bool handle_special_case(Move_t off_move);
+
+    /*              clear_moves()
+     *
+     * description: clears response
+     * return: none
+     * precondition: none
+     * postcondition: response is set to an empty queue
+     */
     void clear_moves();
+
+    /*              get_move()
+     *
+     * description: returns move on front of response and pops it from the
+     *              queue, returns NULL_MOVE if response is empty
+     * return: Move_t
+     * precondition: none
+     * postcondition: if response was not empty, its front entry is popped
+     */
     Move_t get_move();
 };
 
@@ -1005,36 +1149,60 @@ private:
      */
     Move_t fail_safe(Move_t suggested);
 
+    /*       leads_to_cycle(Move_t mv)
+     *
+     * description: If to tiger cage, returns true iff mv returns the men
+     *              locations to a previous state visited in the last
+     *              MAX_CYCLING_CHECK moves, else returns false
+     *
+     * return: bool
+     * precondition: none
+     * postcondition: this object is unchanged
+     */
     bool leads_to_cycle(Move_t mv);
 
+    /*       tiger_reachable_pos()
+     *
+     * description: Returns the set of points which the tiger could reach
+     *              in an arbitrary number of moves, not including its
+     *              current position
+     * return: set<Point_t>
+     * precondition: none
+     * postcondition: this object is unchanged
+     */
     set<Point_t> tiger_reachable_pos();
 
+    /*       finish_off_tiger()
+     *
+     * description: Returns a move to do for when at tiger cage
+     * return: Move_t
+     * precondition: the only reachable positions from the tiger include the
+     *               row in front of the tiger cage and the tiger cage itself
+     * postcondition: this object is unchanged
+     */
     Move_t finish_off_tiger();
 
 public:
-    /*       Men_Mover(const State& s)
+    /*       Smart_Mover(const State& s)
      *
-     * description: creates a Men_Mover object with the given State
+     * description: creates a Smart_Mover object with the given State
      *              used to create current
      * return: none
      * precondition: s is a valid State
-     * postcondition: a Men_Mover object is created
+     * postcondition: a Smart_Mover object is created
      */
     Smart_Mover(const State& s);
     ~Smart_Mover(){}
 
 protected:
-    /*       next_move(Move_t tiger_move)
+    /*       execute_move()
      *
-     * description: performs the tiger_move on current, then
-     *              returns the best move for the men to perform
+     * description: returns the best move for the men to perform
      *              in order to prevent capture of men and
      *              move men forward
-     *                performs that move on current and returns it
      * return: Move_t
      * precondition: none
-     * postcondition: the returned move is performed on current, any
-     *                moves calculated turns in advanced are stored
+     * postcondition: this object is unchanged
      */
     Move_t execute_move() override;
 };
@@ -1346,7 +1514,21 @@ bool Unordered_State::is_occupied(const Point_t& pt) const {
 
 Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
     static Smart_Mover * men  = nullptr;
-    if(men == nullptr)
+    // if at beginning of game, make a new man
+    bool new_game = true;
+    for(unsigned int i = 0; i < gameState.size() && new_game; ++i) {
+        if(gameState[i].color == BLUE) {
+            if(gameState[i].location.row < NUM_ROW - 2) {
+                new_game = false;
+            }
+        }
+    }
+
+    if(new_game && men) {
+        delete men;
+    }
+
+    if(men == nullptr || new_game)
         men = new Smart_Mover(gameState);
     Move_t returnMove;
     Color_t win;
@@ -2502,74 +2684,6 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
     return !jump;
 }
 
-// returns the move from the man closest to dest which moves him
-// towards dest as quickly as possible
-//
-// returns  NULL_MOVE if no such move exists or if from is occupied
-Move_t bfs_move_getter(Unordered_State* st, Point_t dest) {
-    // if from is occupied, don't try to move towards it
-    if(st->is_occupied(dest)) {
-        return NULL_MOVE;
-    }
-
-    queue<Point_t> frontier;
-
-    bool visited[NUM_ROW][NUM_COL];
-    int dist[NUM_ROW][NUM_COL];
-    // initialize visited to false, dist to infinity, and predecessor to null
-    for (int r = 0; r < NUM_ROW; ++r) {
-        for (int c = 0; c < NUM_COL; ++c) {
-            visited[r][c] = false;
-            dist[r][c] = INFTY;
-        }
-    }
-
-    set<Point_t> bad_locs;
-    // we don't want to move any men that are needed to stage the tiger cage
-    for (int i = 0; i < STAGE_POS_SIZE; i++) {
-        bad_locs.insert(STAGE_POSITIONS[i]);
-    }
-
-    // initialize current
-    Point_t current = dest;
-    visited[current.row][current.col] = true;
-    dist[current.row][current.col] = 0;
-    frontier.push(current);
-    pair<Point_t*, pair<bool*, int> > moves;
-    // perform a bfs from the dest without using diagonals
-    Point_t dirs[4] = {UP, DOWN, LEFT, RIGHT};
-    Move_t mv_todo = NULL_MOVE;
-    while (!frontier.empty() && mv_todo == NULL_MOVE) {
-        current = frontier.front();
-        // mark visited
-        frontier.pop();
-
-        // add each reachable new position to the frontier
-        for(int i = 0; i < 4 && mv_todo == NULL_MOVE; ++i) {
-            // if not a populated point and in bounds and unvisited,
-            Point_t to = current + dirs[i];
-            // if to is in tiger cage, don't record it
-            if(to.row < CAGE_ENTRANCE.row) {
-                continue;
-            }
-            if(!visited[to.row][to.col] && !st->is_occupied(to)) {
-                // don't need to check tiger cage because not using diagonals
-                if((to.row >= 4 && to.col >= 0 && to.col < NUM_COL)) {
-                    visited[to.row][to.col] = true;
-                    dist[to.row][to.col] = dist[current.row][current.col] + 1;
-                    frontier.push(to);
-                }
-            }
-                // if found a man not in a bad loc, move him to the predecessor
-            else if(st->is_occupied(to) && st->get_tiger() != make_tiger(to) &&
-                    bad_locs.find(to) == bad_locs.end()) {
-                mv_todo = make_move(make_man(to), current);
-            }
-        }
-    }
-
-    return mv_todo;
-}
 
 void Smart_Mover::determine_rows() {
     set<int> row_to_col[NUM_ROW];
