@@ -1503,7 +1503,21 @@ bool Unordered_State::is_occupied(const Point_t& pt) const {
 
 Move_t  Move_Deep_Blue(vector<Token_t> gameState, Color_t turn){
     static Smart_Mover * men  = nullptr;
-    if(men == nullptr)
+    // if at beginning of game, make a new man
+    bool new_game = true;
+    for(unsigned int i = 0; i < gameState.size() && new_game; ++i) {
+        if(gameState[i].color == BLUE) {
+            if(gameState[i].location.row < NUM_ROW - 2) {
+                new_game = false;
+            }
+        }
+    }
+
+    if(new_game && men) {
+        delete men;
+    }
+
+    if(men == nullptr || new_game)
         men = new Smart_Mover(gameState);
     Move_t returnMove;
     Color_t win;
