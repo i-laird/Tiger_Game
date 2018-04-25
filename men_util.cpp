@@ -6,7 +6,7 @@ Hash_val hash_locs(const Unordered_State& st, int back_row) {
     for(int c = 0; c < NUM_COL; ++c) {
         for(auto r = st.rows_in_col(c).begin(); r != st.rows_in_col(c).end(); ++r) {
             Point_t loc = make_point(*r, c);
-            int val = pow(2, loc.col + + ((back_row - loc.row) % 2) * NUM_COL);
+            int val = pow(2, loc.col + ((back_row - loc.row) % 2) * NUM_COL);
 
             if(back_row - loc.row < 2) {
                 h.first += val;

@@ -10,7 +10,7 @@
 #ifndef DEEP_BLUE_GROUP_PROJECT_H
 #define DEEP_BLUE_GROUP_PROJECT_H
 //Stub this out for submission
-//#include "function_api.h"
+#include "function_api.h"
 
 #include <iostream>
 #include <map>
@@ -2560,7 +2560,7 @@ Hash_val hash_locs(const Unordered_State& st, int back_row) {
         for(auto r = st.rows_in_col(c).begin(); r !=
                                                 st.rows_in_col(c).end(); ++r) {
             Point_t loc = make_point(*r, c);
-            int val = pow(2, loc.col ++ ((back_row - loc.row) % 2)
+            int val = pow(2, loc.col + ((back_row - loc.row) % 2)
                                        * NUM_COL);
 
             if(back_row - loc.row < 2) {
