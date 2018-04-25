@@ -1,10 +1,5 @@
 #include "Smart_Mover.h"
 #include "testing_util.h"
-#include "Scored_MMover.h"
-#include "Scored_MMovers/Upward.h"
-#include "Scored_MMovers/Inward.h"
-#include "Scored_MMovers/AvoidCapture.h"
-#include "Scored_MMovers/MarkTiger.h"
 #include <iomanip>
 #include <ctime>
 using namespace std;
@@ -268,7 +263,7 @@ int main()
                             cout << "at first turn...\n";
                             turn = 0;
                         }
-                        else if(turn >= the_game.size()) {
+                        else if(turn >= (int)the_game.size()) {
                             cout << "at last turn ...\n";
                             turn = the_game.size() - 1;
                         }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7.1)
 project(Tiger-Game)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic")
 
 add_executable(Tiger-Game
         driver.cpp
@@ -23,14 +23,5 @@ add_executable(Tiger-Game
         Unordered_State.h
         Smart_Mover.cpp
         Smart_Mover.h
-        Scored_MMover.h
-        Scored_MMover.cpp
-        Men_Mover.cpp
-        Scored_MMovers/Upward.cpp
-        Scored_MMovers/Upward.h
-        Scored_MMovers/ScoreMod.h
-        Scored_MMovers/Inward.cpp
-        Scored_MMovers/Inward.h
-        Scored_MMovers/AvoidCapture.cpp
-        Scored_MMovers/AvoidCapture.h
-        Scored_MMovers/MarkTiger.cpp Scored_MMovers/MarkTiger.h submit.h)
+        Men_Mover.cpp)
+

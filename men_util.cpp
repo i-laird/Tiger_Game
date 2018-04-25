@@ -137,7 +137,7 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
 // towards dest as quickly as possible
 //
 // returns  NULL_MOVE if no such move exists or if from is occupied
-Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t dest) {
+Move_t bfs_move_getter(Unordered_State* st, Point_t dest) {
     // if from is occupied, don't try to move towards it
     if(st->is_occupied(dest)) {
         return NULL_MOVE;

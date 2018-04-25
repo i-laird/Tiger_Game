@@ -14,6 +14,7 @@ protected:
     Unordered_State current;
 public:
     Men_Mover(const State &s);
+    virtual ~Men_Mover() = default;
 
     virtual Move_t next_move(State s);
 protected:

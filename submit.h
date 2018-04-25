@@ -772,6 +772,7 @@ public:
     Men_Mover(const State &s);
 
     virtual Move_t next_move(State s);
+    virtual ~Men_Mover() = default;
 protected:
     virtual Move_t execute_move() = 0;
 };
@@ -1002,6 +1003,7 @@ public:
      * postcondition: a Men_Mover object is created
      */
     Smart_Mover(const State& s);
+    ~Smart_Mover(){}
 
 protected:
     /*       next_move(Move_t tiger_move)
@@ -2018,7 +2020,7 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
 
 int GameRunner::getRandomizer(vector<Token_t> & tokens){
     //First find the average row
-    int rowTotal = 0, rowAverage, returnVal;
+    int rowTotal = 0, rowAverage;
     for(Token_t & temp : tokens){
         rowTotal += temp.location.row;
     }
@@ -2436,7 +2438,7 @@ bool secure(Unordered_State* st, GameRunner* g, Move_t off_move) {
 // towards dest as quickly as possible
 //
 // returns  NULL_MOVE if no such move exists or if from is occupied
-Move_t bfs_move_getter(Unordered_State* st, GameRunner* g, Point_t dest) {
+Move_t bfs_move_getter(Unordered_State* st, Point_t dest) {
     // if from is occupied, don't try to move towards it
     if(st->is_occupied(dest)) {
         return NULL_MOVE;
@@ -2814,7 +2816,7 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
                            DOWN, DOWN + LEFT, DOWN + RIGHT};
         // if cannot find a safe valid move, just try to find a valid move
         for (int i = 0; i < 8 && !fail_safe_found; ++i) {
-            for (int j = 1; j < cur.size() && !fail_safe_found; ++j) {
+            for (int j = 1; j < (int)cur.size() && !fail_safe_found; ++j) {
                 Token_t man = cur[j];
                 // don't try to move away from the middle
                 if ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
@@ -2857,7 +2859,7 @@ Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
                            LEFT, RIGHT,
                            DOWN, DOWN + LEFT, DOWN + RIGHT};
         for (int i = 0; i < 8 && !fail_safe_found; ++i) {
-            for (int j = 1; j < cur.size() && !fail_safe_found; ++j) {
+            for (int j = 1; j < (int)cur.size() && !fail_safe_found; ++j) {
                 Token_t man = cur[j];
                 // don't try to move away from the middle if tiger in cage
                 bool bad_choice = false;
@@ -3099,7 +3101,7 @@ Move_t Smart_Mover::finish_off_tiger() {
     // behind it
     // for each man
     State cur = current;
-    for(int i = 1; i < cur.size(); ++i) {
+    for(int i = 1; i < (int)cur.size(); ++i) {
         Token_t man = cur[i];
         // get man moves
         auto moves = game.validMoves(current, man);
@@ -3112,7 +3114,7 @@ Move_t Smart_Mover::finish_off_tiger() {
                 fill_in_behind_mvs.emplace_back(set<Move_t>());
                 // look for any moves that fill in behind it
                 current.do_move(mv);
-                for(int k = 1; k < cur.size(); ++k) {
+                for(int k = 1; k < (int)cur.size(); ++k) {
                     Token_t next_man = cur[k];
                     // don't look at man moving right now
                     if(next_man.location != mv.destination) {
@@ -3144,7 +3146,7 @@ Move_t Smart_Mover::finish_off_tiger() {
     // try each pair of move / fill_in behind it to see if any reduces
     // tiger reachable positions
     bool move_found = false;
-    for(int i = 0; i < moves_into_t_reachable.size() && !move_found; ++i) {
+    for(int i = 0; i < (int)moves_into_t_reachable.size() && !move_found; ++i) {
         Move_t mv = moves_into_t_reachable[i];
         current.do_move(mv);
         unsigned long new_reachable = tiger_reachable_pos().size();
@@ -3193,7 +3195,7 @@ Move_t Smart_Mover::finish_off_tiger() {
     Move_t towards_tiger = NULL_MOVE;
     if(!move_found) {
         Token_t tiger = current.get_tiger();
-        for(int i = 1; i < cur.size() && !move_found; ++i) {
+        for(int i = 1; i < (int)cur.size() && !move_found; ++i) {
             Token_t man = cur[i];
             auto moves = game.validMoves(current, man);
             for (int j = 0; j < moves.second.second; ++j) {
@@ -3395,7 +3397,7 @@ bool Specific_Move_Handler::three_by_diag() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int diag_col, lim_col, mid_col;;
+        int diag_col, lim_col, mid_col;
         if(left_col == front_row_diag_cols[0] ||
            left_col == front_row_diag_cols[1]) {
             diag_col = left_col;
@@ -3500,17 +3502,17 @@ bool Specific_Move_Handler::near_top_finish_three_by_diag() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int diag_col, lim_col, mid_col;;
+        int diag_col;// lim_col;// mid_col;
         if(left_col == front_row_diag_cols[0] ||
            left_col == front_row_diag_cols[1]) {
             diag_col = left_col;
-            lim_col = left_col + 2;
+           // lim_col = left_col + 2;
         }
         else {
-            lim_col = left_col;
+         //   lim_col = left_col;
             diag_col = left_col + 2;
         }
-        mid_col = (lim_col + diag_col) / 2;
+        //mid_col = (lim_col + diag_col) / 2;
         Point_t from, to;
         from = make_point(back_row, diag_col);
         to = make_point(back_row - 1, diag_col);
@@ -3613,15 +3615,15 @@ bool Specific_Move_Handler::lagging_col() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int col_in, col_2_in, col_3_in;
+        int col_in, /*col_2_in,*/ col_3_in;
         if((lag_col < 4 && front_row >= 8) || (lag_col >= 4 && front_row < 8)) {
             col_in = min(tig_pos.col + 1, NUM_COL - 1);
-            col_2_in = min(tig_pos.col + 2, NUM_COL - 1);
+           // col_2_in = min(tig_pos.col + 2, NUM_COL - 1);
             col_3_in = min(tig_pos.col + 3, NUM_COL - 1);
         }
         else {
             col_in = max(0, tig_pos.col - 1);
-            col_2_in = max(0, tig_pos.col - 2);
+           // col_2_in = max(0, tig_pos.col - 2);
             col_3_in = max(0, tig_pos.col - 3);
         }
 

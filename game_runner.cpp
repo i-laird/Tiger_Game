@@ -702,7 +702,7 @@ Point_t GameRunner::BFS_To_Point(vector<Token_t> mapLayout, int tokenIndex, Poin
 
 int GameRunner::getRandomizer(vector<Token_t> & tokens){
     //First find the average row
-    int rowTotal = 0, rowAverage, returnVal;
+    int rowTotal = 0, rowAverage;
     for(Token_t & temp : tokens){
         rowTotal += temp.location.row;
     }

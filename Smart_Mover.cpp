@@ -313,7 +313,7 @@ Move_t Smart_Mover::fail_safe(Move_t suggested) {
                            DOWN, DOWN + LEFT, DOWN + RIGHT};
         // if cannot find a safe valid move, just try to find a valid move
         for (int i = 0; i < 8 && !fail_safe_found; ++i) {
-            for (int j = 1; j < cur.size() && !fail_safe_found; ++j) {
+            for (int j = 1; j < (int)cur.size() && !fail_safe_found; ++j) {
                 Token_t man = cur[j];
                 // don't try to move away from the middle
                 if ((man.location.col < (NUM_COL - 1) / 2 && dirs[i].col < 0) ||
@@ -356,7 +356,7 @@ Move_t Smart_Mover::safety_fail_safe(Move_t suggested) {
                            LEFT, RIGHT,
                            DOWN, DOWN + LEFT, DOWN + RIGHT};
         for (int i = 0; i < 8 && !fail_safe_found; ++i) {
-            for (int j = 1; j < cur.size() && !fail_safe_found; ++j) {
+            for (int j = 1; j < (int)cur.size() && !fail_safe_found; ++j) {
                 Token_t man = cur[j];
                 // don't try to move away from the middle if tiger in cage
                 bool bad_choice = false;
@@ -598,7 +598,7 @@ Move_t Smart_Mover::finish_off_tiger() {
                                             // behind it
     // for each man
     State cur = current;
-    for(int i = 1; i < cur.size(); ++i) {
+    for(int i = 1; i < (int)cur.size(); ++i) {
         Token_t man = cur[i];
         // get man moves
         auto moves = game.validMoves(current, man);
@@ -611,7 +611,7 @@ Move_t Smart_Mover::finish_off_tiger() {
                 fill_in_behind_mvs.emplace_back(set<Move_t>());
                 // look for any moves that fill in behind it
                 current.do_move(mv);
-                for(int k = 1; k < cur.size(); ++k) {
+                for(int k = 1; k < (int)cur.size(); ++k) {
                     Token_t next_man = cur[k];
                     // don't look at man moving right now
                     if(next_man.location != mv.destination) {
@@ -643,7 +643,7 @@ Move_t Smart_Mover::finish_off_tiger() {
     // try each pair of move / fill_in behind it to see if any reduces
     // tiger reachable positions
     bool move_found = false;
-    for(int i = 0; i < moves_into_t_reachable.size() && !move_found; ++i) {
+    for(int i = 0; i < (int)moves_into_t_reachable.size() && !move_found; ++i) {
         Move_t mv = moves_into_t_reachable[i];
         current.do_move(mv);
         unsigned long new_reachable = tiger_reachable_pos().size();
@@ -692,7 +692,7 @@ Move_t Smart_Mover::finish_off_tiger() {
     Move_t towards_tiger = NULL_MOVE;
     if(!move_found) {
         Token_t tiger = current.get_tiger();
-        for(int i = 1; i < cur.size() && !move_found; ++i) {
+        for(int i = 1; i < (int)cur.size() && !move_found; ++i) {
         Token_t man = cur[i];
             auto moves = game.validMoves(current, man);
             for (int j = 0; j < moves.second.second; ++j) {

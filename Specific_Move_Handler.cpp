@@ -139,7 +139,7 @@ bool Specific_Move_Handler::three_by_diag() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int diag_col, lim_col, mid_col;;
+        int diag_col, lim_col, mid_col;
         if(left_col == front_row_diag_cols[0] ||
            left_col == front_row_diag_cols[1]) {
             diag_col = left_col;
@@ -244,17 +244,17 @@ bool Specific_Move_Handler::near_top_finish_three_by_diag() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int diag_col, lim_col, mid_col;;
+        int diag_col;// lim_col;//, mid_col;
         if(left_col == front_row_diag_cols[0] ||
            left_col == front_row_diag_cols[1]) {
             diag_col = left_col;
-            lim_col = left_col + 2;
+           // lim_col = left_col + 2;
         }
         else {
-            lim_col = left_col;
+           // lim_col = left_col;
             diag_col = left_col + 2;
         }
-        mid_col = (lim_col + diag_col) / 2;
+        //mid_col = (lim_col + diag_col) / 2;
         Point_t from, to;
         from = make_point(back_row, diag_col);
         to = make_point(back_row - 1, diag_col);
@@ -357,15 +357,15 @@ bool Specific_Move_Handler::lagging_col() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int col_in, col_2_in, col_3_in;
+        int col_in,/* col_2_in,*/ col_3_in;
         if((lag_col < 4 && front_row >= 8) || (lag_col >= 4 && front_row < 8)) {
             col_in = min(tig_pos.col + 1, NUM_COL - 1);
-            col_2_in = min(tig_pos.col + 2, NUM_COL - 1);
+           // col_2_in = min(tig_pos.col + 2, NUM_COL - 1);
             col_3_in = min(tig_pos.col + 3, NUM_COL - 1);
         }
         else {
             col_in = max(0, tig_pos.col - 1);
-            col_2_in = max(0, tig_pos.col - 2);
+           // col_2_in = max(0, tig_pos.col - 2);
             col_3_in = max(0, tig_pos.col - 3);
         }
 

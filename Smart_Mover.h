@@ -145,6 +145,7 @@ private:
      * postcondition: a Men_Mover object is created
      */
     Smart_Mover(const State& s);
+    ~Smart_Mover() = default;
 
 protected:
     /*       next_move(Move_t tiger_move)
