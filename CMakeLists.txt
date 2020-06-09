@@ -33,4 +33,4 @@ add_executable(Tiger-Game
         Scored_MMovers/Inward.h
         Scored_MMovers/AvoidCapture.cpp
         Scored_MMovers/AvoidCapture.h
-        Scored_MMovers/MarkTiger.cpp Scored_MMovers/MarkTiger.h)
+        Scored_MMovers/MarkTiger.cpp Scored_MMovers/MarkTiger.h constants.h)

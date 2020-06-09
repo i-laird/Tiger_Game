@@ -2,6 +2,7 @@
 #include "Transition.h"
 #include "Specific_Move_Handler.h"
 #include "testing_util.h"
+#include "constants.h"
 
 #ifndef MEN_MOVER_H_INCLUDED
 #define MEN_MOVER_H_INCLUDED

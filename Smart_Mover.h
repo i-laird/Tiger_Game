@@ -6,9 +6,8 @@
 #include "Specific_Move_Handler.h"
 #include "testing_util.h"
 #include "Men_Mover.h"
+#include "constants.h"
 #include <queue>
-
-const int MAX_CYCLING_CHECK = 4;
 
 class Smart_Mover : public Men_Mover {
 private:

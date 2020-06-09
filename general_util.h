@@ -386,29 +386,4 @@ Move_t operator+(const Move_t& a, const Move_t& b);
  */
 int one_norm(const Move_t & m);
 
-
-/***************************** constants and simple types *********************/
-/// constants TODO
-const int NUM_COL = 9;
-const int NUM_ROW = 13;
-
-const int INFTY = NUM_ROW * NUM_COL + 1; // longer than any simple path
-
-const Point_t NULL_POINT = make_point(-INFTY, -INFTY);
-const Token_t NULL_TOKEN = make_token(RED, NULL_POINT);
-const Move_t  NULL_MOVE  = make_move(NULL_TOKEN, NULL_POINT);
-
-const Point_t ZERO_VECT = make_point(0,0);
-const Point_t UP    = make_point(-1, 0);
-const Point_t DOWN  = make_point(1, 0);
-const Point_t LEFT  = make_point(0, -1);
-const Point_t RIGHT = make_point(0, 1);
-
-const Point_t CAGE_ENTRANCE = make_point(4,4);
-const Point_t TIGER_START = make_point(2,4);
-
-/// simple types
-typedef vector<Token_t> State;
-
-
 #endif // GENERAL_UTIL_H_INCLUDED

@@ -1,5 +1,6 @@
 #include "general_util.h"
 #include <algorithm>
+#include "constants.h"
 
 #ifndef UNORDERDED_STATE_H_INCLUDED
 #define UNORDERDED_STATE_H_INCLUDED

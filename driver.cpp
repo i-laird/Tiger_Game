@@ -5,6 +5,7 @@
 #include "Scored_MMovers/Inward.h"
 #include "Scored_MMovers/AvoidCapture.h"
 #include "Scored_MMovers/MarkTiger.h"
+#include "constants.h"
 #include <iomanip>
 #include <ctime>
 using namespace std;
