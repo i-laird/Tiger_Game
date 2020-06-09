@@ -10,12 +10,13 @@ Unordered_State::Unordered_State() {
 
 
 /// assignment operator
-const Unordered_State& Unordered_State::operator=(const Unordered_State& that) {
+const Unordered_State& Unordered_State::operator=(const Unordered_State& that){
     if(this != &that) {
         this->tiger = that.tiger;
         for(int c = 0; c < NUM_COL; ++c) {
             this->col_to_rows[c] = set<int>();
-            for(auto r = that.col_to_rows[c].begin(); r != that.col_to_rows[c].end(); ++r) {
+            for(auto r = that.col_to_rows[c].begin();
+                r != that.col_to_rows[c].end(); ++r) {
                 col_to_rows[c].insert(*r);
             }
         }
@@ -144,12 +145,12 @@ void Unordered_State::set_men_locs(const set<Point_t>& locs) {
 /// operators
 bool Unordered_State::do_move(const Move_t& m) {
     bool valid_move = true; // true iff moving a token that
-                            // exists to an unoccupied position
+    // exists to an unoccupied position
     Point_t from = m.token.location; // where going from
     Point_t to = m.destination; // where going to
     // this is a bad move if not in the column range
     if(from.col < 0 || from.col >= NUM_COL || to.col < 0 ||
-       from.col >= NUM_COL) {
+       to.col >= NUM_COL) {
         valid_move = false;
     }
     // this is a bad move if moving into tiger location
@@ -173,7 +174,8 @@ bool Unordered_State::do_move(const Move_t& m) {
         if(from != this->tiger.location) {
             valid_move = false;
         }
-        else if(this->col_to_rows[to.col].find(to.row) == this->col_to_rows[to.col].end()) {
+        else if(this->col_to_rows[to.col].find(to.row) ==
+                this->col_to_rows[to.col].end()) {
             this->tiger.location = to;
         }
         else {
@@ -187,7 +189,7 @@ bool Unordered_State::do_move(const Move_t& m) {
             is_jump = false;
         }
         else if(rows_in_col(jumped_pos.col).find(jumped_pos.row) !=
-                                            rows_in_col(jumped_pos.col).end()) {
+                rows_in_col(jumped_pos.col).end()) {
             is_jump = false;
         }
         if(is_jump) {
@@ -199,7 +201,7 @@ bool Unordered_State::do_move(const Move_t& m) {
 }
 
 
- Unordered_State::operator State() const{
+Unordered_State::operator State() const{
     State st;
     st.push_back(this->tiger);
     for(int c = 0; c < NUM_COL; ++c) {
@@ -219,12 +221,10 @@ bool Unordered_State::is_occupied(const Point_t& pt) const {
         if(pt == this->tiger.location) {
             occupied = true;
         }
-        else if(col_to_rows[pt.col].find(pt.row) != col_to_rows[pt.col].end()) {
+        else if(col_to_rows[pt.col].find(pt.row) != col_to_rows[pt.col].end()){
             occupied = true;
         }
     }
 
     return occupied;
 }
-
-

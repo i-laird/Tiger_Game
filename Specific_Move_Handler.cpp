@@ -20,7 +20,7 @@ bool Specific_Move_Handler::one_col_two_back() {
        row_to_col[back_row - 2].size() == NUM_COL - 1 &&
        row_to_col[back_row - 3].size() == NUM_COL - 1 && front_row >= 4) {
 
-        if(*row_to_col[back_row].begin() == *row_to_col[back_row - 1].begin()) {
+        if(*row_to_col[back_row].begin() == *row_to_col[back_row - 1].begin()){
             in_pos = true;
             back_col = *row_to_col[back_row].begin();
         }
@@ -33,13 +33,13 @@ bool Specific_Move_Handler::one_col_two_back() {
                 in_pos = false;
             }
         }
-   }
-   // if back col has an off move, not in position
+    }
+    // if back col has an off move, not in position
     if(back_col == off_move.destination.col) {
         in_pos = false;
     }
 
-   if(in_pos) {
+    if(in_pos) {
         int help_col = back_col - 1;
         if(back_col < 4) {
             help_col = back_col + 1;
@@ -58,9 +58,9 @@ bool Specific_Move_Handler::one_col_two_back() {
         /**from = make_point(back_row, help_col);
         to = make_point(back_row - 1, help_col);
         response.push(make_move(make_man(from),to));*/
-   }
+    }
 
-   return in_pos;
+    return in_pos;
 }
 
 
@@ -78,8 +78,8 @@ bool Specific_Move_Handler::three_by_diag() {
     int left_col = -1;
     // if at tiger cage or not secure, return false
     if(front_row <= 4 || //(row_to_col[front_row].size() < 4 &&
-                          //front_row > 6) || (front_row <= 6 &&
-                          !secure(current, g)){//)) {
+       //front_row > 6) || (front_row <= 6 &&
+       !secure(current, g)){//)) {
         return false;
     }
 
@@ -113,7 +113,7 @@ bool Specific_Move_Handler::three_by_diag() {
         // with the diagonal intersecting the front_row at
         // either c or c + 1, and continues down into c
         // if off_col in [c, c+2] then not in pos
-        if(c <= off_move.destination.col && c + 2 >= off_move.destination.col) {
+        if(c <= off_move.destination.col && c + 2 >= off_move.destination.col){
             in_pos = false;
         }
         for(int i = 0; i < 3 && in_pos; ++i) {
@@ -139,7 +139,7 @@ bool Specific_Move_Handler::three_by_diag() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int diag_col, lim_col, mid_col;;
+        int diag_col, lim_col, mid_col;
         if(left_col == front_row_diag_cols[0] ||
            left_col == front_row_diag_cols[1]) {
             diag_col = left_col;
@@ -206,7 +206,8 @@ bool Specific_Move_Handler::near_top_finish_three_by_diag() {
         in_pos = true;
         int c = front_row_diag_cols[j];
         // if haven't started a three by diag special move, not in position
-        if(!current->is_occupied(make_point(front_row, c)) || tig_pos == make_point(front_row,c)){
+        if(!current->is_occupied(make_point(front_row, c)) ||
+           tig_pos == make_point(front_row,c)){
             in_pos = false;
         }
         // c, c + 1, c+ 2 should be three consecutive columns
@@ -244,17 +245,17 @@ bool Specific_Move_Handler::near_top_finish_three_by_diag() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int diag_col, lim_col, mid_col;;
+        int diag_col;// lim_col;// mid_col;
         if(left_col == front_row_diag_cols[0] ||
            left_col == front_row_diag_cols[1]) {
             diag_col = left_col;
-            lim_col = left_col + 2;
+            // lim_col = left_col + 2;
         }
         else {
-            lim_col = left_col;
+            //   lim_col = left_col;
             diag_col = left_col + 2;
         }
-        mid_col = (lim_col + diag_col) / 2;
+        //mid_col = (lim_col + diag_col) / 2;
         Point_t from, to;
         from = make_point(back_row, diag_col);
         to = make_point(back_row - 1, diag_col);
@@ -298,8 +299,8 @@ bool Specific_Move_Handler::lagging_col() {
        row_to_col[front_row+1].size() != NUM_COL ||
        row_to_col[front_row + 2].size() != 1) {
         in_pos = false;
-   }
-   else {
+    }
+    else {
         lag_col = *row_to_col[front_row + 2].begin();
         if(row_to_col[front_row].find(lag_col) != row_to_col[front_row].end()) {
             in_pos = false;
@@ -308,34 +309,35 @@ bool Specific_Move_Handler::lagging_col() {
         if(lag_col == off_move.destination.col) {
             in_pos = false;
         }
-   }
+    }
 
 
-   // if the lagging column is the middle on the lower half of the board
-   // or one of the edges on the upper half, then it is fine to lag
-   // and we do not need to do any special moves
-   if(front_row >= 8 && lag_col == (NUM_COL - 1) / 2 ) {
-       in_pos = false;
-   }
-   else if(front_row < 8 && (lag_col == 0 || lag_col == NUM_COL - 1)) {
-       in_pos = false;
-   }
-
-
-
-   // if tiger not suppressing lagging column, i.e. not
-   // right above it/able to get righ above it, then not lagging
-   Token_t tiger = current->get_tiger();
-   Point_t tig_pos = tiger.location;
-   if(tig_pos != make_point(front_row, lag_col) &&
-      !g->isValidMove(*current, make_move(tiger, make_point(front_row, lag_col)))){
+    // if the lagging column is the middle on the lower half of the board
+    // or one of the edges on the upper half, then it is fine to lag
+    // and we do not need to do any special moves
+    if(front_row >= 8 && lag_col == (NUM_COL - 1) / 2 ) {
         in_pos = false;
-   }
+    }
+    else if(front_row < 8 && (lag_col == 0 || lag_col == NUM_COL - 1)) {
+        in_pos = false;
+    }
 
-   bool protect_diag_from_back = false; // true if it will be necessary
-   // to protect from a diagonal attack when switching the lagging col
-   // to an appropriate position
-   if(lag_col == front_row_diag_cols[0] || lag_col == front_row_diag_cols[1]) {
+
+
+    // if tiger not suppressing lagging column, i.e. not
+    // right above it/able to get righ above it, then not lagging
+    Token_t tiger = current->get_tiger();
+    Point_t tig_pos = tiger.location;
+    if(tig_pos != make_point(front_row, lag_col) &&
+       !g->isValidMove(*current,
+                       make_move(tiger, make_point(front_row, lag_col)))){
+        in_pos = false;
+    }
+
+    bool protect_diag_from_back = false; // true if it will be necessary
+    // to protect from a diagonal attack when switching the lagging col
+    // to an appropriate position
+    if(lag_col == front_row_diag_cols[0] || lag_col == front_row_diag_cols[1]) {
         // on row 7 don't need to worry about the diagonals for this move
         if(front_row != 8 && front_row != 7) {
             protect_diag_from_back = true;
@@ -357,15 +359,15 @@ bool Specific_Move_Handler::lagging_col() {
 
     if(in_pos) {
         this->response = queue<Move_t>();
-        int col_in, col_2_in, col_3_in;
+        int col_in, /*col_2_in,*/ col_3_in;
         if((lag_col < 4 && front_row >= 8) || (lag_col >= 4 && front_row < 8)) {
             col_in = min(tig_pos.col + 1, NUM_COL - 1);
-            col_2_in = min(tig_pos.col + 2, NUM_COL - 1);
+            // col_2_in = min(tig_pos.col + 2, NUM_COL - 1);
             col_3_in = min(tig_pos.col + 3, NUM_COL - 1);
         }
         else {
             col_in = max(0, tig_pos.col - 1);
-            col_2_in = max(0, tig_pos.col - 2);
+            // col_2_in = max(0, tig_pos.col - 2);
             col_3_in = max(0, tig_pos.col - 3);
         }
 
@@ -456,7 +458,8 @@ bool Specific_Move_Handler::try_switch() {
         return false;
     }
     // if either column has an off move, not in a special move
-    if(diag_threatening == off_move.destination.col || tiger_col == off_move.destination.col) {
+    if(diag_threatening == off_move.destination.col ||
+       tiger_col == off_move.destination.col) {
         return false;
     }
 
@@ -468,8 +471,10 @@ bool Specific_Move_Handler::try_switch() {
     to = make_point(front_row, tiger_col);
     response.push(make_move(make_man(from),to));
     // move guy protecting diag up
-    from = make_point(front_row + 2, diag_threatening + (diag_threatening - tiger_col));
-    to = make_point(front_row + 1, diag_threatening + (diag_threatening - tiger_col));
+    from = make_point(front_row + 2, diag_threatening +
+                                     (diag_threatening - tiger_col));
+    to = make_point(front_row + 1, diag_threatening +
+                                   (diag_threatening - tiger_col));
     response.push(make_move(make_man(from),to));
     // protect him
     from = make_point(front_row + 2, tiger_col);
@@ -480,7 +485,8 @@ bool Specific_Move_Handler::try_switch() {
 }
 
 
-Specific_Move_Handler::Specific_Move_Handler(Unordered_State* st, GameRunner* g) {
+Specific_Move_Handler::Specific_Move_Handler(Unordered_State* st,
+                                             GameRunner* g) {
     this->current = st;
     this->g = g;
     this->front_row = front_row;
@@ -488,7 +494,7 @@ Specific_Move_Handler::Specific_Move_Handler(Unordered_State* st, GameRunner* g)
 }
 
 
-bool Specific_Move_Handler::handle_special_case(Move_t off_move) {
+bool Specific_Move_Handler::handle_special_case(Move_t off_move){
     if(front_row <= 4) {
         return false;
     }
@@ -523,7 +529,7 @@ bool Specific_Move_Handler::handle_special_case(Move_t off_move) {
 }
 
 
-void Specific_Move_Handler::set_front_back_row(int front_row, int back_row) {
+void Specific_Move_Handler::set_front_back_row(int front_row, int back_row){
     this->front_row = front_row;
     this->back_row = back_row;
 }

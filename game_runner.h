@@ -26,17 +26,19 @@ string const startPos = "TIGER POS\n2 4\nMEN POS\n11 0\n11 1\n11 2\n"
         "11 3\n11 4\n11 5\n11 6\n11 7\n11 8\n12 0\n12 1\n12 2\n"
         "12 3\n12 4\n12 5\n12 6\n12 7\n12 8";
 /**
- * This class runs a game. It can be used like Booth's API to fetch moves and run them on the Game
+ * This class runs a game. It can be used like Booth's API to fetch moves
+ * and run them on the Game
  *
- * However, It can also be used in our program to find moves of a piece because it knows the board layout.
+ * However, It can also be used in our program to find moves of a piece because
+ * it knows the board layout.
  * author: Ian Laird
  */
 class GameRunner{
     bool manJumpedLastCheck;
     int manJumpedCol, manJumpedRow;
     int col_boundary,
-        row_boundary,
-        tiger_cage_row_offset;
+            row_boundary,
+            tiger_cage_row_offset;
     map<Point_t, list<Point_t>> * extendedGraph;
     /*
      * createGraph
@@ -48,22 +50,22 @@ class GameRunner{
 public:
     vector <Token_t> * gameState;
     /**
-     * Description: Sees is the indicated move is valid. i.e. Can the indicated
+     * Description: Sees is the indicated move is valid. i.e. Can indicated
      *              token move to the position specified.
      *              return: true means valid move, false means invalid
      * precondition: game state is valid
      * postcondition: game is unchanged
-     * return: First pair element indicates if a player won, second pair element
+     * return: First pair element indicates if a player won, second element
      *             indicates which player if a win occurred
      */
     bool isValidMove(vector <Token_t> const &, Move_t) ;
     /**
-     * Description: Sees is the indicated move is valid. i.e. Can the indicated
+     * Description: Sees is the indicated move is valid. i.e. Can indicated
      *              token move to the position specified.
      *              return: true means valid move, false means invalid
      * precondition: game state is valid
      * postcondition: game is unchanged
-     * return: First pair element indicates if a player won, second pair element
+     * return: First pair element indicates if a player won, second element
      *             indicates which player if a win occurred
      */
     bool isValidMove(Unordered_State const &, Move_t) ;
@@ -88,7 +90,7 @@ public:
     /*
      * description: Custom Constructor
      *              Reads in game board and starting positions for pieces
-     *              from files. This is the one that is used for testing reasons.
+     *              from files. This is the one that is used testing reasons.
      * precondition: GameRunner does not exist
      * Return: none: GameRunner is created
      */
@@ -118,7 +120,8 @@ public:
      * postcondition: Board is unchanged.
      * Return: a pointer to the Moves along with the # of moves.
      */
-    pair<Point_t *, pair<bool *, int> >  validMoves(vector <Token_t> const &, Token_t);
+    pair<Point_t *, pair<bool *, int> >  validMoves(vector <Token_t> const &,
+                                                    Token_t);
     /*
      * description: returns all Moves a Token can make.
      *                  will return Tiger jump moves.
@@ -126,7 +129,8 @@ public:
      * postcondition: Board is unchanged.
      * Return: a pointer to the Moves along with the # of moves.
      */
-    pair<Point_t *, pair<bool *, int> >  validMoves(Unordered_State const &, Token_t);
+    pair<Point_t *, pair<bool *, int> >  validMoves(Unordered_State const &,
+                                                    Token_t);
     /*
      * description: sees if a player has won (Tiger or Men)
      * precondition: Board state is valid
@@ -143,7 +147,8 @@ public:
      * return: if a path is found the point that should be moved to is returned
      *     boolean passed by reference is updated
      */
-    Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo, Color_t, bool &);
+    Point_t BFS_To_Point(vector<Token_t> mapLayout, int, Point_t moveTo,
+                         Color_t, bool &);
 
     /*
      * tiger_move
@@ -172,6 +177,5 @@ public:
     Move_t Undeterministic_Tiger_Move(vector<Token_t> &);
 
 };
-
 
 #endif //TIGER_GAME_GAME_RUNNER_H

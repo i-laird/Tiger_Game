@@ -1,6 +1,5 @@
 #include "Transition.h"
 
-
 bool Transition::search_for_state(int max_moves, int num_moves) {
     Token_t tiger = current->get_tiger();
     // if already know result of this state return it (i.e. have
@@ -14,7 +13,7 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
            visited_ptr->second.second == false) {
             return visited_ptr->second.second;
         } // else if been here before with fewer remaining moves and could
-          // get there, return true
+            // get there, return true
         else if(num_moves <= visited_ptr->second.first &&
                 visited_ptr->second.second == true){
             return visited_ptr->second.second;
@@ -38,13 +37,13 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
     // move which, no matter the tiger response, allows one to reach the
     // desired state
     bool any_good = false; // true iff path to desired state following above
-                           // guidelines
+    // guidelines
 
     // determine men to move
     vector<Token_t> to_move;
     for(int c = left_r_bds.first; c < left_r_bds.second; ++c) {
         for(auto r = current->rows_in_col(c).begin();
-                                    r != current->rows_in_col(c).end(); ++r) {
+            r != current->rows_in_col(c).end(); ++r) {
             to_move.push_back(make_man(make_point(*r,c)));
         }
     }
@@ -55,7 +54,7 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
         auto man_moves = game->validMoves(*current, man);
         for(int m = 0; m <  man_moves.second.second && !any_good; ++m){
             bool m_okay = true; // true iff this move is a good response to
-                                // the current state
+            // the current state
             Move_t mv = make_move(man, man_moves.first[m]);
             // don't move out of bounds
             if(mv.destination.row < low_high_bds.first ||
@@ -65,14 +64,15 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
                 m_okay = false;
                 /// DO THIS BETER ????
                 continue;
-           }
+            }
             // perform move
             cur_hash_val = next_hash(mv, cur_hash_val, back_row);
 
             current->do_move(mv);
             // if tiger can capture after move, this is a bad move
             if(tiger_can_jump(current, game)) {
-                visited.insert(make_pair(make_pair(cur_hash_val, tiger), make_pair(0, false)));
+                visited.insert(make_pair(make_pair(cur_hash_val, tiger),
+                                         make_pair(0, false)));
                 m_okay = false;
             }
             // check each tiger response
@@ -121,10 +121,10 @@ bool Transition::search_for_state(int max_moves, int num_moves) {
 }
 
 
-
-Transition::Transition(Unordered_State* c, set<Hash_val>*hash_vals, GameRunner*game,
-                   int back_row, pair<int,int> left_right_bds,
-                   pair<int,int> low_high_bds) {
+Transition::Transition(Unordered_State* c, set<Hash_val>*hash_vals,
+                       GameRunner*game,
+                       int back_row, pair<int,int> left_right_bds,
+                       pair<int,int> low_high_bds) {
 
     this->current = c;
     this->hash_vals = hash_vals;
@@ -138,7 +138,7 @@ Transition::Transition(Unordered_State* c, set<Hash_val>*hash_vals, GameRunner*g
 }
 
 
-bool Transition::find_path_to_state(int max_moves, int minimum_max_moves) {
+bool Transition::find_path_to_state(int max_moves, int minimum_max_moves){
     // see if can reach a desired state "without moving" this time
     // this prevents degenerating into cycles
     bool found = false;
