@@ -19,5 +19,5 @@ In order to trap the tiger, the men must advance the line forward in such a way 
 can never get behind the advancing line. Once the Tiger is trapped in the top section of the map,
 the men advance one by one into the pit until the tiger is trapped.
 
-#Requirements
+# Requirements
 This project is written in C++11.
