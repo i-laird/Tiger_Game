@@ -11,7 +11,7 @@ The idea stategy we found for the Tiger is for it to oscillate back and forth be
 points on the map. The Tiger attempts to always oscillate, and prefers to oscillate
 along diagonals, because those give it the most chances for escape.
 
-#Men Overview
+# Men Overview
 **If the men play perfectly they will always win.** \
 \
 However, it is incredibly difficult to trap the tiger because the tiger can kill men by jumping them.
