@@ -23,8 +23,6 @@ add_executable(Tiger-Game
         Unordered_State.h
         Smart_Mover.cpp
         Smart_Mover.h
-        Scored_MMover.h
-        Scored_MMover.cpp
         Men_Mover.cpp
         Scored_MMovers/Upward.cpp
         Scored_MMovers/Upward.h

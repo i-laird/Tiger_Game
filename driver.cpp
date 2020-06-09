@@ -1,6 +1,5 @@
 #include "Smart_Mover.h"
 #include "testing_util.h"
-#include "Scored_MMover.h"
 #include "Scored_MMovers/Upward.h"
 #include "Scored_MMovers/Inward.h"
 #include "Scored_MMovers/AvoidCapture.h"
