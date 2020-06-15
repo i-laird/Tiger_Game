@@ -1,4 +1,0 @@
-TIGER POS
-4 4
-MEN POS
-5 5
