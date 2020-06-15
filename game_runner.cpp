@@ -1,13 +1,15 @@
-//
-// Created by iancl on 3/25/2018.
-//
+/**
+ * FILENAME:           game_runner.cpp
+ * PROJECT:            TIGER PRIME
+ * DATE LAST MODIFIED: June 14, 2020
+ *
+ * copyright 2020
+ */
 
-#include <assert.h>
 #include <set>
 #include <queue>
 #include <ctime>
 #include <cstdlib>
-#include <algorithm>
 #include "game_runner.h"
 #include "Smart_Mover.h"
 

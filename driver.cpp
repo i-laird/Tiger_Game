@@ -1,6 +1,6 @@
 /**
  * FILENAME:           driver.cpp
- * PROJECT:            DEEP BLUE
+ * PROJECT:            TIGER PRIME
  * DATE LAST MODIFIED: June 14, 2020
  *
  * copyright 2020
