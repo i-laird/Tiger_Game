@@ -24,11 +24,4 @@ add_executable(Tiger-Game
         Smart_Mover.cpp
         Smart_Mover.h
         Men_Mover.cpp
-        Scored_MMovers/Upward.cpp
-        Scored_MMovers/Upward.h
-        Scored_MMovers/ScoreMod.h
-        Scored_MMovers/Inward.cpp
-        Scored_MMovers/Inward.h
-        Scored_MMovers/AvoidCapture.cpp
-        Scored_MMovers/AvoidCapture.h
-        Scored_MMovers/MarkTiger.cpp Scored_MMovers/MarkTiger.h constants.h)
+        constants.h)
