@@ -291,7 +291,7 @@ bool operator!=(const Token_t& a, const Token_t& b);
  * postcondition: the Token_t object and Point_t objects
  *                passed in are unchanged
  */
-Move_t make_move(const Token_t& tn, const Point_t& dest);
+Move_t & make_move(const Token_t& tn, const Point_t& dest);
 
 /*      make_move_in_direction(const Token_t& tn, const Point_t& dir)
 *

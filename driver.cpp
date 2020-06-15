@@ -198,34 +198,61 @@ int main()
             if (!auto_tiger) {
                 string kb;
                 do {
+
+                    // the number of user input vertical commands
+                    int verticalCount   = 0;
+
+                    // the number of user input horizontal commands
+                    int horizontalCount = 0;
+
                     tiger_move = make_move(game_state.get_tiger(), NULL_POINT);
                     tiger_move.destination = tiger_move.token.location;
+
+                    // get the user inputed move for the tiger
                     getline(cin, kb);
                     for (unsigned int i = 0; i < kb.size(); ++i) {
+
+                        if(horizontalCount > 1 || verticalCount > 1){
+                            cerr << "ERROR: Invalid Move" << endl;
+                            tiger_move = NULL_MOVE;
+                        }
+
+                        // loop through ever user inputed key
                         switch (tolower(kb[i])) {
                             case 'w':
                                 tiger_move.destination += UP;
+                                ++verticalCount;
                                 break;
                             case 'a':
                                 tiger_move.destination += LEFT;
+                                ++horizontalCount;
                                 break;
                             case 's':
                                 tiger_move.destination += DOWN;
+                                ++verticalCount;
                                 break;
                             case 'd':
                                 tiger_move.destination += RIGHT;
+                                ++horizontalCount;
                                 break;
                             case 'q':
                                 play_game = false;
                                 break;
                         }
                     }
+
+                    // if the move entered is not valid
                     if (play_game && !game.isValidMove(game_state, tiger_move)) {
+
                         cout << "<ERROR>: " << kb << " is not a valid move: ";
                         cout << tiger_move.token.location << " --> " << tiger_move.destination;
                         cout << "\n";
                         cout << "<valid moves>:\n";
+
+                        // get the moves that the tiger can make
                         auto valid_moves = game.validMoves(game_state, game_state.get_tiger());
+
+                        // list these so that the user can choose
                         for (auto i = 0; i < valid_moves.second.second; ++i) {
                             Point_t to = valid_moves.first[i];
                             string cmd = "";
@@ -257,11 +284,14 @@ int main()
                         delete[] valid_moves.second.first;
                     }
                 } while (play_game && !game.isValidMove(game_state, tiger_move));
-            } else {
+            }
+            // get the AI tiger move if the user is not playing
+            else {
                 State cur = game_state;
                 tiger_move = game.Tiger_Move(cur, rando_prob);
             }
 
+            // perform the tiger move
             game_state.do_move(tiger_move);
             time_t start = clock();
             Move_t men_move = men->next_move(game_state);

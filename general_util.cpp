@@ -192,7 +192,7 @@ bool operator!=(const Token_t& a, const Token_t& b) {
 ***********************************            *******************************/
 
 /// Move Constructors
-Move_t make_move(const Token_t& tn, const Point_t& dest) {
+Move_t & make_move(const Token_t& tn, const Point_t& dest) {
     Move_t mv;
     mv.token = tn;
     mv.destination = dest;
