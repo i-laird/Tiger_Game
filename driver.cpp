@@ -1,52 +1,101 @@
+/**
+ * FILENAME:           driver.cpp
+ * PROJECT:            DEEP BLUE
+ * DATE LAST MODIFIED: June 14, 2020
+ *
+ * copyright 2020
+ */
+
 #include "Smart_Mover.h"
 #include "testing_util.h"
-#include "Scored_MMovers/Upward.h"
-#include "Scored_MMovers/Inward.h"
-#include "Scored_MMovers/AvoidCapture.h"
-#include "Scored_MMovers/MarkTiger.h"
 #include "constants.h"
-#include <iomanip>
 #include <ctime>
 using namespace std;
 
-const int MAX_TURNS = 250;
-const int HOW_MANY_TO_STORE = 50;
-
+/**
+ * MAIN
+ *
+ * Runs a simulation of the TIGER GAME. Allows player to decide if
+ * AI will be used for Tiger or if the player wants to play as the Tiger.
+ * ALso allows game to be watched in realtime or in replay after a game
+ * is compeleted. If desired speedrun can be enabled.
+ *
+ */
 int main()
 {
+    // by default the tiger will not have AI enabled
     bool auto_tiger = false;
+
+    // used to determine if the game will be displayed as it is simulated
     bool speed_run = false;
+
     int rando_prob = 0;
+
+    // the number of games that will be simulated
+    int num_games = 1;
+
+    // if the player wishes to watch the games as they are simulated
+    bool watch_games = true;
+
+    time_t max_time = 0;
+
+    int tiger_wins = 0;
+
+    int draws = 0;
+
+    int men_wins = 0;
+
+    vector<time_t> avg_times;
+
+    double avg_moves = 0;
+
+    int max_moves = 0;
+
+    int max_moves_in_men_win = 0;
+
+    // player input for tiger AI choice
     cout << "Auto tiger (y/n)?\n";
-    string trash;
-    cin >> trash;
-    if(tolower(trash[0]) == 'y') {
+    string playerInput;
+    cin >> playerInput;
+
+    // evaluates to Y/N
+    if(tolower(playerInput[0]) == 'y') {
         auto_tiger = true;
+
+        // only if Tiger AI is enabled does the random prob need to be specified
+        // random prob is the probability that the Tiger will make a
+        // completely random move. This is useful if you want the Tiger to
+        // not be stuck in oscillation cycles
         cout << "random prob?\n";
         cin >> rando_prob;
+
         rando_prob = max(rando_prob, 0);
         rando_prob = min(rando_prob, 9);
     }
 
-    int num_games = 1;
-
-    bool watch_games = true;
+    // if Tiger AI is chosen
     if(auto_tiger) {
+
+        // player input for if speedrun should be chosen
         cout << "Speed Run (y/n)?\n";
-        cin >> trash;
-        if (tolower(trash[0]) == 'y') {
+        cin >> playerInput;
+
+        if (tolower(playerInput[0]) == 'y') {
             speed_run = true;
+
             cout << "How many games?\n";
             cin >> num_games;
             num_games = max(num_games, 1);
+
             cout << "Watch games?(y/n)\n";
-            cin >> trash;
-            if(tolower(trash[0]) != 'y') {
+            cin >> playerInput;
+            if(tolower(playerInput[0]) != 'y') {
                 watch_games = false;
             }
         }
     }
 
+    // if the player has chosen to play it lists the controls
     if(!auto_tiger) {
         cout << "   TIGER GAME:    \n\n\n";
         cout << " Use wasd keys to move the tiger, then press Enter.\n";
@@ -57,26 +106,31 @@ int main()
         cout << "Your Turn: \n\n";
     }
 
-    time_t max_time = 0;
-    int tiger_wins = 0;
-    int draws = 0;
-    int men_wins = 0;
-    vector<time_t> avg_times;
-    double avg_moves = 0;
-    int max_moves = 0;
-    int max_moves_in_men_win = 0;
+    // each loop is a game simulation
+    for(int q = 1; q <= num_games; ++q) {
 
-    for(int q = 0; q < num_games; ++q) {
-        if((100 * q) / num_games != (100 * (q - 1)) / num_games) {
-            cout << q << " / " << num_games << "...\n";
-        }
+        // contains all of the states that have occurred so far in the game
+        // this is only used if the player has set watch_games
         list<Unordered_State> the_game;
+
+        // signifies that the men have won the game
+        // i.e. the tiger can no longer move
         bool men_win = false;
 
         time_t total_men_time = 0;
+
+        // the number of moves that have been made
         int num_moves = 0;
+
         State gs(19, NULL_TOKEN);
+
+        // print the game number
+        printf("Game %d/%d", q, num_games);
+
+        // initialize the tiger
         gs[0] = make_tiger(make_point(2, 4));
+
+        // initilize the men
         int index = 1;
         for (int row = NUM_ROW - 2; row < NUM_ROW; ++row) {
             for (int col = 0; col < NUM_COL; ++col) {
@@ -84,22 +138,36 @@ int main()
                 ++index;
             }
         }
+
+        // runs the game simulation
         GameRunner game;
-        //Men_Mover* men = (new Scored_MMover(gs))->addMod(new Upward())->addMod(new Upward())->addMod(new Inward())->addMod(new AvoidCapture())->addMod(new MarkTiger());//new Smart_Mover(gs);
-        Men_Mover *men = new Smart_Mover(gs);
+
+        // controls the men AI
+        Men_Mover * men = new Smart_Mover(gs);
+
+        // the current game state
         Unordered_State game_state(gs);
+
         bool play_game = true;
+
         while (play_game && num_moves < MAX_TURNS) {
+
+            // only store previous states if the player has option enabled
             if(watch_games) {
                 the_game.push_back(game_state);
                 if (the_game.size() > HOW_MANY_TO_STORE) {
                     the_game.pop_front();
                 }
             }
+
             Color_t c;
             State cur = game_state;
+
+            // see if either the men of tiger have won the game
             if (game.evaluateWinState(cur, c)) {
+
                 play_game = false;
+
                 if (c == BLUE) {
                     ++men_wins;
                     men_win = true;
@@ -123,7 +191,7 @@ int main()
             }
             if (auto_tiger && !speed_run) {
                 cout << "Press Enter to continue.\n";
-                getline(cin, trash);
+                getline(cin, playerInput);
             }
 
             Move_t tiger_move;
@@ -245,11 +313,11 @@ int main()
 
         delete men;
         if(!men_win && speed_run && watch_games) {
-            trash = "";
+            playerInput = "";
             cout << "game lost... watch game?(y/n)";
-            cin >> trash;
-            trash[0] = tolower(trash[0]);
-            if(trash[0] == 'y') {
+            cin >> playerInput;
+            playerInput[0] = tolower(playerInput[0]);
+            if(playerInput[0] == 'y') {
                 cout << "enter a positive number to go forwards, negative to go back, 0 to quit\n";
                 cout << "enter any positive number to start.\n";
                 bool viewing = true;
